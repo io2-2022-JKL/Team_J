@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using VaccinationSystem.DTO;
+using VaccinationSystem.DTO.PatientDTOs;
+using VaccinationSystem.Service;
 
 namespace VaccinationSystem.Controllers
 {
@@ -12,6 +14,22 @@ namespace VaccinationSystem.Controllers
     [Route("")]
     public class DefaultController : ControllerBase
     {
+        private readonly TestService _service;
+
+        public DefaultController(TestService service)
+        {
+            _service = service;
+        }
+
+        [HttpGet("test")]
+        public ActionResult<IEnumerable<CertificatesResponseDTO>> GetAllCertificates()
+        {
+            var result = _service.Test();
+            if (result != null)
+                return Ok(result);
+            else
+                return NotFound();
+        }
 
         [HttpPost("register")]
         public IActionResult RegisterUser(RegisterRequestDTO registerRequestDTO)
