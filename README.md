@@ -1,2 +1,1 @@
-#Team J
-Project Vaccinatiomn System
+# team_J
