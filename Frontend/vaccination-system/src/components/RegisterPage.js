@@ -5,9 +5,6 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
-//import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
@@ -85,6 +82,16 @@ export default function SignUp() {
           </Typography>
           <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
             <Grid container spacing={2}>
+            <Grid item xs={12}>
+                <TextField
+                  name="PESEL"
+                  required
+                  fullWidth
+                  id="pesel"
+                  label="PESEL"
+                  autoFocus
+                />
+              </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField
                   autoComplete="given-name"
@@ -115,6 +122,7 @@ export default function SignUp() {
                   label="Adres Email"
                   name="email"
                   autoComplete="email"
+                  type="email"
                   onChange={(e) => validateEmail(e)}
                   helperText = {emailError}
                 />
@@ -130,7 +138,6 @@ export default function SignUp() {
                   id="password"
                   autoComplete="new-password"
                   onChange={(e) => holdPassword(e)}
-                  //helperText={passwordError}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -146,6 +153,17 @@ export default function SignUp() {
                   helperText={password2Error}
                 />
               </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  name="phoneNumber"
+                  required
+                  fullWidth
+                  id="phoneNumber"
+                  label="Numer telefonu"
+                  autoFocus
+                  type="tel"
+                />
+              </Grid>
             </Grid>
             <Button
               type="submit"
@@ -157,7 +175,7 @@ export default function SignUp() {
             </Button>
             <Grid container justifyContent="flex-end">
               <Grid item>
-                <Link to='/' variant="body2">
+                <Link to='/signin' variant="body2">
                   Masz już konto? Zaloguj się
                 </Link>
               </Grid>
