@@ -88,7 +88,7 @@ export default function LoginPage() {
                             fullWidth
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
-                            onClick={() => { navigate("/patient") }}
+                            onClick={() => { navigate("/admin") }}
                         >
                             Zaloguj się
                         </Button>
