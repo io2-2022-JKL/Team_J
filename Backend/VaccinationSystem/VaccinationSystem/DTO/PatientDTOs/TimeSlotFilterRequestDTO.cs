@@ -2,8 +2,9 @@
 {
     public class TimeSlotFilterRequestDTO
     {
-        public string vaccineType { get; set; }
         public string city { get; set; }
-        public string vaccinationDayFrom { get; set; }
+        public string dateFrom { get; set; }
+        public string dateTo { get; set; }
+        public string virus { get; set; }
     }
 }

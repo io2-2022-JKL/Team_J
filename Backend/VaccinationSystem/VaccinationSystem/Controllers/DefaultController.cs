@@ -4,9 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using VaccinationSystem.Config;
 using VaccinationSystem.DTO;
 using VaccinationSystem.DTO.PatientDTOs;
-using VaccinationSystem.Service;
+using VaccinationSystem.Models;
 
 namespace VaccinationSystem.Controllers
 {
@@ -14,21 +15,11 @@ namespace VaccinationSystem.Controllers
     [Route("")]
     public class DefaultController : ControllerBase
     {
-        private readonly TestService _service;
+        private readonly VaccinationSystemDbContext _context;
 
-        public DefaultController(TestService service)
+        public DefaultController(VaccinationSystemDbContext context)
         {
-            _service = service;
-        }
-
-        [HttpGet("test")]
-        public ActionResult<IEnumerable<CertificatesResponseDTO>> GetAllCertificates()
-        {
-            var result = _service.Test();
-            if (result != null)
-                return Ok(result);
-            else
-                return NotFound();
+            _context = context;
         }
 
         [HttpPost("register")]

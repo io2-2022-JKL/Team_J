@@ -14,14 +14,14 @@ namespace VaccinationSystem.Controllers
     [Route("admin")]
     public class AdminController : ControllerBase
     {
-        [HttpPost("patients/showPatients")]
-        public ActionResult<IEnumerable<PatientDTO>> GetPatients(GetPatientsRequestDTO getPatientsRequestDTO)
+        [HttpGet("patients")]
+        public ActionResult<IEnumerable<PatientDTO>> GetPatients()
         {
             return NotFound();
         }
 
         [HttpPost("patients/editPatient")]
-        public IActionResult EditPatient(EditPatientRequestDTO editPatientRequestDTO)
+        public IActionResult EditPatient(PatientDTO patientDTO)
         {
             return NotFound();
         }
@@ -32,8 +32,8 @@ namespace VaccinationSystem.Controllers
             return NotFound();
         }
 
-        [HttpPost("doctors/showDoctors")]
-        public ActionResult<IEnumerable<GetDoctorsResponseDTO>> GetDoctors(GetDoctorsRequestDTO getDoctorsRequestDTO)
+        [HttpGet("doctors")]
+        public ActionResult<IEnumerable<GetDoctorsResponseDTO>> GetDoctors()
         {
             return NotFound();
         }
@@ -56,38 +56,62 @@ namespace VaccinationSystem.Controllers
             return NotFound();
         }
 
-        [HttpPost("vaccinationCenter/showVaccinationCenters")]
-        public ActionResult<IEnumerable<VaccinationCenterDTO>> GetVaccinationCenters(GetVaccinationCentersRequestDTO getVaccinationCentersRequestDTO)
+        [HttpGet("vaccinationCenters")]
+        public ActionResult<IEnumerable<VaccinationCenterDTO>> GetVaccinationCenters()
         {
             return NotFound();
         }
 
-        [HttpPost("doctors/editVaccinationCenter")]
+        [HttpPost("vaccinationCenters/addVaccinationCenter")]
+        public IActionResult AddVaccinationCenter(AddVaccinationCenterRequestDTO addVaccinationCenterRequestDTO)
+        {
+            return NotFound();
+        }
+
+        [HttpPost("vaccinationCenters/editVaccinationCenter")]
         public IActionResult EditVaccinationCenter(EditVaccinationCenterRequestDTO editVaccinationCenterRequestDTO)
         {
             return NotFound();
         }
 
-        [HttpDelete("doctors/deleteVaccinationCenter/{vaccinationCenterId}")]
+        [HttpDelete("vaccinationCenters/deleteVaccinationCenter/{vaccinationCenterId}")]
         public IActionResult DeleteVaccinationCenter(string vaccinationCenterId)
         {
             return NotFound();
         }
 
-        [HttpPost("patients/showVaccines")]
-        public ActionResult<IEnumerable<VaccineDTO>> GetVaccines(GetVaccinesRequestDTO getVaccinesRequestDTO)
+        [HttpGet("vaccines")]
+        public ActionResult<IEnumerable<VaccineDTO>> GetVaccines(VaccineDTO vaccineDTO) 
+        { 
+            return NotFound();
+        }
+
+        [HttpPost("vaccines/addVaccine")]
+        public IActionResult AddVaccine(AddVaccineRequestDTO addVaccineRequestDTO)
         {
             return NotFound();
         }
 
-        [HttpPost("patients/editVaccine")]
+        [HttpPost("vaccines/editVaccine")]
         public IActionResult EditVaccine(EditVaccineRequestDTO editVaccineRequestDTO)
         {
             return NotFound();
         }
 
-        [HttpDelete("patients/deleteVaccine/{vaccineId}")]
+        [HttpDelete("vaccines/deleteVaccine/{vaccineId}")]
         public IActionResult DeleteVaccine(string vaccineId)
+        {
+            return NotFound();
+        }
+
+        [HttpGet("doctors/timeSlots/{doctorId}")]
+        public ActionResult<IEnumerable<TimeSlotDTO>> GetTimeSlots()
+        {
+            return NotFound();
+        }
+
+        [HttpPost("doctors/timeSlots/deleteTimeSlots")]
+        public IActionResult DeleteTimeSlots(IEnumerable<string> ids)
         {
             return NotFound();
         }

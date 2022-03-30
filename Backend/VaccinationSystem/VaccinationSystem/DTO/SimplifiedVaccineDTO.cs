@@ -1,6 +1,11 @@
-﻿namespace VaccinationSystem.DTO.AdminDTOs
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace VaccinationSystem.DTO
 {
-    public class EditVaccineRequestDTO // dopisać w dokumentacji
+    public class SimplifiedVaccineDTO
     {
         public string vaccineId { get; set; }
         public string company { get; set; }
@@ -11,6 +16,5 @@
         public string virus { get; set; }
         public int minPatientAge { get; set; }
         public int maxPatientAge { get; set; }
-        public bool active { get; set; }
     }
 }
