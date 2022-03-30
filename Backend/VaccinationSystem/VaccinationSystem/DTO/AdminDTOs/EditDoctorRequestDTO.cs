@@ -2,7 +2,7 @@
 {
     public class EditDoctorRequestDTO
     {
-        public string patientID { get; set; }
+        public string doctorId { get; set; }
         public string PESEL { get; set; }
         public string firstName { get; set; }
         public string lastName { get; set; }

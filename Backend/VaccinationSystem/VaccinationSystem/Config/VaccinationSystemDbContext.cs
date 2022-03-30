@@ -8,16 +8,15 @@ namespace VaccinationSystem.Config
     public class VaccinationSystemDbContext : DbContext
     { 
 
-        public DbSet<Admin> Admin { get; set; }
-        public DbSet<Appointment> Appointment { get; set; }
-        public DbSet<Certificate> Certificate { get; set; }
-        public DbSet<Doctor> Doctor { get; set; }
+        public DbSet<Admin> Admins { get; set; }
+        public DbSet<Appointment> Appointments { get; set; }
+        public DbSet<Certificate> Certificates { get; set; }
+        public DbSet<Doctor> Doctors { get; set; }
         public DbSet<OpeningHours> OpeningHours { get; set; }
-        public DbSet<Patient> Patient { get; set; }
-        public DbSet<TimeSlot> TimeSlot { get; set; }
-        public DbSet<User> User { get; set; }
-        public DbSet<VaccinationCenter> VaccinationCenter { get; set; }
-        public DbSet<Vaccine> Vaccine { get; set; }
+        public DbSet<Patient> Patients { get; set; }
+        public DbSet<TimeSlot> TimeSlots { get; set; }
+        public DbSet<VaccinationCenter> VaccinationCenters { get; set; }
+        public DbSet<Vaccine> Vaccines { get; set; }
 
         public VaccinationSystemDbContext()
         {
@@ -37,6 +36,19 @@ namespace VaccinationSystem.Config
             var connectionString = configuration.GetConnectionString("AppDb");
             if (!optionsBuilder.IsConfigured)
                 optionsBuilder.UseSqlServer(connectionString);
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Admin>().ToTable("Admin");
+            modelBuilder.Entity<Appointment>().ToTable("Appointment");
+            modelBuilder.Entity<Certificate>().ToTable("Certificate");
+            modelBuilder.Entity<Doctor>().ToTable("Doctor");
+            modelBuilder.Entity<OpeningHours>().ToTable("OpeningHours");
+            modelBuilder.Entity<Patient>().ToTable("Patient");
+            modelBuilder.Entity<TimeSlot>().ToTable("TimeSlot");
+            modelBuilder.Entity<VaccinationCenter>().ToTable("VaccinationCenter");
+            modelBuilder.Entity<Vaccine>().ToTable("Vaccine");
         }
 
     }

@@ -10,7 +10,7 @@ namespace VaccinationSystem.Models
     public class VaccinationCenter
     {
         [Key]
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         [Required]
         [Column(TypeName = "varchar(100)")]
         public string Name { get; set; }

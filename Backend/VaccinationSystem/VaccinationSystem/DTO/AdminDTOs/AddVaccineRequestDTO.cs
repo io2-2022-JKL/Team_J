@@ -1,8 +1,12 @@
-﻿namespace VaccinationSystem.DTO.AdminDTOs
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace VaccinationSystem.DTO.AdminDTOs
 {
-    public class EditVaccineRequestDTO // dopisać w dokumentacji
+    public class AddVaccineRequestDTO
     {
-        public string vaccineId { get; set; }
         public string company { get; set; }
         public string name { get; set; }
         public int numberOfDoses { get; set; }

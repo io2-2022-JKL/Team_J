@@ -14,50 +14,38 @@ namespace VaccinationSystem.Controllers
     public class PatientController : ControllerBase
     {
 
-        [HttpPost("timeSlot/filter/{patientId}")]
-        public ActionResult<IEnumerable<TimeSlotFilterResponseDTO>> FilterTimeSlots(TimeSlotFilterRequestDTO timeSlotFilterRequestDTO)
+        [HttpPost("timeSlots/Filter")]
+        public ActionResult<IEnumerable<TimeSlotFilterResponseDTO>> FilterTimeSlots(string city, string dateFrom, string dateTo, string virus)
         {
             return NotFound();
         }
 
-        [HttpGet("timeSlot/Filter/{patientId}/{dayId}")]
-        public ActionResult<IEnumerable<AppointmentsFilterForSpecificDayResponseDTO>> FilterDay(string patientId, string dayId)
-        {
-            return NotFound();
-        }
-
-        [HttpPost("timeSlot/Book/{patientId}/{windowId}")]
+        [HttpPost("timeSlots/Book/{patientId}/{timeSlotId}")]
         public IActionResult BookVisit(string patientId, string windowId)
         {
             return NotFound();
         }
 
-        [HttpGet("appointments/IncomingVisits/{patientId}")]
-        public ActionResult<IEnumerable<FutureAppointmentResponseDTO>> GetIncomingVisits(string patientId)
+        [HttpGet("appointments/incomingAppointments/{patientId}")]
+        public ActionResult<IEnumerable<FutureAppointmentDTO>> GetIncomingVisits(string patientId)
         {
             return NotFound();
         }
 
-        [HttpDelete("appointments/IncomingVisists/CancelVisit/{visitId}/{patientId}")]
-        public IActionResult CancelVisit(string visitId, string patientId)
+        [HttpDelete("appointments/IncomingAppointment/cancelAppointment/{patientId}/{appointmentId}")]
+        public IActionResult CancelVisit(string appointmentId, string patientId)
         {
             return NotFound();
         }
 
-        [HttpGet("appointments/FormerVisits/{patientId}")]
-        public ActionResult<IEnumerable<FormerAppointmentResponseDTO>> GetFormerVisits(string patientId)
+        [HttpGet("appointments/formerAppointments/{patientId}")]
+        public ActionResult<IEnumerable<FormerAppointmentDTO>> GetFormerVisits(string patientId)
         {
             return NotFound();
         }
 
         [HttpGet("certificates/{patientId}")]
-        public ActionResult<IEnumerable<CertificatesResponseDTO>> GetCertificates(string patientId)
-        {
-            return NotFound();
-        }
-
-        [HttpPost("certificates/Certificate/{patientId}")]
-        public ActionResult<string> GetCertificate(string patientId, CertificateToDownloadRequestDTO certificateToDownloadRequestDTO)
+        public ActionResult<IEnumerable<BasicCertificateInfoDTO>> GetCertificates(string patientId)
         {
             return NotFound();
         }

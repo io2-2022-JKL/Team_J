@@ -13,62 +13,68 @@ namespace VaccinationSystem.Controllers
     [Route("doctor")]
     public class DoctorController : ControllerBase
     {
-        [HttpPost("createAppointments/GetExistingAppointments/{doctorId}")]
-        public ActionResult<IEnumerable<AppointmentsFilterForSpecificDayResponseDTO>> GetExistingAppointments(string doctorId, GetExistingDoctorAppointmentsRequestDTO getExistingDoctorAppointmentsRequestDTO)
+        [HttpPost("timeSlots/{doctorId}")]
+        public ActionResult<IEnumerable<ExistingTimeSlotDTO>> GetExistingAppointments(string doctorId)
         {
             return NotFound();
         }
 
-        [HttpPost("createAppointments/Create/{doctorId}")]
+        [HttpPost("timeSlots/create/{doctorId}")]
         public IActionResult CreateAppointments(string doctorId, CreateNewVisitsRequestDTO createNewVisitsRequestDTO)
         {
             return NotFound();
         }
 
-        [HttpDelete("createAppointments/Delete/{doctorId}/{windowId}")]
-        public IActionResult DeleteAppointment(string doctorId, string windowId)
+        [HttpDelete("timeSlots/Delete/{doctorId}")]
+        public IActionResult DeleteAppointment(string doctorId, IEnumerable<string> ids)
         {
             return NotFound();
         }
 
-        [HttpPost("createAppointments/Modify/{doctorId}/{windowId}")]
-        public IActionResult ModifyAppointment(string doctorId, string windowId, ModifyVisitRequestDTO modifyVisitRequestDTO)
+        [HttpPost("timeSlots/modify/{doctorId}/{timeSlotId}")]
+        public IActionResult ModifyAppointment(string doctorId, string timeSlotId, ModifyTimeSlotRequestDTO modifyVisitRequestDTO)
         {
             return NotFound();
         }
 
-        [HttpGet("appointments/IncomingVisits/{doctorId}")]
-        public ActionResult<IEnumerable<DoctorIncomingVisitsResponseDTO>> GetIncomingVisits(string doctorId)
+        [HttpGet("formerAppointments/{doctorId}")]
+        public ActionResult<IEnumerable<DoctorFormerAppointmentDTO>> GetFormerAppointments(string doctorId)
         {
             return NotFound();
         }
 
-        [HttpGet("appointments/IncomingVisits/{doctorId}/{visitId}")]
-        public ActionResult<DoctorIncomingSpecificVisitResponseDTO> GetIncomingVisit(string doctorId, string visitId)
+        [HttpGet("incomingAppointments/{doctorId}")]
+        public ActionResult<IEnumerable<DoctorIncomingAppointmentDTO>> GetIncomingAppointments(string doctorId)
         {
             return NotFound();
         }
 
-        [HttpPost("Vaccinate/ConfirmVaccination/{doctorId}/{visitId}/{batchId}")]
-        public ActionResult<DoctorConfirmVaccinationResponseDTO> ConfirmVaccination(string doctorId, string visitId, string batchId)
+        [HttpGet("vaccinate/{doctorId}/{appointmentId}")]
+        public ActionResult<DoctorMarkedAppointmentResponseDTO> GetIncomingAppointment(string doctorId, string appointmentId)
         {
             return NotFound();
         }
 
-        [HttpPost("Vaccinate/VaccinationDidNotHappen/{doctorId}/{visitId}")]
-        public IActionResult VaccinationDidNotHappen(string doctorId, string visitId)
+        [HttpPost("vaccinate/confirmVaccination/{doctorId}/{appointmentId}/{batchId}")]
+        public ActionResult<DoctorConfirmVaccinationResponseDTO> ConfirmVaccination(string doctorId, string appointmentId, string batchId)
         {
             return NotFound();
         }
 
-        [HttpPost("Vaccinate/Certify/{doctorId}/{visitId}")]
-        public IActionResult Certify(string doctorId, string visitId)
+        [HttpPost("vaccinate/vaccinationDidNotHappen/{doctorId}/{appointmentId}")]
+        public IActionResult VaccinationDidNotHappen(string doctorId, string appointmentId)
         {
             return NotFound();
         }
 
-        [HttpPost("Vaccinate/EndVisit/{doctorId}/{visitId}")]
-        public IActionResult EndVisit(string doctorId, string visitId)
+        [HttpPost("vaccinate/certify/{doctorId}/{appointmentId}")]
+        public IActionResult Certify(string doctorId, string appointmentId)
+        {
+            return NotFound();
+        }
+
+        [HttpPost("vaccinate/endAppointment/{doctorId}/{appointmentId}")]
+        public IActionResult EndVisit(string doctorId, string appointmentId)
         {
             return NotFound();
         }

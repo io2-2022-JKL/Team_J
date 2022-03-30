@@ -9,5 +9,6 @@
         public string mail { get; set; }
         public string dateOfBirth { get; set; }
         public string phoneNumber { get; set; }
+        public bool active { get; set; }
     }
 }

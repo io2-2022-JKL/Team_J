@@ -10,7 +10,7 @@ namespace VaccinationSystem.Models
     public class User
     {
         [Key]
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         [Required]
         [Column(TypeName = "varchar(11)")]
         public string PESEL { get; set; } // Remember to place restriction on column so it only accepts digits

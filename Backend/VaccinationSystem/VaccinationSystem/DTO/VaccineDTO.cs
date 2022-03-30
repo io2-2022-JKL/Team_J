@@ -11,5 +11,6 @@
         public string virus { get; set; }
         public int minPatientAge { get; set; }
         public int maxPatientAge { get; set; }
+        public bool active { get; set; }
     }
 }

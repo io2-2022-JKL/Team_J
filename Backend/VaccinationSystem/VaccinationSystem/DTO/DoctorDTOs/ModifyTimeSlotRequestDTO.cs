@@ -1,6 +1,6 @@
 ﻿namespace VaccinationSystem.DTO.DoctorDTOs
 {
-    public class ModifyVisitRequestDTO
+    public class ModifyTimeSlotRequestDTO
     {
         public string timeFrom { get; set; }
         public string timeTo { get; set; }

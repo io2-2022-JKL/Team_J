@@ -10,7 +10,7 @@ namespace VaccinationSystem.Models
     public class Vaccine
     {
         [Key]
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         [Required]
         [Column(TypeName = "varchar(50)")]
         public string Company { get; set; }
@@ -28,7 +28,6 @@ namespace VaccinationSystem.Models
         public int MinPatientAge { get; set; }
         public int MaxPatientAge { get; set; } // Suggestion: Vaccines could not have a minimum/maximum age, NULL if that's the case
         [Required]
-        public bool Used { get; set; } // Suggestion: What is the point of it? Doesn't Vaccine represent a type of vaccine, not
-                                       // a physical object?
+        public bool Active { get; set; } 
     }
 }

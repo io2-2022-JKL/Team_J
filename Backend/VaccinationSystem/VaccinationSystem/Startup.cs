@@ -10,8 +10,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using VaccinationSystem.Config;
 using VaccinationSystem.Models;
-using VaccinationSystem.Repository;
-using VaccinationSystem.Service;
 
 namespace VaccinationSystem
 {
@@ -31,13 +29,13 @@ namespace VaccinationSystem
             //services.AddControllersWithViews();
             services.AddSwaggerGen();
 
-            services.AddScoped<TestService>();
-            services.AddScoped<TestRepository>();
-
             services.AddHttpClient();
 
             var connectionString = Configuration.GetConnectionString("AppDb");
             services.AddDbContext<VaccinationSystemDbContext>(x => x.UseSqlServer(connectionString));
+
+            services.AddControllersWithViews();
+
 
             // In production, the React files will be served from this directory
             /*services.AddSpaStaticFiles(configuration =>
