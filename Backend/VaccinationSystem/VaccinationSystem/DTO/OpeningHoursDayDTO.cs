@@ -7,7 +7,7 @@ namespace VaccinationSystem.DTO
 {
     public class OpeningHoursDayDTO
     {
-        public string from { get; set; }
-        public string to { get; set; }
+        public string From { get; set; }
+        public string To { get; set; }
     }
 }
