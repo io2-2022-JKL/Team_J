@@ -14,7 +14,7 @@ namespace VaccinationSystem.Models
         [Required]
         public int WhichDose { get; set; }
         [ForeignKey("TimeSlot")]
-        public int TimeSlotId { get; set; }
+        public Guid TimeSlotId { get; set; }
         public TimeSlot TimeSlot { get; set; }
         [ForeignKey("Patient")]
         public Guid PatientId { get; set; }

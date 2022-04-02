@@ -27,7 +27,7 @@ namespace VaccinationSystem.Controllers
         [HttpPost("timeSlots/Filter")]
         public ActionResult<IEnumerable<TimeSlotFilterResponseDTO>> FilterTimeSlots(string city, string dateFrom, string dateTo, string virus)
         {
-            // Weryfikacja tokenem do kodów 401 i 403
+            // TODO: Token verification for 401 and 403 error codes
             var result = from timeSlot in this._context.TimeSlots
                          join doctor in this._context.Doctors
                             on timeSlot.DoctorId equals doctor.Id
@@ -79,7 +79,34 @@ namespace VaccinationSystem.Controllers
         [HttpGet("appointments/incomingAppointments/{patientId}")]
         public ActionResult<IEnumerable<FutureAppointmentDTO>> GetIncomingVisits(string patientId)
         {
-            return NotFound();
+            // TODO: Token verification for 401 and 403 error codes
+            var result = from appointment in this._context.Appointments
+                         where appointment.Id.ToString() == patientId && appointment.State == Models.AppointmentState.Planned
+                         join timeSlot in this._context.TimeSlots
+                            on appointment.TimeSlotId equals timeSlot.Id
+                         join doctor in this._context.Doctors
+                             on timeSlot.DoctorId equals doctor.Id
+                         join vaccinationCenter in this._context.VaccinationCenters
+                            on doctor.VaccinationCenterId equals vaccinationCenter.Id
+                         join vaccine in this._context.Vaccines
+                            on appointment.VaccineId equals vaccine.Id
+                         select new FutureAppointmentDTO
+                         {
+                             VaccineName = vaccine.Name,
+                             VaccineCompany = vaccine.Company,
+                             VaccineVirus = vaccine.Virus.ToString(), // TODO: Check if this is the correct way of doing this
+                             WhichVaccineDose = appointment.WhichDose,
+                             AppointmentId = appointment.Id.ToString(),
+                             WindowBegin = timeSlot.From.ToString(),
+                             WindowEnd = timeSlot.To.ToString(),
+                             VaccinationCenterName = vaccinationCenter.Name,
+                             VaccinationCenterCity = vaccinationCenter.City,
+                             VaccinationCenterStreet = vaccinationCenter.Address,
+                             DoctorFirstName = doctor.PatientAccount.FirstName,
+                             DoctorLastName = doctor.PatientAccount.LastName
+                         };
+            if (result.Count() == 0) return NotFound();
+            return Ok(result.AsEnumerable());
         }
 
         [HttpDelete("appointments/IncomingAppointment/cancelAppointment/{patientId}/{appointmentId}")]
