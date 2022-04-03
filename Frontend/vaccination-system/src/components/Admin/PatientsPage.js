@@ -5,30 +5,79 @@ import { Container, CssBaseline } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import { useNavigate } from "react-router-dom";
-import { FixedSizeList } from 'react-window';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemText from '@mui/material/ListItemText';
+import { DataGrid } from '@mui/x-data-grid';
+import { randomDate, randomEmail, randomId, randomPhoneNumber, randomTraderName,randomBoolean, randomInt } from '@mui/x-data-grid-generator';
+import dateFormat from 'dateformat';
 
 const theme = createTheme();
+const columns = [
+    {
+        field: 'id',
+    },
+    {
+        field: 'PESEL',
+        width: 110,
+    },
+    {
+        field: 'firstName',
+        headerName: 'Imię'
+    },
+    {
+        field: 'lastName',
+        headerName: 'Nazwisko'
+    },
+    {
+        field: 'mail',
+        headerName: 'E-Mail',
+        width: 125
+    },
+    {
+        field: 'dateOfBirth',
+        headerName: 'Data urodzenia'
+    },
+    {
+        field: 'phoneNumber',
+        headerName: 'Numer telefonu',
+        width: 125
+    },
+    {
+        field: 'active',
+        headerName: 'Aktywny',
+        type: Boolean
+    }
+];
 
-function renderRow(props) {
-    const { index, style } = props;
-
-    return (
-        <ListItem style={style} key={index} component="div" disablePadding>
-            <ListItemButton>
-                <ListItemText primary={`Pacjent ${index + 1}`} />
-            </ListItemButton>
-        </ListItem>
-    );
-}
+let id = randomId();
+const createRandomRow = () => {
+    id = randomId();
+    return {
+        id: id,
+        PESEL: randomInt(10000000000,100000000000).toString(),
+        firstName: randomTraderName().split(' ')[0],
+        lastName: randomTraderName().split(' ')[1],
+        mail: randomEmail(),
+        dateOfBirth: dateFormat(randomDate(new Date(50,1),new Date("1/1/30")),"isoDate").toString(),
+        phoneNumber: randomPhoneNumber(),
+        active: randomBoolean()
+    }
+};
 
 export default function PatientsPage() {
     const navigate = useNavigate();
+    
+    const [rows, setRows] = React.useState(() => [
+        createRandomRow(),
+        createRandomRow(),
+        createRandomRow(),
+        createRandomRow(),
+        createRandomRow(),
+        createRandomRow(),
+        createRandomRow(),
+        createRandomRow(),
+    ]);
     return (
         <ThemeProvider theme={theme}>
-            <Container component="main" maxWidth="xs">
+            <Container component="main" maxWidth="lg">
                 <CssBaseline>
                     <Box
                         sx={{
@@ -41,15 +90,13 @@ export default function PatientsPage() {
                         <Typography component="h1" variant='h5'>
                             Pacjenci
                         </Typography>
-                        <FixedSizeList
-                            height={400}
-                            width={360}
-                            itemSize={46}
-                            itemCount={200}
-                            overscanCount={5}
-                        >
-                            {renderRow}
-                        </FixedSizeList>
+                        <div style={{ height: 250, width: '100%' }}>
+                            <DataGrid
+                                hideFooter
+                                columns={columns}
+                                rows={rows}
+                            />
+                        </div>
                         <Button
                             type="submit"
                             fullWidth
