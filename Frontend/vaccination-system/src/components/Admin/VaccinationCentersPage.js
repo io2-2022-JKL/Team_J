@@ -39,7 +39,7 @@ export default function VaccinationCentersPage() {
                         }}
                     >
                         <Typography component="h1" variant='h5'>
-                            Doktorzy
+                            Centra Szczepień
                         </Typography>
                         <FixedSizeList
                             height={400}
