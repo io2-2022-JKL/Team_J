@@ -7,9 +7,9 @@ namespace VaccinationSystem.DTO
 {
     public class BasicCertificateInfoDTO
     {
-        public string url { get; set; }
-        public string vaccineName { get; set; }
-        public string vaccineCompany { get; set; }
-        public string virus { get; set; }
+        public string Url { get; set; }
+        public string VaccineName { get; set; }
+        public string VaccineCompany { get; set; }
+        public string Virus { get; set; }
     }
 }

@@ -28,6 +28,12 @@ namespace VaccinationSystem.Controllers
         public ActionResult<IEnumerable<TimeSlotFilterResponseDTO>> FilterTimeSlots(string city, string dateFrom, string dateTo, string virus)
         {
             // TODO: Token verification for 401 and 403 error codes
+            var result = fetchFilteredTimeSlots(city, dateFrom, dateTo, virus);
+            if (result.Count() == 0) return NotFound();
+            return Ok(result);
+        }
+        private IEnumerable<TimeSlotFilterResponseDTO> fetchFilteredTimeSlots(string city, string dateFrom, string dateTo, string virus)
+        {
             var result = from timeSlot in this._context.TimeSlots
                          join doctor in this._context.Doctors
                             on timeSlot.DoctorId equals doctor.Id
@@ -44,8 +50,8 @@ namespace VaccinationSystem.Controllers
                              VaccinationCenterName = vaccinationCenter.Name,
                              VaccinationCenterCity = vaccinationCenter.City,
                              VaccinationCenterStreet = vaccinationCenter.Address,
-                             AvailableVaccines = 
-                                vaccinationCenter.AvailableVaccines.Select(i => new SimplifiedVaccineDTO 
+                             AvailableVaccines =
+                                vaccinationCenter.AvailableVaccines.Select(i => new SimplifiedVaccineDTO
                                 {
                                     vaccineId = i.Id.ToString(),
                                     company = i.Company,
@@ -57,7 +63,7 @@ namespace VaccinationSystem.Controllers
                                     minPatientAge = i.MinPatientAge,
                                     maxPatientAge = i.MaxPatientAge,
                                 }).ToList(),
-                             OpeningHours = 
+                             OpeningHours =
                                 vaccinationCenter.OpeningHours.Select(i => new OpeningHoursDayDTO
                                 {
                                     From = i.From.ToString(),
@@ -66,8 +72,7 @@ namespace VaccinationSystem.Controllers
                              DoctorFirstName = doctor.PatientAccount.FirstName,
                              DoctorLastName = doctor.PatientAccount.LastName,
                          };
-            if (result.Count() == 0) return NotFound();
-            return Ok(result.AsEnumerable());
+            return result.AsEnumerable();
         }
 
         [HttpPost("timeSlots/Book/{patientId}/{timeSlotId}")]
@@ -80,6 +85,13 @@ namespace VaccinationSystem.Controllers
         public ActionResult<IEnumerable<FutureAppointmentDTO>> GetIncomingVisits(string patientId)
         {
             // TODO: Token verification for 401 and 403 error codes
+            var result = fetchIncomingVisits(patientId);
+            if (result.Count() == 0) return NotFound();
+            return Ok(result);
+        }
+
+        private IEnumerable<FutureAppointmentDTO> fetchIncomingVisits(string patientId)
+        {
             var result = from appointment in this._context.Appointments
                          where appointment.Id.ToString() == patientId && appointment.State == Models.AppointmentState.Planned
                          join timeSlot in this._context.TimeSlots
@@ -103,28 +115,87 @@ namespace VaccinationSystem.Controllers
                              VaccinationCenterCity = vaccinationCenter.City,
                              VaccinationCenterStreet = vaccinationCenter.Address,
                              DoctorFirstName = doctor.PatientAccount.FirstName,
-                             DoctorLastName = doctor.PatientAccount.LastName
+                             DoctorLastName = doctor.PatientAccount.LastName,
                          };
-            if (result.Count() == 0) return NotFound();
-            return Ok(result.AsEnumerable());
+            return result.AsEnumerable();
         }
 
         [HttpDelete("appointments/IncomingAppointment/cancelAppointment/{patientId}/{appointmentId}")]
         public IActionResult CancelVisit(string appointmentId, string patientId)
         {
+            // TODO: Token verification for 401 and 403 error codes
+            // I'm going to wait with doing that one until I see how the DB looks like, because this endpoint will have to change
+            // data in many different tables (appointments, timeSlots, Doctor, Patient)
             return NotFound();
         }
+
+
 
         [HttpGet("appointments/formerAppointments/{patientId}")]
         public ActionResult<IEnumerable<FormerAppointmentDTO>> GetFormerVisits(string patientId)
         {
-            return NotFound();
+            // TODO: Token verification for 401 and 403 error codes
+            var result = fetchFormerVisits(patientId);
+            if (result.Count() == 0) return NotFound();
+            return Ok(result);
+        }
+
+        private IEnumerable<FormerAppointmentDTO> fetchFormerVisits(string patientId)
+        {
+            var result = from appointment in this._context.Appointments
+                         where appointment.Id.ToString() == patientId && appointment.State != Models.AppointmentState.Planned
+                         join timeSlot in this._context.TimeSlots
+                            on appointment.TimeSlotId equals timeSlot.Id
+                         join doctor in this._context.Doctors
+                             on timeSlot.DoctorId equals doctor.Id
+                         join vaccinationCenter in this._context.VaccinationCenters
+                            on doctor.VaccinationCenterId equals vaccinationCenter.Id
+                         join vaccine in this._context.Vaccines
+                            on appointment.VaccineId equals vaccine.Id
+                         select new FormerAppointmentDTO
+                         {
+                             VaccineName = vaccine.Name,
+                             VaccineCompany = vaccine.Company,
+                             VaccineVirus = vaccine.Virus.ToString(), // TODO: Check if this is the correct way of doing this
+                             WhichVaccineDose = appointment.WhichDose,
+                             AppointmentId = appointment.Id.ToString(),
+                             WindowBegin = timeSlot.From.ToString(),
+                             WindowEnd = timeSlot.To.ToString(),
+                             VaccinationCenterName = vaccinationCenter.Name,
+                             VaccinationCenterCity = vaccinationCenter.City,
+                             VaccinationCenterStreet = vaccinationCenter.Address,
+                             DoctorFirstName = doctor.PatientAccount.FirstName,
+                             DoctorLastName = doctor.PatientAccount.LastName,
+                             VisitState = appointment.State.ToString(),
+                         };
+            return result.AsEnumerable();
         }
 
         [HttpGet("certificates/{patientId}")]
         public ActionResult<IEnumerable<BasicCertificateInfoDTO>> GetCertificates(string patientId)
         {
-            return NotFound();
+            // TODO: Token verification for 401 and 403 error codes
+            var result = fetchCertificates(patientId);
+            if (result.Count() == 0) return NotFound();
+            return Ok(result);
+        }
+
+        private IEnumerable<BasicCertificateInfoDTO> fetchCertificates(string patientId)
+        {
+            var result = from certificate in this._context.Certificates
+                         join patient in this._context.Patients
+                         on certificate.PatientId equals patient.Id
+                         join vaccine in this._context.Vaccines
+                         on certificate.VaccineId equals vaccine.Id
+                         where patient.Id.ToString() == patientId
+                         select new BasicCertificateInfoDTO
+                         {
+                             Url = certificate.Url,
+                             VaccineName = vaccine.Name,
+                             VaccineCompany = vaccine.Company,
+                             Virus = vaccine.Virus.ToString(),
+                         };
+            return result.AsEnumerable();
         }
     }
 }
