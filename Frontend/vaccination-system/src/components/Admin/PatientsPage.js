@@ -6,44 +6,56 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import { useNavigate } from "react-router-dom";
 import { DataGrid } from '@mui/x-data-grid';
-import { randomDate, randomEmail, randomId, randomPhoneNumber, randomTraderName,randomBoolean, randomInt } from '@mui/x-data-grid-generator';
+import { randomDate, randomEmail, randomId, randomPhoneNumber, randomTraderName, randomBoolean, randomInt } from '@mui/x-data-grid-generator';
 import dateFormat from 'dateformat';
 
 const theme = createTheme();
+
 const columns = [
     {
         field: 'id',
+        flex: 1
     },
     {
         field: 'PESEL',
-        width: 110,
+        minWidth: 110,
+        flex: 0.5,
+        editable: true
     },
     {
         field: 'firstName',
-        headerName: 'Imię'
+        headerName: 'Imię',
+        editable: true
     },
     {
         field: 'lastName',
-        headerName: 'Nazwisko'
+        headerName: 'Nazwisko',
+        editable: true
     },
     {
         field: 'mail',
         headerName: 'E-Mail',
-        width: 125
+        minWidth: 125,
+        flex: 0.5,
+        editable: true
     },
     {
         field: 'dateOfBirth',
-        headerName: 'Data urodzenia'
+        headerName: 'Data urodzenia',
+        flex: 0.5,
+        editable: true
     },
     {
         field: 'phoneNumber',
         headerName: 'Numer telefonu',
-        width: 125
+        width: 125,
+        editable: true
     },
     {
         field: 'active',
         headerName: 'Aktywny',
-        type: Boolean
+        type: Boolean,
+        editable: true
     }
 ];
 
@@ -52,11 +64,11 @@ const createRandomRow = () => {
     id = randomId();
     return {
         id: id,
-        PESEL: randomInt(10000000000,100000000000).toString(),
+        PESEL: randomInt(10000000000, 100000000000).toString(),
         firstName: randomTraderName().split(' ')[0],
         lastName: randomTraderName().split(' ')[1],
         mail: randomEmail(),
-        dateOfBirth: dateFormat(randomDate(new Date(50,1),new Date("1/1/30")),"isoDate").toString(),
+        dateOfBirth: dateFormat(randomDate(new Date(50, 1), new Date("1/1/30")), "isoDate").toString(),
         phoneNumber: randomPhoneNumber(),
         active: randomBoolean()
     }
@@ -64,8 +76,17 @@ const createRandomRow = () => {
 
 export default function PatientsPage() {
     const navigate = useNavigate();
-    
+    const [pageSize, setPageSize] = React.useState(15);
+
     const [rows, setRows] = React.useState(() => [
+        createRandomRow(),
+        createRandomRow(),
+        createRandomRow(),
+        createRandomRow(),
+        createRandomRow(),
+        createRandomRow(),
+        createRandomRow(),
+        createRandomRow(),
         createRandomRow(),
         createRandomRow(),
         createRandomRow(),
@@ -90,13 +111,26 @@ export default function PatientsPage() {
                         <Typography component="h1" variant='h5'>
                             Pacjenci
                         </Typography>
-                        <div style={{ height: 250, width: '100%' }}>
+                        <div style={{height:400,width: '100%' }}>
                             <DataGrid
+                                
+                                pageSize={pageSize}
+                                onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+                                rowsPerPageOptions={[5, 10, 15, 20]}
+                                pagination
+                                onClick={() => console.log('test')}
                                 hideFooter
                                 columns={columns}
                                 rows={rows}
+                                disableColumnMenu
+                                
+                                componentsProps={{
+                                    pagination: { classes: null }
+                                  }}
+                                  
                             />
                         </div>
+
                         <Button
                             type="submit"
                             fullWidth
