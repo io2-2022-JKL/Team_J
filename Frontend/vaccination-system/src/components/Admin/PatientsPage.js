@@ -33,24 +33,24 @@ const filterId = (array, filter) => {
 
 const filterDate = (array, filter) => {
     return array.filter((item) => {
-        if (filter == "")
+        if (filter === "")
             return true;
         var d1 = new Date(item.dateOfBirth);
         var d2 = new Date(filter);
-        return d1.getTime() == d2.getTime();
+        return d1.getTime() === d2.getTime();
     });
 }
 
-const filterActive = (array,filter) => {
+const filterActive = (array, filter) => {
     return array.filter((item) => {
-        if(filter == "aktywny")
-            return item.active == true;
-        else if(filter=="nieaktywny")
-            return item.active == false;
+        if (filter === "aktywny")
+            return item.active === true;
+        else if (filter === "nieaktywny")
+            return item.active === false;
         else
             return true;
     });
-} 
+}
 
 const columns = [
     {
@@ -100,7 +100,7 @@ let id = randomId();
 const createRandomRow = () => {
     id = randomId();
     return {
-        id:id,
+        id: id,
         PESEL: randomInt(10000000000, 100000000000).toString(),
         firstName: randomTraderName().split(' ')[0],
         lastName: randomTraderName().split(' ')[1],
@@ -145,7 +145,7 @@ export default function PatientsPage() {
         result = filterEmail(result, data.get('emailFilter'));
         result = filterDate(result, data.get('dateOfBirthFilter'));
         result = filterPhoneNumber(result, data.get('phoneNumberFilter'));
-        result = filterActive(result,data.get('activeFilter'));
+        result = filterActive(result, data.get('activeFilter'));
         setFilteredRows(result);
         console.log(
             {
@@ -236,7 +236,7 @@ export default function PatientsPage() {
                                 rowsPerPageOptions={[5, 10, 15, 20]}
                                 pagination
                                 columns={columns}
-                                rows={filteredRows} 
+                                rows={filteredRows}
                             />
                         </div>
                         <Button
