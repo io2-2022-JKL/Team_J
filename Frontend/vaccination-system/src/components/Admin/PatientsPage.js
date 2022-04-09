@@ -79,6 +79,10 @@ export default function PatientsPage() {
 
     const columns = [
         {
+            field:'id',
+            flex:2
+        },
+        {
             field: 'PESEL',
             minWidth: 110,
             flex: 0.5,
@@ -87,11 +91,13 @@ export default function PatientsPage() {
         {
             field: 'firstName',
             headerName: 'Imię',
+            flex: 0.5,
             editable: true
         },
         {
             field: 'lastName',
             headerName: 'Nazwisko',
+            flex: 0.5,
             editable: true
         },
         {
@@ -104,13 +110,14 @@ export default function PatientsPage() {
         {
             field: 'dateOfBirth',
             headerName: 'Data urodzenia',
-            flex: 0.5,
+            flex: 0.75,
             editable: true
         },
         {
             field: 'phoneNumber',
             headerName: 'Numer telefonu',
-            width: 125,
+            minWidth: 125,
+            flex: 0.5,
             editable: true
         },
         {
@@ -118,6 +125,7 @@ export default function PatientsPage() {
             headerName: 'Aktywny',
             type: 'boolean',
             editable: true,
+            flex: 0.5,
             cellClassName: (params) => {
                 if (params.value == null) {
                     return '';
@@ -312,6 +320,14 @@ export default function PatientsPage() {
                                 pagination
                                 columns={columns}
                                 rows={filteredRows}
+                                initialState={{
+                                    columns: {
+                                      columnVisibilityModel: {
+                                        // Hide column id, the other columns will remain visible
+                                        id: false,
+                                      },
+                                    },
+                                  }}
                             />
                         </Box>
                         <Button
