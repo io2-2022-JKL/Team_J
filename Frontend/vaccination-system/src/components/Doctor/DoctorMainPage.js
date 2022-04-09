@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 
 const theme = createTheme();
 
-export default function PatientMainPage() {
+export default function DoctorMainPage() {
     const name = "Jan", surname = "Kowalski";
     const navigate = useNavigate();
     return (
@@ -32,7 +32,7 @@ export default function PatientMainPage() {
                             Witaj {name} {surname}
                         </Typography>
                         <Typography component="h1" variant="h6">
-                            Pacjent
+                            Lekarz
                         </Typography>
                         <Button
                             type="submit"
@@ -43,7 +43,7 @@ export default function PatientMainPage() {
                                 //navigate("") 
                             }}
                         >
-                            Twoje szczepienia
+                            Twoje okna godzinowe
                         </Button>
                         <Button
                             type="submit"
@@ -54,7 +54,7 @@ export default function PatientMainPage() {
                                 //navigate("") 
                             }}
                         >
-                            Zapisz się na szczepienie
+                            Przeglądaj pacjentów
                         </Button>
                         <Button
                             type="submit"
@@ -65,7 +65,7 @@ export default function PatientMainPage() {
                                 //navigate("") 
                             }}
                         >
-                            Historia szczepień
+                            Aktualna wizyta
                         </Button>
                         <Button
                             type="submit"
@@ -76,7 +76,7 @@ export default function PatientMainPage() {
                                 //navigate("") 
                             }}
                         >
-                            Twoje certyfikaty szczepień
+                            Wystaw certyfikat szczepienia
                         </Button>
                         <Button
                             type="submit"

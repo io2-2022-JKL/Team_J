@@ -12,24 +12,38 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from 'react';
 import validator from 'validator';
+import { CoPresent } from '@mui/icons-material';
 
 const theme = createTheme();
 
 export default function LoginPage() {
     const navigate = useNavigate();
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const [emailError, setEmailError] = useState('');
     const [emailErrorState, setEmailErrorState] = useState(false);
 
-    const validateEmail = (e) => {
-        var email = e.target.value
+    const handleEmialChangeWithValidation = (e) => {
+        var emailFiledValue = e.target.value
 
-        if (validator.isEmail(email)) {
+        console.log({
+            emailFiledValue
+        })
+
+        if (validator.isEmail(emailFiledValue)) {
             setEmailError('')
             setEmailErrorState(false)
+            setEmail(emailFiledValue)
         } else {
             setEmailError('Wprowadź poprawny adres email!')
             setEmailErrorState(true)
         }
+    }
+
+    const handlePasswordChange = (e) => {
+        var passwordFiledValue = e.target.value
+
+        setPassword(passwordFiledValue);
     }
 
     const handleSubmit = (event) => {
@@ -40,6 +54,28 @@ export default function LoginPage() {
             password: data.get('password'),
         });
     };
+
+    const logInUser = () => {
+        // request i response
+        if (emailError) return;
+
+        const userType = email.includes("admin") ? "admin" : email.includes("patient") ? "patient" : "doctor";
+        console.log({
+            email,
+            bool: email.includes("admin"),
+            userType
+        })
+        switch (userType) {
+            case "admin":
+                navigate("/admin");
+                break;
+            case "patient":
+                navigate("/patient");
+                break;
+            case "doctor":
+                navigate("/doctor");
+        }
+    }
 
     return (
         <ThemeProvider theme={theme}>
@@ -70,7 +106,7 @@ export default function LoginPage() {
                             name="email"
                             autoComplete="email"
                             autoFocus
-                            onChange={(e) => validateEmail(e)}
+                            onChange={(e) => handleEmialChangeWithValidation(e)}
                             helperText={emailError}
                         />
                         <TextField
@@ -82,13 +118,14 @@ export default function LoginPage() {
                             type="password"
                             id="password"
                             autoComplete="current-password"
+                            onChange={(e) => handlePasswordChange(e)}
                         />
                         <Button
                             type="submit"
                             fullWidth
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
-                            onClick={() => { navigate("/admin") }}
+                            onClick={() => { logInUser() }}
                         >
                             Zaloguj się
                         </Button>

@@ -11,8 +11,6 @@ import { useNavigate } from "react-router-dom";
 const theme = createTheme();
 
 export default function AdminMainPage() {
-    const name = "Jan";
-    const surname = "Kowalski"
     const navigate = useNavigate();
     return (
         <ThemeProvider theme={theme}>

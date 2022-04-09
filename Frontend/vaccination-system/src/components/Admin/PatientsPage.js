@@ -5,6 +5,7 @@ import { Container, CssBaseline, TextField } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import { useNavigate } from "react-router-dom";
+import Grid from "@material-ui/core/Grid";
 import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid';
 import { randomDate, randomEmail, randomId, randomPhoneNumber, randomTraderName, randomBoolean, randomInt } from '@mui/x-data-grid-generator';
 import dateFormat from 'dateformat';
@@ -37,14 +38,6 @@ const filterId = (array, filter) => {
 
 const filterDate = (array, filter) => {
     return array.filter((item) => {
-        /*
-        if (filter === "")
-            return true;
-        
-        var d1 = new Date(item.dateOfBirth);
-        var d2 = new Date(filter);
-        return d1.getTime() === d2.getTime();
-        */
         if (filter.length !== 10)
             return true;
         else
@@ -148,7 +141,7 @@ export default function PatientsPage() {
             ],
         },
     ];
-    
+
     const [rows, setRows] = React.useState(() => [
         createRandomRow(),
         createRandomRow(),
@@ -228,60 +221,70 @@ export default function PatientsPage() {
                             onChange={handleSubmit}
                             //onSubmit={handleSubmit}
                             sx={{
+                                marginTop: 2,
                                 display: 'flex',
                                 flexDirection: 'row',
                                 alignItems: 'center'
                             }}
-                            mt={2}
                         >
-                            <TextField
-                                id="idFilter"
-                                label="Filtracja id"
-                                name="idFilter"
-                            />
-                            <TextField
-                                id="peselFilter"
-                                label="Filtracja PESEL-u"
-                                name="peselFilter"
-                            />
-                            <TextField
-                                id="firstNameFilter"
-                                label="Filtracja imion"
-                                name="firstNameFilter"
-                            />
-                            <TextField
-                                id="lastNameFilter"
-                                label="Filtracja nazwiska"
-                                name="lastNameFilter"
-                            />
-                            <TextField
-                                id="emailFilter"
-                                label="Filtracje e-maila"
-                                name="emailFilter"
-                            />
-                            <TextField
-                                id="dateOfBirthFilter"
-                                label="Filtracja daty urodzenia"
-                                name="dateOfBirthFilter"
-                            />
-                            <TextField
-                                id="phoneNumberFilter"
-                                label="Filtracja numeru telefonu"
-                                name="phoneNumberFilter"
-                            />
-                            <TextField
-                                id="activeFilter"
-                                label="Filtracja aktywności"
-                                name="activeFilter"
-                            />
-                            {/*
-                            <Button
-                                type='submit'
-                                variant='contained'
-                            >
-                                Filtruj
-                            </Button>
-                            */}
+                            <Grid container direction={"row"} spacing={1}>
+                                <Grid item>
+                                    <TextField
+                                        id="idFilter"
+                                        label="ID"
+                                        name="idFilter"
+                                    />
+                                </Grid>
+                                <Grid item>
+                                    <TextField
+                                        id="peselFilter"
+                                        label="PESEL"
+                                        name="peselFilter"
+                                    />
+                                </Grid>
+                                <Grid item>
+                                    <TextField
+                                        id="firstNameFilter"
+                                        label="Imię"
+                                        name="firstNameFilter"
+                                    />
+                                </Grid>
+                                <Grid item>
+                                    <TextField
+                                        id="lastNameFilter"
+                                        label="Nazwisko"
+                                        name="lastNameFilter"
+                                    />
+                                </Grid>
+                                <Grid item>
+                                    <TextField
+                                        id="emailFilter"
+                                        label="Email"
+                                        name="emailFilter"
+                                    />
+                                </Grid>
+                                <Grid item>
+                                    <TextField
+                                        id="dateOfBirthFilter"
+                                        label="Data urodzenia"
+                                        name="dateOfBirthFilter"
+                                    />
+                                </Grid>
+                                <Grid item>
+                                    <TextField
+                                        id="phoneNumberFilter"
+                                        label="Numer telefonu"
+                                        name="phoneNumberFilter"
+                                    />
+                                </Grid>
+                                <Grid item>
+                                    <TextField
+                                        id="activeFilter"
+                                        label="Aktywny"
+                                        name="activeFilter"
+                                    />
+                                </Grid>
+                            </Grid>
                         </Box>
                         <Box
                             sx={{
@@ -322,7 +325,7 @@ export default function PatientsPage() {
                         </Button>
                     </Box>
                 </CssBaseline>
-            </Container>
-        </ThemeProvider>
+            </Container >
+        </ThemeProvider >
     );
 }
