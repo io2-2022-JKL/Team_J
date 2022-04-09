@@ -4,15 +4,15 @@ namespace VaccinationSystem.DTO.PatientDTOs
 {
     public class TimeSlotFilterResponseDTO
     {
-        public string timeSlotId { get; set; }
-        public string from { get; set; }
-        public string to { get; set; }
-        public string vaccinationCenterName { get; set; }
-        public string vaccinationCenterCity { get; set; }
-        public string vaccinationCenterStreet { get; set; }
-        public List<SimplifiedVaccineDTO> availableVaccines { get; set; }
-        public List<OpeningHoursDayDTO> openingHours { get; set; }
-        public string doctorFirstName { get; set; }
-        public string doctorLastName { get; set; }
+        public string TimeSlotId { get; set; }
+        public string From { get; set; }
+        public string To { get; set; }
+        public string VaccinationCenterName { get; set; }
+        public string VaccinationCenterCity { get; set; }
+        public string VaccinationCenterStreet { get; set; }
+        public List<SimplifiedVaccineDTO> AvailableVaccines { get; set; }
+        public List<OpeningHoursDayDTO> OpeningHours { get; set; }
+        public string DoctorFirstName { get; set; }
+        public string DoctorLastName { get; set; }
     }
 }
