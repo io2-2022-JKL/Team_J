@@ -9,6 +9,7 @@ import DoctorsPage from './Admin/DoctorsPage';
 import VaccinationCentersPage from './Admin/VaccinationCentersPage';
 import VaccinesPage from './Admin/VaccinesPage';
 import PrivateRoute from './PrivateRoute';
+import DoctorMainPage from './Doctor/DoctorMainPage';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route exact path='/signin' element={< LoginPage />} />
           <Route exact path='/register' element={<RegisterPage />} />
           <Route exact path='/patient' element={<PatientMainPage />} />
+          <Route exact path='/doctor' element={<DoctorMainPage />} />
           <Route exact path='/admin' element={<AdminMainPage />} />
           <Route exact path='/admin/patients' element={<PatientsPage />} />
           <Route exact path='/admin/doctors' element={<DoctorsPage />} />

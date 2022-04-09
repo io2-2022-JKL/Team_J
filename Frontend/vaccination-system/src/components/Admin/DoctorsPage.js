@@ -39,7 +39,7 @@ export default function DoctorsPage() {
                         }}
                     >
                         <Typography component="h1" variant='h5'>
-                            Doktorzy
+                            Lekarze
                         </Typography>
                         <FixedSizeList
                             height={400}

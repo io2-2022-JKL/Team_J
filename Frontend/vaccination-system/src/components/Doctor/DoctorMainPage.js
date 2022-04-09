@@ -10,7 +10,8 @@ import { useNavigate } from "react-router-dom";
 
 const theme = createTheme();
 
-export default function AdminMainPage() {
+export default function DoctorMainPage() {
+    const name = "Jan", surname = "Kowalski";
     const navigate = useNavigate();
     return (
         <ThemeProvider theme={theme}>
@@ -28,43 +29,54 @@ export default function AdminMainPage() {
                             <AccountBoxRoundedIcon />
                         </Avatar>
                         <Typography component="h1" variant="h4">
-                            Administrator
+                            Witaj {name} {surname}
+                        </Typography>
+                        <Typography component="h1" variant="h6">
+                            Lekarz
                         </Typography>
                         <Button
                             type="submit"
                             fullWidth
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
-                            onClick={() => { navigate("/admin/patients") }}
+                            onClick={() => {
+                                //navigate("") 
+                            }}
                         >
-                            Zarządzaj pacjentami
+                            Twoje okna godzinowe
                         </Button>
                         <Button
                             type="submit"
                             fullWidth
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
-                            onClick={() => { navigate("/admin/doctors") }}
+                            onClick={() => {
+                                //navigate("") 
+                            }}
                         >
-                            Zarządzaj lekarzami
+                            Przeglądaj pacjentów
                         </Button>
                         <Button
                             type="submit"
                             fullWidth
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
-                            onClick={() => { navigate("/admin/vaccinationCenters") }}
+                            onClick={() => {
+                                //navigate("") 
+                            }}
                         >
-                            Zarządzaj Centrami Szczepień
+                            Aktualna wizyta
                         </Button>
                         <Button
                             type="submit"
                             fullWidth
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
-                            onClick={() => { navigate("/admin/vaccines") }}
+                            onClick={() => {
+                                //navigate("") 
+                            }}
                         >
-                            Zarządzaj szczepionkami
+                            Wystaw certyfikat szczepienia
                         </Button>
                         <Button
                             type="submit"
