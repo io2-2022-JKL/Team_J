@@ -43,7 +43,14 @@ namespace VaccinationSystem.Controllers
                 patientDTO.firstName = patient.FirstName;
                 patientDTO.lastName = patient.LastName;
                 patientDTO.mail = patient.Mail;
-                patientDTO.dateOfBirth = patient.DateOfBirth.ToString("dd-MM-yyyy");
+                try
+                {
+                    patientDTO.dateOfBirth = patient.DateOfBirth.ToString("dd-MM-yyyy");
+                }
+                catch(FormatException)
+                {
+                    return null;
+                }
                 patientDTO.phoneNumber = patient.PhoneNumber;
                 patientDTO.active = patient.Active;
                 result.Add(patientDTO);
@@ -134,7 +141,14 @@ namespace VaccinationSystem.Controllers
                 getDoctorsResponseDTO.firstName = doc.PatientAccount.FirstName;
                 getDoctorsResponseDTO.lastName = doc.PatientAccount.LastName;
                 getDoctorsResponseDTO.mail = doc.PatientAccount.Mail;
-                getDoctorsResponseDTO.dateOfBirth = doc.PatientAccount.DateOfBirth.ToString("dd-MM-yyyy");
+                try
+                {
+                    getDoctorsResponseDTO.dateOfBirth = doc.PatientAccount.DateOfBirth.ToString("dd-MM-yyyy");
+                }
+                catch(FormatException)
+                {
+                    return null;
+                }
                 getDoctorsResponseDTO.phoneNumber = doc.PatientAccount.PhoneNumber;
                 getDoctorsResponseDTO.active = doc.Active;
                 getDoctorsResponseDTO.vaccinationCenterId = doc.VaccinationCenterId.ToString();
@@ -238,8 +252,7 @@ namespace VaccinationSystem.Controllers
 
             Doctor doctor;
             if((doctor = _context.Doctors.Where(doc => doc.Active == true && doc.Id == id).SingleOrDefault()) != null)
-            {
-                doctor.Active = false;
+            {             
                 foreach (Appointment appointment in doctor.Vaccinations)
                 {
                     if (appointment.State == AppointmentState.Planned)
@@ -253,6 +266,7 @@ namespace VaccinationSystem.Controllers
                 {
                     timeSlot.Active = false;
                 }
+                doctor.Active = false;
                 if (_context.SaveChanges() < 1)
                 {
                     return StatusCode(404);
@@ -269,13 +283,123 @@ namespace VaccinationSystem.Controllers
         [HttpGet("vaccinationCenters")]
         public ActionResult<IEnumerable<VaccinationCenterDTO>> GetVaccinationCenters()
         {
-            return NotFound();
+            var result = GetAllVaccinationCenters();
+            if (result != null)
+                return Ok(result);
+            return StatusCode(404);
+        }
+
+        private IEnumerable<VaccinationCenterDTO> GetAllVaccinationCenters()
+        {
+            List<VaccinationCenterDTO> result = new List<VaccinationCenterDTO>();
+            foreach(VaccinationCenter center in _context.VaccinationCenters.ToList())
+            {
+                VaccinationCenterDTO centerDTO = new VaccinationCenterDTO();
+                centerDTO.id = center.Id.ToString();
+                centerDTO.name = center.Name;
+                centerDTO.city = center.City;
+                centerDTO.street = center.Address;
+                List<VaccineInVaccinationCenterDTO> vaccines = new List<VaccineInVaccinationCenterDTO>();
+                foreach(Vaccine vaccine in center.AvailableVaccines)
+                {
+                    VaccineInVaccinationCenterDTO vaccineDTO = new VaccineInVaccinationCenterDTO();
+                    vaccineDTO.id = vaccine.Id.ToString();
+                    vaccineDTO.name = vaccine.Name;
+                    vaccineDTO.companyName = vaccine.Company;
+                    vaccineDTO.virus = vaccine.Virus.ToString();
+                    vaccines.Add(vaccineDTO);
+                }
+                centerDTO.vaccines = vaccines;
+                List<OpeningHoursDayDTO> openingHours = new List<OpeningHoursDayDTO>();
+                foreach(OpeningHours oh in center.OpeningHours)
+                {
+                    OpeningHoursDayDTO ohDTO = new OpeningHoursDayDTO();
+                    try
+                    {
+                        ohDTO.From = oh.From.ToString(@"hh\:mm");
+                        ohDTO.To = oh.To.ToString(@"hh\:mm");
+                    }
+                    catch(FormatException)
+                    {
+                        return null;
+                    }
+                    openingHours.Add(ohDTO);
+                }
+                centerDTO.openingHoursDays = openingHours;
+                centerDTO.active = center.Active;
+                result.Add(centerDTO);
+            }
+            return result;
         }
 
         [HttpPost("vaccinationCenters/addVaccinationCenter")]
         public IActionResult AddVaccinationCenter(AddVaccinationCenterRequestDTO addVaccinationCenterRequestDTO)
         {
-            return NotFound();
+            var result = AddNewVaccinationCenter(addVaccinationCenterRequestDTO);
+            return result;
+        }
+
+        private IActionResult AddNewVaccinationCenter(AddVaccinationCenterRequestDTO addVaccinationCenterRequestDTO)
+        {
+            VaccinationCenter vaccinationCenter = new VaccinationCenter();
+            vaccinationCenter.Name = addVaccinationCenterRequestDTO.name;
+            vaccinationCenter.City = addVaccinationCenterRequestDTO.city;
+            vaccinationCenter.Address = addVaccinationCenterRequestDTO.street;
+            List<Vaccine> vaccines = new List<Vaccine>();
+            foreach(String vaccineId in addVaccinationCenterRequestDTO.vaccineIds)
+            {
+                Guid id;
+                try
+                {
+                    id = Guid.Parse(vaccineId);
+                }
+                catch(FormatException)
+                {
+                    return StatusCode(404);
+                }
+                catch(ArgumentNullException)
+                {
+                    return StatusCode(404);
+                }
+                Vaccine vaccine;
+                if((vaccine = _context.Vaccines.Where(vac => vac.Active == true && vac.Id == id).FirstOrDefault()) != null)
+                {
+                    vaccines.Add(vaccine);
+                }
+                else
+                {
+                    return StatusCode(404);
+                }
+            }
+            vaccinationCenter.AvailableVaccines = vaccines;
+            List<OpeningHours> openingHours = new List<OpeningHours>();
+            foreach(OpeningHoursDayDTO ohDTO in addVaccinationCenterRequestDTO.openingHoursDays)
+            {
+                OpeningHours oh = new OpeningHours();
+                try
+                {
+                    oh.From = TimeSpan.ParseExact(ohDTO.From, "hh:mm", null);
+                    oh.To = TimeSpan.ParseExact(ohDTO.To, "hh:mm", null);
+                }
+                catch(FormatException)
+                {
+                    return StatusCode(404);
+                }
+                openingHours.Add(oh);
+            }
+            vaccinationCenter.OpeningHours = openingHours;
+            vaccinationCenter.Doctors = new List<Doctor>();
+            vaccinationCenter.Active = addVaccinationCenterRequestDTO.active;
+            var entry = _context.VaccinationCenters.Add(vaccinationCenter);
+            if (entry.State != Microsoft.EntityFrameworkCore.EntityState.Added)
+            {
+                return StatusCode(404);
+            }
+            if (_context.SaveChanges() < 1)
+            {
+                return StatusCode(404);
+            }
+            return StatusCode(200);
         }
 
         [HttpPost("vaccinationCenters/editVaccinationCenter")]
@@ -287,7 +411,55 @@ namespace VaccinationSystem.Controllers
         [HttpDelete("vaccinationCenters/deleteVaccinationCenter/{vaccinationCenterId}")]
         public IActionResult DeleteVaccinationCenter(string vaccinationCenterId)
         {
-            return NotFound();
+            var result = FindAndDeleteVaccinationCenter(vaccinationCenterId);
+            return result;
+        }
+
+        private IActionResult FindAndDeleteVaccinationCenter(string vaccinationCenterId)
+        {
+            Guid id;
+            try
+            {
+                id = Guid.Parse(vaccinationCenterId);
+            }
+            catch(FormatException)
+            {
+                return StatusCode(404);
+            }
+            VaccinationCenter vaccinationCenter;
+            if((vaccinationCenter = _context.VaccinationCenters.Where(vc => vc.Active == true && vc.Id == id).SingleOrDefault())!=null)
+            {
+                foreach(Doctor doctor in vaccinationCenter.Doctors)
+                {
+                    if (doctor.Active)
+                    {
+                        foreach (Appointment appointment in doctor.Vaccinations)
+                        {
+                            if (appointment.State == AppointmentState.Planned)
+                            {
+                                appointment.State = AppointmentState.Cancelled;
+                                appointment.TimeSlot.Active = false;
+                                //powiadomić pacjentów
+                            }
+                        }
+                        foreach (TimeSlot timeSlot in _context.TimeSlots.Where(slot => slot.DoctorId == doctor.Id && slot.Active == false).ToList())
+                        {
+                            timeSlot.Active = false;
+                        }
+                        doctor.Active = false;
+                    }
+                }
+                vaccinationCenter.Active = false;
+                if (_context.SaveChanges() < 1)
+                {
+                    return StatusCode(404);
+                }
+                else
+                {
+                    return StatusCode(200);
+                }
+            }
+            return StatusCode(404);
         }
 
         [HttpGet("vaccines")]
