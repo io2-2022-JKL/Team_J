@@ -316,8 +316,8 @@ namespace VaccinationSystem.Controllers
                     OpeningHoursDayDTO ohDTO = new OpeningHoursDayDTO();
                     try
                     {
-                        ohDTO.From = oh.From.ToString(@"hh\:mm");
-                        ohDTO.To = oh.To.ToString(@"hh\:mm");
+                        ohDTO.From = oh.From.ToString(@"HH\:mm");
+                        ohDTO.To = oh.To.ToString(@"HH\:mm");
                     }
                     catch(FormatException)
                     {
@@ -378,8 +378,8 @@ namespace VaccinationSystem.Controllers
                 OpeningHours oh = new OpeningHours();
                 try
                 {
-                    oh.From = TimeSpan.ParseExact(ohDTO.From, "hh:mm", null);
-                    oh.To = TimeSpan.ParseExact(ohDTO.To, "hh:mm", null);
+                    oh.From = TimeSpan.ParseExact(ohDTO.From, "HH:mm", null);
+                    oh.To = TimeSpan.ParseExact(ohDTO.To, "HH:mm", null);
                 }
                 catch(FormatException)
                 {
@@ -593,15 +593,97 @@ namespace VaccinationSystem.Controllers
         }
 
         [HttpGet("doctors/timeSlots/{doctorId}")]
-        public ActionResult<IEnumerable<TimeSlotDTO>> GetTimeSlots()
+        public ActionResult<IEnumerable<TimeSlotDTO>> GetTimeSlots(string doctorId)
         {
-            return NotFound();
+            var result = GetAllDoctorTimeSlots(doctorId);
+            if (result != null)
+                return Ok(result);
+            return StatusCode(404);
+        }
+
+        private IEnumerable<TimeSlotDTO> GetAllDoctorTimeSlots(string doctorId)
+        {
+            List<TimeSlotDTO> timeSlots = new List<TimeSlotDTO>();
+            Guid id;
+            try
+            {
+                id = Guid.Parse(doctorId);
+            }
+            catch(FormatException)
+            {
+                return null;
+            }
+            foreach (TimeSlot timeSlot in _context.TimeSlots.Where(ts => ts.DoctorId == id).ToList())
+            {
+                TimeSlotDTO timeSlotDTO = new TimeSlotDTO();
+                timeSlotDTO.id = timeSlot.Id.ToString();
+                try
+                {
+                    timeSlotDTO.from = timeSlot.From.ToString(@"dd-MM-yyyy HH\:mm");
+                    timeSlotDTO.to = timeSlot.To.ToString(@"dd-MM-yyyy HH\:mm");
+                }
+                catch(FormatException)
+                {
+                    return null;
+                }
+                timeSlotDTO.isFree = timeSlot.IsFree;
+                timeSlotDTO.active = timeSlot.Active;
+                timeSlots.Add(timeSlotDTO);
+            }
+            return timeSlots;
         }
 
         [HttpPost("doctors/timeSlots/deleteTimeSlots")]
         public IActionResult DeleteTimeSlots(IEnumerable<string> ids)
         {
-            return NotFound();
+            var result = FindAndDeleteDoctorTimeSlots(ids);
+            return result;
         }
+
+        private IActionResult FindAndDeleteDoctorTimeSlots(IEnumerable<string> ids)
+        {
+            foreach(string stringId in ids)
+            {
+                if(!FindAndDeleteDoctorTimeSlot(stringId))
+                {
+                    return StatusCode(404);
+                }
+            }
+            if (_context.SaveChanges() < 1)
+            {
+                return StatusCode(404);
+            }
+            else
+            {
+                return StatusCode(200);
+            }
+
+        }
+        private bool FindAndDeleteDoctorTimeSlot(string timeSlotId)
+        {
+            Guid id;
+            try
+            {
+                id = Guid.Parse(timeSlotId);
+            }
+            catch(FormatException)
+            {
+                return false;
+            }
+            TimeSlot timeSlot;
+            if ((timeSlot = _context.TimeSlots.Where(ts => ts.Active == true && ts.Id == id).SingleOrDefault()) != null)
+            {
+                Appointment appointment;
+                if ((appointment = _context.Appointments.Where(a => a.State == AppointmentState.Planned && a.TimeSlotId == timeSlot.Id).SingleOrDefault()) != null)
+                {
+                    appointment.State = AppointmentState.Cancelled;
+                    //poinformować pacjenta
+                }
+                timeSlot.Active = false;
+                return true;
+            }
+            return false;
+        }
+
     }
 }
