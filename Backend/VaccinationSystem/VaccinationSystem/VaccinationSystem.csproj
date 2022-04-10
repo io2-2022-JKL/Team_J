@@ -13,6 +13,10 @@
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="3.1.19" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.OpenApi" Version="1.2.3" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.3.0" />
   </ItemGroup>
@@ -22,6 +26,21 @@
     <Content Remove="$(SpaRoot)**" />
     <None Remove="$(SpaRoot)**" />
     <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Migrations\20220410101630_initialMigration.cs" />
+    <Compile Remove="Migrations\20220410101630_initialMigration.Designer.cs" />
+    <Compile Remove="Migrations\20220410102503_initialMigration.cs" />
+    <Compile Remove="Migrations\20220410102503_initialMigration.Designer.cs" />
+    <Compile Remove="Migrations\20220410102952_initialMigration.cs" />
+    <Compile Remove="Migrations\20220410102952_initialMigration.Designer.cs" />
+    <Compile Remove="Migrations\20220410103355_initialMigration.cs" />
+    <Compile Remove="Migrations\20220410103355_initialMigration.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Migrations\" />
   </ItemGroup>
 
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
