@@ -6,6 +6,9 @@ import { BrowserRouter, Routes } from 'react-router-dom';
 
 test("renders buttons", async () => {
     const { getByText } = render(<BrowserRouter> <PatientMainPage /> </BrowserRouter>)
-    expect(getByText('Wyloguj się')).toBeInTheDocument()
     expect(getByText('Twoje szczepienia')).toBeInTheDocument()
+    expect(getByText('Zapisz się na szczepienie')).toBeInTheDocument()
+    expect(getByText('Historia szczepień')).toBeInTheDocument()
+    expect(getByText('Twoje certyfikaty szczepień')).toBeInTheDocument()
+    expect(getByText('Wyloguj się')).toBeInTheDocument()
 })

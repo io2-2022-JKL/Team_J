@@ -6,12 +6,12 @@ import AccountBoxRoundedIcon from '@mui/icons-material/AccountBoxRounded';
 import Typography from '@mui/material/Typography';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const theme = createTheme();
 
 export default function PatientMainPage() {
-    const name = "Jan", surname = "Kowalski";
+    const location = useLocation();
     const navigate = useNavigate();
     return (
         <ThemeProvider theme={theme}>
@@ -29,7 +29,7 @@ export default function PatientMainPage() {
                             <AccountBoxRoundedIcon />
                         </Avatar>
                         <Typography component="h1" variant="h4">
-                            Witaj {name} {surname}
+                            Witaj {location.state != null && location.state.name} {location.state != null && location.state.surname}
                         </Typography>
                         <Typography component="h1" variant="h6">
                             Pacjent

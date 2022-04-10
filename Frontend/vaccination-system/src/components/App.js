@@ -1,4 +1,3 @@
-import '../App.css';
 import LoginPage from './LoginPage';
 import RegisterPage from './RegisterPage';
 import PatientMainPage from './Patient/PatientMainPage';
@@ -10,6 +9,7 @@ import VaccinationCentersPage from './Admin/VaccinationCentersPage';
 import VaccinesPage from './Admin/VaccinesPage';
 import PrivateRoute from './PrivateRoute';
 import DoctorMainPage from './Doctor/DoctorMainPage';
+import { propsToClassKey } from '@mui/styles';
 
 function App() {
   return (

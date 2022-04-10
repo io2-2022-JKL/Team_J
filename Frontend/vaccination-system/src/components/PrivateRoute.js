@@ -1,23 +1,18 @@
 import * as React from 'react';
-import { Route } from "react-router-dom";
-const PrivateRoute =
-    ({ component: Component, ...rest }) => {
-        return (
-            <Route
-                {...rest}
-                render={props =>
-                    //isAuthenticated() ? (
-                    <Component {...props} />
-                    //) : (
-                    //    <Navigate
-                    //        to={{
-                    //            pathname: "/signin",
-                    //            state: { from: props.location }
-                    //        }}
-                    //    />
-                    //)
-                }
-            />
-        )
-    };
-export default PrivateRoute;
+import { Navigate, Route } from "react-router-dom";
+export default function PrivateRoute({ children, ...rest }) {
+    return (
+        <Route
+            {...rest}
+            render={
+                ({ location }) => (
+                    true
+                        ? (
+                            children
+                        ) : (
+                            null
+                        ))
+            }
+        />
+    );
+}

@@ -59,6 +59,14 @@ export default function LoginPage() {
         // request i response
         if (emailError) return;
 
+
+        /*const response = fetch("https://localhost:5001/patient/certificates/{31241412}");
+
+
+        console.log({
+            cos: response.status
+        })*/
+
         const userType = email.includes("admin") ? "admin" : email.includes("patient") ? "patient" : "doctor";
         console.log({
             email,
@@ -70,10 +78,10 @@ export default function LoginPage() {
                 navigate("/admin");
                 break;
             case "patient":
-                navigate("/patient");
+                navigate("/patient", { state: { name: "Jan", surname: "Kowalski" } });
                 break;
             case "doctor":
-                navigate("/doctor");
+                navigate("/doctor",);
         }
     }
 
