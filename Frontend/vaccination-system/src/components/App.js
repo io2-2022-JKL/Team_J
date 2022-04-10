@@ -9,7 +9,7 @@ import VaccinationCentersPage from './Admin/VaccinationCentersPage';
 import VaccinesPage from './Admin/VaccinesPage';
 import PrivateRoute from './PrivateRoute';
 import DoctorMainPage from './Doctor/DoctorMainPage';
-import { propsToClassKey } from '@mui/styles';
+import AddNewDoctor from './Admin/AddDoctor';
 
 function App() {
   return (
@@ -23,6 +23,7 @@ function App() {
           <Route exact path='/admin' element={<AdminMainPage />} />
           <Route exact path='/admin/patients' element={<PatientsPage />} />
           <Route exact path='/admin/doctors' element={<DoctorsPage />} />
+          <Route exact path='/admin/doctors/addDoctor' element={< AddNewDoctor />} />
           <Route exact path='/admin/vaccinationCenters' element={<VaccinationCentersPage />} />
           <Route exact path='/admin/vaccines' element={<VaccinesPage />} />
           <Route path="" element={<Navigate to="/signin" />} />
