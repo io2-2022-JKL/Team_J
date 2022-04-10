@@ -463,15 +463,89 @@ namespace VaccinationSystem.Controllers
         }
 
         [HttpGet("vaccines")]
-        public ActionResult<IEnumerable<VaccineDTO>> GetVaccines(VaccineDTO vaccineDTO) 
-        { 
-            return NotFound();
+        public ActionResult<IEnumerable<VaccineDTO>> GetVaccines() 
+        {
+            var result = GetAllVaccines();
+            if (result != null)
+                return Ok(result);
+            return StatusCode(404);
+        }
+
+        private IEnumerable<VaccineDTO> GetAllVaccines()
+        {
+            List<VaccineDTO> vaccines = new List<VaccineDTO>();
+            foreach(Vaccine vaccine in _context.Vaccines.ToList())
+            {
+                VaccineDTO vaccineDTO = new VaccineDTO();
+                vaccineDTO.vaccineId = vaccine.Id.ToString();
+                vaccineDTO.company = vaccine.Company;
+                vaccineDTO.name = vaccine.Name;
+                vaccineDTO.numberOfDoses = vaccine.NumberOfDoses;
+                vaccineDTO.minDaysBetweenDoses = vaccine.MinDaysBetweenDoses;
+                vaccineDTO.maxDaysBetweenDoses = vaccine.MaxDaysBetweenDoses;
+                vaccineDTO.virus = vaccine.Virus.ToString();
+                vaccineDTO.minPatientAge = vaccine.MinPatientAge;
+                vaccineDTO.maxPatientAge = vaccine.MaxPatientAge;
+                vaccineDTO.active = vaccine.Active;
+                vaccines.Add(vaccineDTO);
+            }
+            return vaccines;
         }
 
         [HttpPost("vaccines/addVaccine")]
         public IActionResult AddVaccine(AddVaccineRequestDTO addVaccineRequestDTO)
         {
-            return NotFound();
+            var result = AddNewVaccine(addVaccineRequestDTO);
+            return result;
+        }
+
+        private IActionResult AddNewVaccine(AddVaccineRequestDTO addVaccineRequestDTO)
+        {
+            Vaccine vaccine = new Vaccine();
+            vaccine.Company = addVaccineRequestDTO.company;
+            vaccine.Name = addVaccineRequestDTO.name;
+            vaccine.NumberOfDoses = addVaccineRequestDTO.numberOfDoses;
+            if (vaccine.NumberOfDoses < 1)
+                return StatusCode(404);
+            vaccine.MinDaysBetweenDoses = addVaccineRequestDTO.minDaysBetweenDoses;
+            vaccine.MaxDaysBetweenDoses = addVaccineRequestDTO.maxDaysBetweenDoses;
+            if (vaccine.MinDaysBetweenDoses >= 0 && vaccine.MaxDaysBetweenDoses >= 0 && vaccine.MaxDaysBetweenDoses < vaccine.MinDaysBetweenDoses)
+            {
+                return StatusCode(404);
+            }
+            try
+            {
+                vaccine.Virus = (Virus)Enum.Parse(typeof(Virus), addVaccineRequestDTO.virus);
+            }
+            catch (ArgumentNullException)
+            {
+                return StatusCode(404);
+            }
+            catch (ArgumentException)
+            {
+                return StatusCode(404);
+            }
+            catch (OverflowException)
+            {
+                return StatusCode(404);
+            }
+            vaccine.MinPatientAge = addVaccineRequestDTO.minPatientAge;
+            vaccine.MaxPatientAge = addVaccineRequestDTO.maxPatientAge;
+            if (vaccine.MinPatientAge >= 0 && vaccine.MaxPatientAge >= 0 && vaccine.MaxPatientAge < vaccine.MinPatientAge)
+            {
+                return StatusCode(404);
+            }
+            vaccine.Active = addVaccineRequestDTO.active;
+            var entry = _context.Vaccines.Add(vaccine);
+            if (entry.State != Microsoft.EntityFrameworkCore.EntityState.Added)
+            {
+                return StatusCode(404);
+            }
+            if (_context.SaveChanges() < 1)
+            {
+                return StatusCode(404);
+            }
+            return StatusCode(200);
         }
 
         [HttpPost("vaccines/editVaccine")]
@@ -483,7 +557,39 @@ namespace VaccinationSystem.Controllers
         [HttpDelete("vaccines/deleteVaccine/{vaccineId}")]
         public IActionResult DeleteVaccine(string vaccineId)
         {
-            return NotFound();
+            var result = FindAndDeleteVaccine(vaccineId);
+            return result;
+        }
+
+        private IActionResult FindAndDeleteVaccine(string vaccineId)
+        {
+            Guid id;
+            try
+            {
+                id = Guid.Parse(vaccineId);
+            }
+            catch(FormatException)
+            {
+                return StatusCode(404);
+            }
+            Vaccine vaccine;
+            if ((vaccine = _context.Vaccines.Where(vac => vac.Active == true && vac.Id == id).SingleOrDefault()) != null)
+            {
+                foreach(Appointment appointment in _context.Appointments.Where(a => a.State == AppointmentState.Planned && a.TimeSlot.Active == true && a.VaccineId == id).ToList())
+                {
+                    appointment.State = AppointmentState.Cancelled;
+                }
+                vaccine.Active = false;
+                if (_context.SaveChanges() < 1)
+                {
+                    return StatusCode(404);
+                }
+                else
+                {
+                    return StatusCode(200);
+                }
+            }
+            return StatusCode(404);
         }
 
         [HttpGet("doctors/timeSlots/{doctorId}")]
