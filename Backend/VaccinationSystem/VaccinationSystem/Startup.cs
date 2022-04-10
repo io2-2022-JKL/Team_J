@@ -50,11 +50,26 @@ namespace VaccinationSystem
             app.Build();
             app.UseSwagger();
             app.UseSwaggerUI();
+            app.UseHttpsRedirection();
+            app.UseStaticFiles();
+            app.UseRouting();
+            app.UseAuthorization();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
+            /*app.Build();
+            app.UseSwagger();
+            app.UseSwaggerUI();
 
             app.UseHttpsRedirection();
 
+            app.UseEndpoints(routes =>
+            {
+                routes.MapRoute("default", "{controller}/{action}");
+            });
             //app.MapControllers();
-
+            */
             /*if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
