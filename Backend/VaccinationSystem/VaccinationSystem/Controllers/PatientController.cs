@@ -124,9 +124,23 @@ namespace VaccinationSystem.Controllers
         public IActionResult CancelVisit(string appointmentId, string patientId)
         {
             // TODO: Token verification for 401 and 403 error codes
-            // I'm going to wait with doing that one until I see how the DB looks like, because this endpoint will have to change
-            // data in many different tables (appointments, timeSlots, Doctor, Patient)
-            return NotFound();
+            if (modifyCancelVisit(appointmentId, patientId)) return NotFound();
+            return Ok();
+        }
+
+        private bool modifyCancelVisit(string appointmentId, string patientId)
+        {
+            var appointment = this._context.Appointments.SingleOrDefault(a => String.Compare(a.Id.ToString(), appointmentId) == 0 &&
+                                                                         String.Compare(a.PatientId.ToString(), patientId) == 0);
+            if (appointment == null) return false;
+            Guid timeSlotId = appointment.TimeSlotId.GetValueOrDefault();
+            if (timeSlotId == null) return false;
+            var timeSlot = this._context.TimeSlots.SingleOrDefault(a => a.Id == timeSlotId);
+            if (timeSlot == null) return false;
+            appointment.State = Models.AppointmentState.Cancelled;
+            timeSlot.IsFree = true;
+            this._context.SaveChanges();
+            return true;
         }
 
 
