@@ -14,10 +14,13 @@ namespace VaccinationSystem.Models
         [ForeignKey("VaccinationCenter")]
         public Guid VaccinationCenterId { get; set; }
         public VaccinationCenter VaccinationCenter { get; set; }
-        [Required]
-        public IEnumerable<Appointment> VaccinationsArchive { get; set; }
-        [Required]
-        public IEnumerable<Appointment> FutureVaccinations { get; set; }
+        //[Required]
+        //[ForeignKey("ArchivedAppointment")]
+        //public IEnumerable<Appointment> VaccinationsArchive { get; set; }
+        //[Required]
+        //[ForeignKey("FutureAppointment")]
+        //public IEnumerable<Appointment> FutureVaccinations { get; set; }
+        public IEnumerable<Appointment> Vaccinations { get; set; }
         [Required]
         public Patient PatientAccount { get; set; }
         [Required]
