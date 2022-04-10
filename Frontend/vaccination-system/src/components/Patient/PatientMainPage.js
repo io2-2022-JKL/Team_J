@@ -29,7 +29,7 @@ export default function PatientMainPage() {
                             <AccountBoxRoundedIcon />
                         </Avatar>
                         <Typography component="h1" variant="h4">
-                            Witaj {location.state.name} {location.state.surname}
+                            Witaj {location.state != null && location.state.name} {location.state != null && location.state.surname}
                         </Typography>
                         <Typography component="h1" variant="h6">
                             Pacjent
