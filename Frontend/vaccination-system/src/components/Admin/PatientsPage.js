@@ -13,6 +13,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import clsx from 'clsx';
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
 import Avatar from '@mui/material/Avatar';
+import axios from 'axios';
+import LinearProgress from '@mui/material/LinearProgress';
 
 const theme = createTheme();
 
@@ -72,15 +74,32 @@ const createRandomRow = () => {
 };
 
 export default function PatientsPage() {
-
+   
+    const [loading, setLoading] = React.useState(true);
+    const [data, setData] = React.useState([])
+  
+    React.useEffect(() => {
+      const fetchData = async () =>{
+        setLoading(true);
+        try {
+          const {data: response} = await axios.get('https://localhost:44393/admin/patients');
+          setData(response);
+        } catch (error) {
+          console.error(error.message);
+        }
+        setLoading(false);
+      }
+      fetchData();
+    }, []);
+  
     const navigate = useNavigate();
 
     const [pageSize, setPageSize] = React.useState(10);
 
     const columns = [
         {
-            field:'id',
-            flex:2
+            field: 'id',
+            flex: 2
         },
         {
             field: 'PESEL',
@@ -169,6 +188,11 @@ export default function PatientsPage() {
         createRandomRow(),
     ]);
 
+    if(data.length !== 0)
+    {
+        setRows(data);
+    }
+    
     const [filteredRows, setFilteredRows] = React.useState(rows);
 
     const deleteUser = React.useCallback(
@@ -318,16 +342,20 @@ export default function PatientsPage() {
                                 onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
                                 rowsPerPageOptions={[5, 10, 15, 20]}
                                 pagination
+                                components={{
+                                    LoadingOverlay: LinearProgress,
+                                  }}
+                                loading = {loading}
                                 columns={columns}
                                 rows={filteredRows}
                                 initialState={{
                                     columns: {
-                                      columnVisibilityModel: {
-                                        // Hide column id, the other columns will remain visible
-                                        id: false,
-                                      },
+                                        columnVisibilityModel: {
+                                            // Hide column id, the other columns will remain visible
+                                            id: false,
+                                        },
                                     },
-                                  }}
+                                }}
                             />
                         </Box>
                         <Button
