@@ -60,21 +60,12 @@ export default function LoginPage() {
         if (emailError) return;
 
 
-        const response = fetch("https://localhost:5001/login", {
-            method: "POST",
-            headers: new Headers({
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            }),
-            body: JSON.stringify({
-                "mail": email,
-                "password": password
-            })
-        })
+        /*const response = fetch("https://localhost:5001/patient/certificates/{31241412}");
+
 
         console.log({
             cos: response.status
-        })
+        })*/
 
         const userType = email.includes("admin") ? "admin" : email.includes("patient") ? "patient" : "doctor";
         console.log({
