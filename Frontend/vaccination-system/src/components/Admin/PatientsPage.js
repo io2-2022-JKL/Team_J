@@ -13,6 +13,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import clsx from 'clsx';
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
 import Avatar from '@mui/material/Avatar';
+import { confirm } from "react-confirm-box";
+import { PlayCircleFilledWhiteRounded } from '@mui/icons-material';
 
 const theme = createTheme();
 
@@ -73,14 +75,15 @@ const createRandomRow = () => {
 
 export default function PatientsPage() {
 
+
     const navigate = useNavigate();
 
     const [pageSize, setPageSize] = React.useState(10);
 
     const columns = [
         {
-            field:'id',
-            flex:2
+            field: 'id',
+            flex: 2
         },
         {
             field: 'PESEL',
@@ -230,63 +233,77 @@ export default function PatientsPage() {
                             //onSubmit={handleSubmit}
                             sx={{
                                 marginTop: 2,
+                                marginBottom: 2,
                                 display: 'flex',
-                                flexDirection: 'row',
-                                alignItems: 'center'
+                                //flexDirection: 'row',
+                                //alignItems: 'center'
                             }}
                         >
-                            <Grid container direction={"row"} spacing={1}>
-                                <Grid item>
+                            <Grid container direction={"row"} spacing={1} //flex={"wrap"}
+                                /*sx={{
+                                    display: 'flex',
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                }}*/>
+                                <Grid item xs={3}>
                                     <TextField
+                                        fullWidth
                                         id="idFilter"
                                         label="ID"
                                         name="idFilter"
                                     />
                                 </Grid>
-                                <Grid item>
+                                <Grid item xs={3}>
                                     <TextField
+                                        fullWidth
                                         id="peselFilter"
                                         label="PESEL"
                                         name="peselFilter"
                                     />
                                 </Grid>
-                                <Grid item>
+                                <Grid item xs={3}>
                                     <TextField
+                                        fullWidth
                                         id="firstNameFilter"
                                         label="Imię"
                                         name="firstNameFilter"
                                     />
                                 </Grid>
-                                <Grid item>
+                                <Grid item xs={3}>
                                     <TextField
+                                        fullWidth
                                         id="lastNameFilter"
                                         label="Nazwisko"
                                         name="lastNameFilter"
                                     />
                                 </Grid>
-                                <Grid item>
+                                <Grid item xs={3}>
                                     <TextField
+                                        fullWidth
                                         id="emailFilter"
                                         label="Email"
                                         name="emailFilter"
                                     />
                                 </Grid>
-                                <Grid item>
+                                <Grid item xs={3}>
                                     <TextField
+                                        fullWidth
                                         id="dateOfBirthFilter"
                                         label="Data urodzenia"
                                         name="dateOfBirthFilter"
                                     />
                                 </Grid>
-                                <Grid item>
+                                <Grid item xs={3}>
                                     <TextField
+                                        fullWidth
                                         id="phoneNumberFilter"
                                         label="Numer telefonu"
                                         name="phoneNumberFilter"
                                     />
                                 </Grid>
-                                <Grid item>
+                                <Grid item xs={3}>
                                     <TextField
+                                        fullWidth
                                         id="activeFilter"
                                         label="Aktywny"
                                         name="activeFilter"
@@ -312,6 +329,29 @@ export default function PatientsPage() {
                             }}
                         >
                             <DataGrid
+                                onCellEditCommit={async (params, event) => {
+                                    const result = await confirm("Czy na pewno chcesz edytować pacjenta?", confirmOptionsInPolish);
+                                    if (result) {
+                                        console.log("You click yes!");
+                                        rows[params.id] = params.value;
+                                        filteredRows[params.id] = params.value;
+                                        setRows(rows);
+                                        setFilteredRows(filteredRows);
+                                        return;
+                                    }
+                                    else {
+                                        rows[params.id] = params.value;
+                                        filteredRows[params.id] = params.value;
+                                        setFilteredRows(filteredRows);
+                                    }
+                                    setFilteredRows(filteredRows);
+                                    console.log("You click No!");
+
+                                    if (!event.ctrlKey) {
+                                        event.defaultMuiPrevented = true;
+                                    }
+                                    console.log(params.row.PESEL);
+                                }}
                                 disableColumnFilter
                                 autoHeight
                                 pageSize={pageSize}
@@ -322,12 +362,13 @@ export default function PatientsPage() {
                                 rows={filteredRows}
                                 initialState={{
                                     columns: {
-                                      columnVisibilityModel: {
-                                        // Hide column id, the other columns will remain visible
-                                        id: false,
-                                      },
+                                        columnVisibilityModel: {
+                                            // Hide column id, the other columns will remain visible
+                                            id: false,
+                                        },
                                     },
-                                  }}
+                                }
+                                }
                             />
                         </Box>
                         <Button
@@ -344,4 +385,11 @@ export default function PatientsPage() {
             </Container >
         </ThemeProvider >
     );
+}
+
+const confirmOptionsInPolish = {
+    labels: {
+        confirmable: "Tak",
+        cancellable: "Nie"
+    }
 }
