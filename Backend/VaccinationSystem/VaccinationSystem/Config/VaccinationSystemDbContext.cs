@@ -8,15 +8,15 @@ namespace VaccinationSystem.Config
     public class VaccinationSystemDbContext : DbContext
     { 
 
-        public DbSet<Admin> Admins { get; set; }
-        public DbSet<Appointment> Appointments { get; set; }
-        public DbSet<Certificate> Certificates { get; set; }
-        public DbSet<Doctor> Doctors { get; set; }
-        public DbSet<OpeningHours> OpeningHours { get; set; }
-        public DbSet<Patient> Patients { get; set; }
-        public DbSet<TimeSlot> TimeSlots { get; set; }
-        public DbSet<VaccinationCenter> VaccinationCenters { get; set; }
-        public DbSet<Vaccine> Vaccines { get; set; }
+        public virtual DbSet<Admin> Admins { get; set; }
+        public virtual DbSet<Appointment> Appointments { get; set; }
+        public virtual DbSet<Certificate> Certificates { get; set; }
+        public virtual DbSet<Doctor> Doctors { get; set; }
+        public virtual DbSet<OpeningHours> OpeningHours { get; set; }
+        public virtual DbSet<Patient> Patients { get; set; }
+        public virtual DbSet<TimeSlot> TimeSlots { get; set; }
+        public virtual DbSet<VaccinationCenter> VaccinationCenters { get; set; }
+        public virtual DbSet<Vaccine> Vaccines { get; set; }
 
         public VaccinationSystemDbContext()
         {
