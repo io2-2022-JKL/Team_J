@@ -29,7 +29,7 @@ namespace VaccinationSystem.Controllers
             var result = GetAllPatients();
             if (result != null)
                 return Ok(result);
-            return StatusCode(404);
+            return NotFound();
         }
 
         private IEnumerable<PatientDTO> GetAllPatients()
@@ -80,17 +80,17 @@ namespace VaccinationSystem.Controllers
             }
             catch(FormatException)
             {
-                return StatusCode(404);
+                return NotFound();
             }
             catch(ArgumentNullException)
             {
-                return StatusCode(404);
+                return NotFound();
             }
-            Patient patient;
-            if((patient = _context.Patients.Where(patient => patient.Active == true && patient.Id == id).FirstOrDefault()) != null)
+            Patient patient = _context.Patients.Where(patient => patient.Active == true && patient.Id == id).FirstOrDefault();
+            if(patient != null)
             {
-                Doctor doctor;
-                if((doctor = _context.Doctors.Where(doc => doc.Active == true && doc.PatientAccount.Id == id).FirstOrDefault()) != null)
+                Doctor doctor = _context.Doctors.Where(doc => doc.Active == true && doc.PatientAccount.Id == id).FirstOrDefault();
+                if(doctor != null)
                 {
                     doctor.Active = false;
                     foreach(Appointment appointment in doctor.Vaccinations)
@@ -102,22 +102,17 @@ namespace VaccinationSystem.Controllers
                             //powiadomić pacjentów
                         }
                     }
-                    foreach(TimeSlot timeSlot in _context.TimeSlots.Where(slot => slot.DoctorId == doctor.Id && slot.Active == false).ToList())
+                    var timeSlots = _context.TimeSlots.Where(slot => slot.DoctorId == doctor.Id && slot.Active == false).ToList();
+                    foreach(TimeSlot timeSlot in timeSlots)
                     {
                         timeSlot.Active = false;
                     }
                 }
                 patient.Active = false;
-                if(_context.SaveChanges() < 1)
-                {
-                    return StatusCode(404);
-                }
-                else
-                {
-                    return StatusCode(200);
-                }
+                _context.SaveChanges();
+                return Ok();
             }
-            return StatusCode(404);
+            return NotFound();
             
         }
 
