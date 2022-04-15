@@ -17,6 +17,8 @@ import { confirm } from "react-confirm-box";
 import { PlayCircleFilledWhiteRounded } from '@mui/icons-material';
 import axios from 'axios';
 import LinearProgress from '@mui/material/LinearProgress';
+import DataDisplayArray from '../DataDisplayArray';
+import { getPatientsData } from './AdminApi';
 
 const theme = createTheme();
 
@@ -76,27 +78,10 @@ const createRandomRow = () => {
 };
 
 export default function PatientsPage() {
-  
-    const [loading, setLoading] = React.useState(true);
-    const [data, setData] = React.useState([])
-  
-    React.useEffect(() => {
-      const fetchData = async () =>{
-        setLoading(true);
-        try {
-          const {data: response} = await axios.get('https://localhost:44393/admin/patients');
-          setData(response);
-        } catch (error) {
-          console.error(error.message);
-        }
-        setLoading(false);
-      }
-      fetchData();
-    }, []);
-  
-    const navigate = useNavigate();
 
-    const [pageSize, setPageSize] = React.useState(10);
+    const [data, setData] = React.useState([])
+
+    const navigate = useNavigate();
 
     const columns = [
         {
@@ -171,6 +156,19 @@ export default function PatientsPage() {
         },
     ];
 
+    const [loading, setLoading] = React.useState(true);
+
+    // const [rows, setRows] = React.useState([]);
+
+    React.useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            //data = getPatientsData();
+            setLoading(false);
+        }
+        fetchData();
+    }, []);
+
     const [rows, setRows] = React.useState(() => [
         createRandomRow(),
         createRandomRow(),
@@ -190,11 +188,6 @@ export default function PatientsPage() {
         createRandomRow(),
     ]);
 
-    if(data.length !== 0)
-    {
-        setRows(data);
-    }
-    
     const [filteredRows, setFilteredRows] = React.useState(rows);
 
     const deleteUser = React.useCallback(
@@ -206,6 +199,37 @@ export default function PatientsPage() {
         },
         [],
     );
+
+    const editCell = async (params, event) => {
+        const result = await confirm("Czy na pewno chcesz edytować pacjenta?", confirmOptionsInPolish);
+        if (result) {
+            console.log("You click yes!");
+            rows[params.id] = params.value;
+            filteredRows[params.id] = params.value;
+            setRows(rows);
+            setFilteredRows(filteredRows);
+            return;
+        }
+        else {
+            rows[params.id] = params.value;
+            filteredRows[params.id] = params.value;
+            setFilteredRows(filteredRows);
+        }
+        setFilteredRows(filteredRows);
+        console.log("You click No!");
+
+        if (!event.ctrlKey) {
+            event.defaultMuiPrevented = true;
+        }
+        console.log(params.row.PESEL);
+    }
+
+    const confirmOptionsInPolish = {
+        labels: {
+            confirmable: "Tak",
+            cancellable: "Nie"
+        }
+    }
 
     const handleSubmit = (event) => {
         event.preventDefault();
@@ -220,15 +244,6 @@ export default function PatientsPage() {
         result = filterPhoneNumber(result, data.get('phoneNumberFilter'));
         result = filterActive(result, data.get('activeFilter'));
         setFilteredRows(result);
-        /*
-        console.log(
-            {
-                filter: data.get('firstNameFilter'),
-                date: data.get('dateOfBirthFilter'),
-                date2: new Date(data.get('dateOfBirthFilter'))
-            }
-        )
-        */
     };
 
     return (
@@ -262,12 +277,7 @@ export default function PatientsPage() {
                                 //alignItems: 'center'
                             }}
                         >
-                            <Grid container direction={"row"} spacing={1} //flex={"wrap"}
-                                /*sx={{
-                                    display: 'flex',
-                                    flexDirection: 'row',
-                                    alignItems: 'center',
-                                }}*/>
+                            <Grid container direction={"row"} spacing={1} >
                                 <Grid item xs={3}>
                                     <TextField
                                         fullWidth
@@ -334,69 +344,12 @@ export default function PatientsPage() {
                                 </Grid>
                             </Grid>
                         </Box>
-                        <Box
-                            sx={{
-                                width: '100%',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                '& .active.positive': {
-                                    backgroundColor: 'rgba(157, 255, 118, 0.49)',
-                                    color: '#1a3e72',
-                                    fontWeight: '600',
-                                },
-                                '& .active.negative': {
-                                    backgroundColor: '#d47483',
-                                    color: '#1a3e72',
-                                    fontWeight: '600',
-                                },
-                            }}
-                        >
-                            <DataGrid
-                                onCellEditCommit={async (params, event) => {
-                                    const result = await confirm("Czy na pewno chcesz edytować pacjenta?", confirmOptionsInPolish);
-                                    if (result) {
-                                        console.log("You click yes!");
-                                        rows[params.id] = params.value;
-                                        filteredRows[params.id] = params.value;
-                                        setRows(rows);
-                                        setFilteredRows(filteredRows);
-                                        return;
-                                    }
-                                    else {
-                                        rows[params.id] = params.value;
-                                        filteredRows[params.id] = params.value;
-                                        setFilteredRows(filteredRows);
-                                    }
-                                    setFilteredRows(filteredRows);
-                                    console.log("You click No!");
-
-                                    if (!event.ctrlKey) {
-                                        event.defaultMuiPrevented = true;
-                                    }
-                                    console.log(params.row.PESEL);
-                                }}
-                                disableColumnFilter
-                                autoHeight
-                                pageSize={pageSize}
-                                onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
-                                rowsPerPageOptions={[5, 10, 15, 20]}
-                                pagination
-                                components={{
-                                    LoadingOverlay: LinearProgress,
-                                  }}
-                                loading = {loading}
-                                columns={columns}
-                                rows={filteredRows}
-                                initialState={{
-                                    columns: {
-                                        columnVisibilityModel: {
-                                            // Hide column id, the other columns will remain visible
-                                            id: false,
-                                        },
-                                    },
-                                }}
-                            />
-                        </Box>
+                        <DataDisplayArray
+                            loading={loading}
+                            editCell={editCell}
+                            columns={columns}
+                            filteredRows={filteredRows}
+                        />
                         <Button
                             type="submit"
                             fullWidth
@@ -411,12 +364,5 @@ export default function PatientsPage() {
             </Container >
         </ThemeProvider >
     );
-}
-
-const confirmOptionsInPolish = {
-    labels: {
-        confirmable: "Tak",
-        cancellable: "Nie"
-    }
 }
 
