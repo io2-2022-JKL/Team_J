@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="EntityFramework" Version="6.4.4" />
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="3.1.19" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.0" />
@@ -37,6 +38,12 @@
     <Compile Remove="Migrations\20220410102952_initialMigration.Designer.cs" />
     <Compile Remove="Migrations\20220410103355_initialMigration.cs" />
     <Compile Remove="Migrations\20220410103355_initialMigration.Designer.cs" />
+    <Compile Remove="Migrations\20220410103625_initialMigration.cs" />
+    <Compile Remove="Migrations\20220410103625_initialMigration.Designer.cs" />
+    <Compile Remove="Migrations\20220417114751_dbFix.cs" />
+    <Compile Remove="Migrations\20220417114751_dbFix.Designer.cs" />
+    <Compile Remove="Migrations\20220417173000_dbFix.cs" />
+    <Compile Remove="Migrations\20220417173000_dbFix.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -19,7 +19,7 @@ MaxPatientAge - jeśli jest ujemne, nie ma maksymalnego wieku do którego można
 (przy czym jeśli obie wartości są nieujemne, to MinPatientAge nie może być większe niż MaxPatientAge)
 TimeSlot from, to - string, format dd-MM-yyyy hh:mm, w bazie danych przechowywane jako yyyy-MM-dd hh:mm:00.0000000, chyba że przedstawiamy godzinę 24:00, wtedy yyyy-MM-dd 23:59:59.9999999;
 
-Jeśli dane podane w Delete nie pozwalają na znalezienie rekordu, który ma status Active == true, zwracany jest błąd. Wyjątkiem jest admin/doctors/timeSlots/deleteTimeSlots, które zwraca błąd tylko, jeśli nie został usunięty żaden z podanych terminów (więc mogą się pojawić złe identyfikatory)
+Jeśli dane podane w Delete nie pozwalają znaleźć rekord, który ma status Active == true, zwracany jest błąd. Wyjątkiem jest admin/doctors/timeSlots/deleteTimeSlots, które zwraca błąd tylko, jeśli nie został usunięty żaden z podanych terminów (więc mogą się pojawić złe identyfikatory)
 
 Postać danych zwracanych przez backend (jeśli coś nie zostało wymienione w poprzednim dziale lub zupełnie się różni):
 UserType - przyjmuje wartości "doctor", "patient" i "admin";

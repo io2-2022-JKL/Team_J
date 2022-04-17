@@ -14,14 +14,14 @@ namespace VaccinationSystem.Models
         [Required]
         public int WhichDose { get; set; }
         [ForeignKey("TimeSlot")]
-        public Guid? TimeSlotId { get; set; }
-        public TimeSlot TimeSlot { get; set; }
+        public virtual Guid? TimeSlotId { get; set; }
+        public virtual TimeSlot TimeSlot { get; set; }
         [ForeignKey("Patient")]
-        public Guid PatientId { get; set; }
-        public Patient Patient { get; set; }
+        public virtual Guid PatientId { get; set; }
+        public virtual Patient Patient { get; set; }
         [ForeignKey("Vaccine")]
-        public Guid VaccineId { get; set; }
-        public Vaccine Vaccine { get; set; }
+        public virtual Guid VaccineId { get; set; }
+        public virtual Vaccine Vaccine { get; set; }
         [Required]
         public AppointmentState State { get; set; }
         [Column(TypeName = "varchar(100)")]

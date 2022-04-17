@@ -15,9 +15,11 @@ namespace VaccinationSystem.Models
         [Column(TypeName = "varchar(250)")]
         public string Url { get; set; }
         [ForeignKey("Patient")]
-        public Guid PatientId { get; set; }
+        public virtual Guid PatientId { get; set; }
+        public virtual Patient Patient { get; set; }
         [ForeignKey("Vaccine")]
-        public Guid VaccineId { get; set; }
+        public virtual Guid VaccineId { get; set; }
+        public virtual Vaccine Vaccine { get; set; }
 
     }
 }

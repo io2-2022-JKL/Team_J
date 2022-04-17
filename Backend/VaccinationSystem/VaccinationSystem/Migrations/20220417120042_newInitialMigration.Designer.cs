@@ -10,8 +10,8 @@ using VaccinationSystem.Config;
 namespace VaccinationSystem.Migrations
 {
     [DbContext(typeof(VaccinationSystemDbContext))]
-    [Migration("20220410103625_initialMigration")]
-    partial class initialMigration
+    [Migration("20220417120042_newInitialMigration")]
+    partial class newInitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -65,9 +65,6 @@ namespace VaccinationSystem.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("DoctorId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid>("PatientId")
                         .HasColumnType("uniqueidentifier");
 
@@ -87,8 +84,6 @@ namespace VaccinationSystem.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("DoctorId");
 
                     b.HasIndex("PatientId");
 
@@ -119,6 +114,8 @@ namespace VaccinationSystem.Migrations
 
                     b.HasIndex("PatientId");
 
+                    b.HasIndex("VaccineId");
+
                     b.ToTable("Certificate");
                 });
 
@@ -131,7 +128,7 @@ namespace VaccinationSystem.Migrations
                     b.Property<bool>("Active")
                         .HasColumnType("bit");
 
-                    b.Property<Guid>("PatientAccountId")
+                    b.Property<Guid>("PatientId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("VaccinationCenterId")
@@ -139,7 +136,7 @@ namespace VaccinationSystem.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PatientAccountId");
+                    b.HasIndex("PatientId");
 
                     b.HasIndex("VaccinationCenterId");
 
@@ -148,10 +145,9 @@ namespace VaccinationSystem.Migrations
 
             modelBuilder.Entity("VaccinationSystem.Models.OpeningHours", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<TimeSpan>("From")
                         .HasColumnType("time");
@@ -159,8 +155,11 @@ namespace VaccinationSystem.Migrations
                     b.Property<TimeSpan>("To")
                         .HasColumnType("time");
 
-                    b.Property<Guid?>("VaccinationCenterId")
+                    b.Property<Guid>("VaccinationCenterId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("WeekDay")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -296,27 +295,39 @@ namespace VaccinationSystem.Migrations
                     b.Property<int>("NumberOfDoses")
                         .HasColumnType("int");
 
-                    b.Property<Guid?>("VaccinationCenterId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<int>("Virus")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
+                    b.ToTable("Vaccine");
+                });
+
+            modelBuilder.Entity("VaccinationSystem.Models.VaccinesInVaccinationCenter", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("VaccinationCenterId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("VaccineId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
                     b.HasIndex("VaccinationCenterId");
 
-                    b.ToTable("Vaccine");
+                    b.HasIndex("VaccineId");
+
+                    b.ToTable("VaccineeInVaccinationCenter");
                 });
 
             modelBuilder.Entity("VaccinationSystem.Models.Appointment", b =>
                 {
-                    b.HasOne("VaccinationSystem.Models.Doctor", null)
-                        .WithMany("Vaccinations")
-                        .HasForeignKey("DoctorId");
-
                     b.HasOne("VaccinationSystem.Models.Patient", "Patient")
-                        .WithMany("Vaccinations")
+                        .WithMany()
                         .HasForeignKey("PatientId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -334,9 +345,15 @@ namespace VaccinationSystem.Migrations
 
             modelBuilder.Entity("VaccinationSystem.Models.Certificate", b =>
                 {
-                    b.HasOne("VaccinationSystem.Models.Patient", null)
-                        .WithMany("Certificates")
+                    b.HasOne("VaccinationSystem.Models.Patient", "Patient")
+                        .WithMany()
                         .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("VaccinationSystem.Models.Vaccine", "Vaccine")
+                        .WithMany()
+                        .HasForeignKey("VaccineId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -345,12 +362,12 @@ namespace VaccinationSystem.Migrations
                 {
                     b.HasOne("VaccinationSystem.Models.Patient", "PatientAccount")
                         .WithMany()
-                        .HasForeignKey("PatientAccountId")
+                        .HasForeignKey("PatientId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("VaccinationSystem.Models.VaccinationCenter", "VaccinationCenter")
-                        .WithMany("Doctors")
+                        .WithMany()
                         .HasForeignKey("VaccinationCenterId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -358,9 +375,11 @@ namespace VaccinationSystem.Migrations
 
             modelBuilder.Entity("VaccinationSystem.Models.OpeningHours", b =>
                 {
-                    b.HasOne("VaccinationSystem.Models.VaccinationCenter", null)
-                        .WithMany("OpeningHours")
-                        .HasForeignKey("VaccinationCenterId");
+                    b.HasOne("VaccinationSystem.Models.VaccinationCenter", "VaccinationCenter")
+                        .WithMany()
+                        .HasForeignKey("VaccinationCenterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("VaccinationSystem.Models.TimeSlot", b =>
@@ -370,11 +389,19 @@ namespace VaccinationSystem.Migrations
                         .HasForeignKey("DoctorId");
                 });
 
-            modelBuilder.Entity("VaccinationSystem.Models.Vaccine", b =>
+            modelBuilder.Entity("VaccinationSystem.Models.VaccinesInVaccinationCenter", b =>
                 {
-                    b.HasOne("VaccinationSystem.Models.VaccinationCenter", null)
-                        .WithMany("AvailableVaccines")
-                        .HasForeignKey("VaccinationCenterId");
+                    b.HasOne("VaccinationSystem.Models.VaccinationCenter", "VaccinationCenter")
+                        .WithMany()
+                        .HasForeignKey("VaccinationCenterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("VaccinationSystem.Models.Vaccine", "Vaccine")
+                        .WithMany()
+                        .HasForeignKey("VaccineId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

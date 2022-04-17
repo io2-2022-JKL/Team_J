@@ -20,12 +20,10 @@ namespace VaccinationSystem.Models
         [Required]
         [Column(TypeName = "varchar(100)")]
         public string Address { get; set; }
-        [Required]
-        public IEnumerable<Vaccine> AvailableVaccines { get; set; }
-        [Required]
-        public IEnumerable<OpeningHours> OpeningHours { get; set; }
-        [Required]
-        public IEnumerable<Doctor> Doctors { get; set; }
+        //[Required]
+        //public IEnumerable<OpeningHours> OpeningHours { get; set; }
+        //[Required]
+        //public IEnumerable<Doctor> Doctors { get; set; }
         [Required]
         public bool Active { get; set; }
     }
