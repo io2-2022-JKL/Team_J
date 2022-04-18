@@ -31,6 +31,7 @@ jobs:
           dotnet restore
           dotnet build --configuration Release
           dotnet publish -c Release -o '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/VaccinationSystem' 
+        working-directory: Backend/VaccinationSystem
       
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v2
