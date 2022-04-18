@@ -6,8 +6,7 @@ name: Build and deploy ASP.Net Core app to Azure Web App - systemszczepien
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
+    branches: [ deploy ]
     paths:
     - '**.cs'
     - '**.csproj'
@@ -18,33 +17,6 @@ env:
   DOTNET_VERSION: '3.1.x'           # set this to the dot net version to use
 
 jobs:
-  build-and-test:
-
-    name: build-and-test-${{matrix.os}}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macOS-latest]
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
-
-    - name: Install dependencies
-      run: dotnet restore
-      working-directory: Backend/VaccinationSystem
-      
-    - name: Build
-      run: dotnet build --configuration Release --no-restore
-      working-directory: Backend/VaccinationSystem
-    
-    - name: Test
-      run: dotnet test --no-restore --verbosity normal
-      working-directory: Backend/VaccinationSystem
-
   build-and-deploy:
     runs-on: windows-latest
 
