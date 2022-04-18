@@ -26,13 +26,13 @@ jobs:
         run: dotnet build --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o Backend/VaccinationSystem
+        run: dotnet publish -c Release -o Backend/VaccinationSystem/VaccinationSystem
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v2
         with:
           name: .net-app
-          path: Backend/VaccinationSystem
+          path: Backend/VaccinationSystem/VaccinationSystem
 
   deploy:
     runs-on: windows-latest
@@ -54,4 +54,4 @@ jobs:
           app-name: 'systemszczepien'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_02EF2AE9E35047CEB794532550537010 }}
-          package: Backend/VaccinationSystem
+          package: Backend/VaccinationSystem/VaccinationSystem
