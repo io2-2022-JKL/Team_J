@@ -229,9 +229,9 @@ namespace VaccinationSystem.Controllers
             {
                 return NotFound();
             }
-            //doctor.Vaccinations = new List<Appointment>();
+
             doctor.Active = true;
-            //Debug.WriteLine(_context.Doctors.Add(doctor).State);
+
             _context.Doctors.Add(doctor);
             Debug.WriteLine(_context.SaveChanges());
             return Ok();
@@ -324,7 +324,7 @@ namespace VaccinationSystem.Controllers
                 }
                 centerDTO.vaccines = vaccines;
                 List<OpeningHoursDayDTO> openingHours = new List<OpeningHoursDayDTO>();
-                //foreach(OpeningHours oh in center.OpeningHours)
+
                 List<OpeningHours> tempOpeningHours = _context.OpeningHours.Where(x => x.VaccinationCenterId == center.Id).ToList();
                 tempOpeningHours.Sort(delegate(OpeningHours a, OpeningHours b)
                 {
@@ -379,7 +379,7 @@ namespace VaccinationSystem.Controllers
             vaccinationCenter.Name = addVaccinationCenterRequestDTO.name;
             vaccinationCenter.City = addVaccinationCenterRequestDTO.city;
             vaccinationCenter.Address = addVaccinationCenterRequestDTO.street;
-            //List<Vaccine> vaccines = new List<Vaccine>();
+
             List<VaccinesInVaccinationCenter> vaccines = new List<VaccinesInVaccinationCenter>();
             List<OpeningHours> openingHours = new List<OpeningHours>();
 
@@ -414,9 +414,7 @@ namespace VaccinationSystem.Controllers
                     return NotFound();
                 }
             }
-            //vaccinationCenter.AvailableVaccines = vaccines;
-            //List<OpeningHours> openingHours = new List<OpeningHours>();
-            //foreach(OpeningHoursDayDTO ohDTO in addVaccinationCenterRequestDTO.openingHoursDays)
+
             if (addVaccinationCenterRequestDTO.openingHoursDays.Count != 7)
                 return NotFound();
 
@@ -438,10 +436,8 @@ namespace VaccinationSystem.Controllers
                 oh.WeekDay = (WeekDay)i;
 
                 openingHours.Add(oh); 
-                //openingHours.Add(oh);
             }
-            //vaccinationCenter.OpeningHours = openingHours;
-            //vaccinationCenter.Doctors = new List<Doctor>();
+
             vaccinationCenter.Active = addVaccinationCenterRequestDTO.active;
             foreach(var v in vaccines)
                 _context.VaccinesInVaccinationCenter.Add(v);
