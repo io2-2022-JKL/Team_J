@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -7,6 +8,7 @@ using System.Threading.Tasks;
 using VaccinationSystem.Config;
 using VaccinationSystem.DTO;
 using VaccinationSystem.DTO.PatientDTOs;
+using VaccinationSystem.Models;
 
 namespace VaccinationSystem.Controllers
 {
@@ -16,11 +18,8 @@ namespace VaccinationSystem.Controllers
     {
         private readonly VaccinationSystemDbContext _context;
 
-        private readonly ILogger<PatientController> _logger;
-
-        public PatientController(ILogger<PatientController> logger, VaccinationSystemDbContext context)
+        public PatientController(VaccinationSystemDbContext context)
         {
-            _logger = logger;
             _context = context;
         }
 
@@ -29,52 +28,88 @@ namespace VaccinationSystem.Controllers
         {
             // TODO: Token verification for 401 and 403 error codes
             var result = fetchFilteredTimeSlots(city, dateFrom, dateTo, virus);
-            if (result.Count() == 0) return NotFound();
+            if (result == null || result.Count() == 0) return NotFound();
             return Ok(result);
         }
         private IEnumerable<TimeSlotFilterResponseDTO> fetchFilteredTimeSlots(string city, string dateFrom, string dateTo, string virus)
         {
-            /*var result = from timeSlot in this._context.TimeSlots
-                         join doctor in this._context.Doctors
-                            on timeSlot.DoctorId equals doctor.Id
-                         join vaccinationCenter in this._context.VaccinationCenters
-                            on doctor.VaccinationCenterId equals vaccinationCenter.Id
-                         where vaccinationCenter.City.Contains(city) && Convert.ToDateTime(dateFrom) <= timeSlot.From &&
-                                timeSlot.To <= Convert.ToDateTime(dateTo) && vaccinationCenter.AvailableVaccines.Any(vaccine => vaccine.Virus.ToString() == virus &&
-                                timeSlot.IsFree)
-                         select new TimeSlotFilterResponseDTO
-                         {
-                             TimeSlotId = timeSlot.Id.ToString(),
-                             From = timeSlot.From.ToString(),
-                             To = timeSlot.To.ToString(),
-                             VaccinationCenterName = vaccinationCenter.Name,
-                             VaccinationCenterCity = vaccinationCenter.City,
-                             VaccinationCenterStreet = vaccinationCenter.Address,
-                             AvailableVaccines =
-                                vaccinationCenter.AvailableVaccines.Select(i => new SimplifiedVaccineDTO
-                                {
-                                    vaccineId = i.Id.ToString(),
-                                    company = i.Company,
-                                    name = i.Name,
-                                    numberOfDoses = i.NumberOfDoses,
-                                    minDaysBetweenDoses = i.MinDaysBetweenDoses,
-                                    maxDaysBetweenDoses = i.MaxDaysBetweenDoses,
-                                    virus = i.Virus.ToString(),
-                                    minPatientAge = i.MinPatientAge,
-                                    maxPatientAge = i.MaxPatientAge,
-                                }).ToList(),
-                             OpeningHours =
-                                vaccinationCenter.OpeningHours.Select(i => new OpeningHoursDayDTO
-                                {
-                                    From = i.From.ToString(),
-                                    To = i.To.ToString()
-                                }).ToList(),
-                             DoctorFirstName = doctor.PatientAccount.FirstName,
-                             DoctorLastName = doctor.PatientAccount.LastName,
-                         };
-            return result.AsEnumerable();
-            */
-            return null;
+            List<TimeSlotFilterResponseDTO> result = new List<TimeSlotFilterResponseDTO>();
+            DateTime From, To;
+            try
+            {
+                From = DateTime.Parse(dateFrom);
+                To = DateTime.Parse(dateTo);
+            }
+            catch (FormatException)
+            {
+                return null;
+            }
+            var timeSlots = _context.TimeSlots.Where(timeSlot => timeSlot.Active == true && timeSlot.IsFree == true && timeSlot.From >= From && timeSlot.To <= To).Include(timeSlot => timeSlot.Doctor);
+            foreach (TimeSlot timeSlot in timeSlots)
+            {
+                Patient patientAccount = _context.Patients.Where(patient => patient.Id == timeSlot.Doctor.PatientId).SingleOrDefault();
+                TimeSlotFilterResponseDTO timeSlotFilterResponseDTO = new TimeSlotFilterResponseDTO();
+                VaccinationCenter vaccinationCenter = _context.VaccinationCenters.Where(vc => vc.Id == timeSlot.Doctor.VaccinationCenterId && vc.City == city).SingleOrDefault();
+                if (vaccinationCenter == null) continue;
+                List<OpeningHours> openingHours;
+                List<VaccinesInVaccinationCenter> vaccineIDs;
+                try
+                {
+                    openingHours = _context.OpeningHours.Where(oh => oh.VaccinationCenterId == vaccinationCenter.Id).ToList();
+                    if (openingHours.Count == 0) continue;
+                    vaccineIDs = _context.VaccinesInVaccinationCenter.Where(vivc => vivc.VaccinationCenterId == vaccinationCenter.Id).ToList();
+                }
+                catch(ArgumentNullException)
+                {
+                    return null;
+                }
+                if (vaccineIDs.Count == 0) continue;
+                List<SimplifiedVaccineDTO> vaccines = new List<SimplifiedVaccineDTO>();
+                bool foundVirus = false;
+                foreach(VaccinesInVaccinationCenter vaccineID in vaccineIDs)
+                {
+                    var vaccine = _context.Vaccines.Where(vac => vac.Id == vaccineID.VaccineId && vac.Active == true).SingleOrDefault();
+                    if (vaccine == null) continue;
+                    vaccines.Add(new SimplifiedVaccineDTO()
+                    {
+                        vaccineId = vaccine.Id.ToString(),
+                        company = vaccine.Company,
+                        name = vaccine.Name,
+                        numberOfDoses = vaccine.NumberOfDoses,
+                        minDaysBetweenDoses = vaccine.MinDaysBetweenDoses,
+                        maxDaysBetweenDoses = vaccine.MaxDaysBetweenDoses,
+                        virus = vaccine.Virus.ToString(),
+                        minPatientAge = vaccine.MinPatientAge,
+                        maxPatientAge = vaccine.MaxPatientAge,
+                    });
+                    if (vaccine.Virus.ToString() == virus) foundVirus = true;
+                }
+                if (!foundVirus) continue;
+                if (vaccines.Count == 0) continue;
+                openingHours.Sort((p1, p2) => p1.WeekDay.CompareTo(p2.WeekDay));
+                List<OpeningHoursDayDTO> openingHoursDTOs = new List<OpeningHoursDayDTO>();
+                foreach(OpeningHours oh in openingHours)
+                {
+                    openingHoursDTOs.Add(new OpeningHoursDayDTO()
+                    {
+                        From = oh.From.ToString(),
+                        To = oh.To.ToString(),
+                    });
+                }
+
+                timeSlotFilterResponseDTO.TimeSlotId = timeSlot.Id.ToString();
+                timeSlotFilterResponseDTO.From = timeSlot.From.ToString();
+                timeSlotFilterResponseDTO.To = timeSlot.To.ToString();
+                timeSlotFilterResponseDTO.VaccinationCenterName = vaccinationCenter.Name;
+                timeSlotFilterResponseDTO.VaccinationCenterCity = vaccinationCenter.City;
+                timeSlotFilterResponseDTO.VaccinationCenterStreet = vaccinationCenter.Address;
+                timeSlotFilterResponseDTO.AvailableVaccines = vaccines;
+                timeSlotFilterResponseDTO.OpeningHours = openingHoursDTOs;
+                timeSlotFilterResponseDTO.DoctorFirstName = patientAccount.FirstName;
+                timeSlotFilterResponseDTO.DoctorLastName = patientAccount.LastName;
+                result.Add(timeSlotFilterResponseDTO);
+            }
+            return result;
         }
 
         [HttpPost("timeSlots/Book/{patientId}/{timeSlotId}")]
@@ -88,56 +123,75 @@ namespace VaccinationSystem.Controllers
         {
             // TODO: Token verification for 401 and 403 error codes
             var result = fetchIncomingVisits(patientId);
-            if (result.Count() == 0) return NotFound();
+            if (result == null || result.Count() == 0) return NotFound();
             return Ok(result);
         }
 
         private IEnumerable<FutureAppointmentDTO> fetchIncomingVisits(string patientId)
         {
-            var result = from appointment in this._context.Appointments
-                         where appointment.Id.ToString() == patientId && appointment.State == Models.AppointmentState.Planned
-                         join timeSlot in this._context.TimeSlots
-                            on appointment.TimeSlotId equals timeSlot.Id
-                         join doctor in this._context.Doctors
-                             on timeSlot.DoctorId equals doctor.Id
-                         join vaccinationCenter in this._context.VaccinationCenters
-                            on doctor.VaccinationCenterId equals vaccinationCenter.Id
-                         join vaccine in this._context.Vaccines
-                            on appointment.VaccineId equals vaccine.Id
-                         select new FutureAppointmentDTO
-                         {
-                             VaccineName = vaccine.Name,
-                             VaccineCompany = vaccine.Company,
-                             VaccineVirus = vaccine.Virus.ToString(), // TODO: Check if this is the correct way of doing this
-                             WhichVaccineDose = appointment.WhichDose,
-                             AppointmentId = appointment.Id.ToString(),
-                             WindowBegin = timeSlot.From.ToString(),
-                             WindowEnd = timeSlot.To.ToString(),
-                             VaccinationCenterName = vaccinationCenter.Name,
-                             VaccinationCenterCity = vaccinationCenter.City,
-                             VaccinationCenterStreet = vaccinationCenter.Address,
-                             DoctorFirstName = doctor.PatientAccount.FirstName,
-                             DoctorLastName = doctor.PatientAccount.LastName,
-                         };
-            return result.AsEnumerable();
+            List<FutureAppointmentDTO> result = new List<FutureAppointmentDTO>();
+            Guid patId;
+            try
+            {
+                patId = Guid.Parse(patientId);
+            }
+            catch(FormatException)
+            {
+                return null;
+            }
+            var appointments = _context.Appointments.Where(ap => ap.PatientId == patId && ap.State == Models.AppointmentState.Planned).Include(ap => ap.TimeSlot).Include(ap => ap.Vaccine);
+            foreach(Appointment appointment in appointments)
+            {
+                FutureAppointmentDTO futureAppointmentDTO = new FutureAppointmentDTO();
+                Doctor doctor = _context.Doctors.Where(doc => doc.Id == appointment.TimeSlot.DoctorId && doc.Active == true).SingleOrDefault();
+                if (doctor == null) continue;
+                Patient doctorPatientAccount = _context.Patients.Where(pat => pat.Id == doctor.PatientId && pat.Active == true).SingleOrDefault();
+                if (doctorPatientAccount == null) continue;
+                VaccinationCenter vaccinationCenter = _context.VaccinationCenters.Where(vc => vc.Id == doctor.VaccinationCenterId && vc.Active == true).SingleOrDefault();
+                if (vaccinationCenter == null) continue;
+
+                futureAppointmentDTO.VaccineName = appointment.Vaccine.Name;
+                futureAppointmentDTO.VaccineCompany = appointment.Vaccine.Company;
+                futureAppointmentDTO.VaccineVirus = appointment.Vaccine.Virus.ToString();
+                futureAppointmentDTO.WhichVaccineDose = appointment.WhichDose;
+                futureAppointmentDTO.AppointmentId = appointment.Id.ToString();
+                futureAppointmentDTO.WindowBegin = appointment.TimeSlot.From.ToString();
+                futureAppointmentDTO.WindowEnd = appointment.TimeSlot.To.ToString();
+                futureAppointmentDTO.VaccinationCenterName = vaccinationCenter.Name;
+                futureAppointmentDTO.VaccinationCenterCity = vaccinationCenter.City;
+                futureAppointmentDTO.VaccinationCenterStreet = vaccinationCenter.Address;
+                futureAppointmentDTO.DoctorFirstName = doctorPatientAccount.FirstName;
+                futureAppointmentDTO.DoctorLastName = doctorPatientAccount.LastName;
+                result.Add(futureAppointmentDTO);
+            }
+            return result;
         }
 
         [HttpDelete("appointments/IncomingAppointment/cancelAppointment/{patientId}/{appointmentId}")]
         public IActionResult CancelVisit(string appointmentId, string patientId)
         {
             // TODO: Token verification for 401 and 403 error codes
-            if (modifyCancelVisit(appointmentId, patientId)) return NotFound();
+            if (!modifyCancelVisit(appointmentId, patientId)) return NotFound();
             return Ok();
         }
 
         private bool modifyCancelVisit(string appointmentId, string patientId)
         {
-            var appointment = this._context.Appointments.SingleOrDefault(a => String.Compare(a.Id.ToString(), appointmentId) == 0 &&
-                                                                         String.Compare(a.PatientId.ToString(), patientId) == 0);
-            if (appointment == null) return false;
+            Guid appId, patId;
+            try
+            {
+                appId = Guid.Parse(appointmentId);
+                patId = Guid.Parse(patientId);
+            }
+            catch(FormatException)
+            {
+                return false;
+            }
+            var appointment = _context.Appointments.Where(a => a.Id == appId && a.PatientId == patId).FirstOrDefault();
+            if (appointment == null || appointment.State != AppointmentState.Planned) return false;
             Guid timeSlotId = appointment.TimeSlotId.GetValueOrDefault();
             if (timeSlotId == null) return false;
-            var timeSlot = this._context.TimeSlots.SingleOrDefault(a => a.Id == timeSlotId);
+            var timeSlot = _context.TimeSlots.SingleOrDefault(a => a.Id == timeSlotId);
             if (timeSlot == null) return false;
             appointment.State = Models.AppointmentState.Cancelled;
             timeSlot.IsFree = true;
@@ -152,39 +206,50 @@ namespace VaccinationSystem.Controllers
         {
             // TODO: Token verification for 401 and 403 error codes
             var result = fetchFormerVisits(patientId);
-            if (result.Count() == 0) return NotFound();
+            if (result == null || result.Count() == 0) return NotFound();
             return Ok(result);
         }
 
         private IEnumerable<FormerAppointmentDTO> fetchFormerVisits(string patientId)
         {
-            var result = from appointment in this._context.Appointments
-                         where appointment.Id.ToString() == patientId && appointment.State != Models.AppointmentState.Planned
-                         join timeSlot in this._context.TimeSlots
-                            on appointment.TimeSlotId equals timeSlot.Id
-                         join doctor in this._context.Doctors
-                             on timeSlot.DoctorId equals doctor.Id
-                         join vaccinationCenter in this._context.VaccinationCenters
-                            on doctor.VaccinationCenterId equals vaccinationCenter.Id
-                         join vaccine in this._context.Vaccines
-                            on appointment.VaccineId equals vaccine.Id
-                         select new FormerAppointmentDTO
-                         {
-                             VaccineName = vaccine.Name,
-                             VaccineCompany = vaccine.Company,
-                             VaccineVirus = vaccine.Virus.ToString(), // TODO: Check if this is the correct way of doing this
-                             WhichVaccineDose = appointment.WhichDose,
-                             AppointmentId = appointment.Id.ToString(),
-                             WindowBegin = timeSlot.From.ToString(),
-                             WindowEnd = timeSlot.To.ToString(),
-                             VaccinationCenterName = vaccinationCenter.Name,
-                             VaccinationCenterCity = vaccinationCenter.City,
-                             VaccinationCenterStreet = vaccinationCenter.Address,
-                             DoctorFirstName = doctor.PatientAccount.FirstName,
-                             DoctorLastName = doctor.PatientAccount.LastName,
-                             VisitState = appointment.State.ToString(),
-                         };
-            return result.AsEnumerable();
+            List<FormerAppointmentDTO> result = new List<FormerAppointmentDTO>();
+            Guid patId;
+            try
+            {
+                patId = Guid.Parse(patientId);
+            }
+            catch(FormatException)
+            {
+                return null;
+            }
+            var appointments = _context.Appointments.Where(ap => ap.PatientId == patId && ap.State != Models.AppointmentState.Planned).Include(ap => ap.TimeSlot).Include(ap => ap.Vaccine);
+            foreach(Appointment appointment in appointments)
+            {
+                FormerAppointmentDTO formerAppointmentDTO = new FormerAppointmentDTO();
+                Doctor doctor = _context.Doctors.Where(doc => doc.Id == appointment.TimeSlot.DoctorId).SingleOrDefault();
+                if (doctor == null) continue;
+                Patient doctorPatientAccount = _context.Patients.Where(pat => pat.Id == doctor.PatientId).SingleOrDefault();
+                if (doctorPatientAccount == null) continue;
+                VaccinationCenter vaccinationCenter = _context.VaccinationCenters.Where(vc => vc.Id == doctor.VaccinationCenterId).SingleOrDefault();
+                if (vaccinationCenter == null) continue;
+
+                formerAppointmentDTO.VaccineName = appointment.Vaccine.Name;
+                formerAppointmentDTO.VaccineCompany = appointment.Vaccine.Company;
+                formerAppointmentDTO.VaccineVirus = appointment.Vaccine.Virus.ToString();
+                formerAppointmentDTO.WhichVaccineDose = appointment.WhichDose;
+                formerAppointmentDTO.AppointmentId = appointment.Id.ToString();
+                formerAppointmentDTO.WindowBegin = appointment.TimeSlot.From.ToString();
+                formerAppointmentDTO.WindowEnd = appointment.TimeSlot.To.ToString();
+                formerAppointmentDTO.VaccinationCenterName = vaccinationCenter.Name;
+                formerAppointmentDTO.VaccinationCenterCity = vaccinationCenter.City;
+                formerAppointmentDTO.VaccinationCenterStreet = vaccinationCenter.Address;
+                formerAppointmentDTO.DoctorFirstName = doctorPatientAccount.FirstName;
+                formerAppointmentDTO.DoctorLastName = doctorPatientAccount.LastName;
+                formerAppointmentDTO.VisitState = appointment.State.ToString();
+
+                result.Add(formerAppointmentDTO);
+            }
+            return result;
         }
 
         [HttpGet("certificates/{patientId}")]
@@ -192,26 +257,34 @@ namespace VaccinationSystem.Controllers
         {
             // TODO: Token verification for 401 and 403 error codes
             var result = fetchCertificates(patientId);
-            if (result.Count() == 0) return NotFound();
+            if (result == null || result.Count() == 0) return NotFound();
             return Ok(result);
         }
 
         private IEnumerable<BasicCertificateInfoDTO> fetchCertificates(string patientId)
         {
-            var result = from certificate in this._context.Certificates
-                         join patient in this._context.Patients
-                         on certificate.PatientId equals patient.Id
-                         join vaccine in this._context.Vaccines
-                         on certificate.VaccineId equals vaccine.Id
-                         where patient.Id.ToString() == patientId
-                         select new BasicCertificateInfoDTO
-                         {
-                             Url = certificate.Url,
-                             VaccineName = vaccine.Name,
-                             VaccineCompany = vaccine.Company,
-                             Virus = vaccine.Virus.ToString(),
-                         };
-            return result.AsEnumerable();
+            Guid patId;
+            try
+            {
+                patId = Guid.Parse(patientId);
+            }
+            catch(FormatException)
+            {
+                return null;
+            }
+            List<BasicCertificateInfoDTO> result = new List<BasicCertificateInfoDTO>();
+            var certificates = _context.Certificates.Where(c => c.PatientId == patId).Include(c => c.Vaccine);
+            foreach(Certificate certificate in certificates)
+            {
+                result.Add(new BasicCertificateInfoDTO()
+                {
+                    Url = certificate.Url,
+                    VaccineName = certificate.Vaccine.Name,
+                    VaccineCompany = certificate.Vaccine.Company,
+                    Virus = certificate.Vaccine.Virus.ToString(),
+                });
+            }
+            return result;
         }
     }
 }

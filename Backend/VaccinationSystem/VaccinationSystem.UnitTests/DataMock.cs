@@ -675,5 +675,30 @@ namespace VaccinationSystem.UnitTests
             return data;
         }
 
+        protected IQueryable<Certificate> GetCertificatesData()
+        {
+            var data = new List<Certificate>()
+            {
+                new Certificate()
+                {
+                    Id = Guid.Parse("aaaa1111-bb22-cc33-dd44-eeeeee555555"),
+                    Url = "https://vaccinationsystem.blob.core.windows.net/certificates/Janusz_Mikke/327ac066-cd35-4be4-aa10-3cb2bba248eb.pdf",
+                    PatientId = GetPatientsData().ElementAt(1).Id,
+                    Patient = GetPatientsData().ElementAt(1),
+                    VaccineId = GetVaccinesData().ElementAt(1).Id,
+                    Vaccine = GetVaccinesData().ElementAt(1),
+                },
+                new Certificate()
+                {
+                    Id = Guid.Parse("aaaa1112-bb22-cc33-dd44-eeeeee555555"),
+                    Url = "https://vaccinationsystem.blob.core.windows.net/certificates/Janusz_Mikke/327ac066-cd35-4be4-aa10-3cb2bba248eb.pdf",
+                    PatientId = GetPatientsData().ElementAt(3).Id,
+                    Patient = GetPatientsData().ElementAt(3),
+                    VaccineId = GetVaccinesData().ElementAt(2).Id,
+                    Vaccine = GetVaccinesData().ElementAt(2),
+                },
+            }.AsQueryable();
+            return data;
+        }
     }
 }
