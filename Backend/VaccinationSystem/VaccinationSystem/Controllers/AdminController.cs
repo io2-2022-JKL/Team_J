@@ -4,11 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Data.Entity;
 using VaccinationSystem.DTO;
 using VaccinationSystem.DTO.PatientDTOs;
 using VaccinationSystem.DTO.AdminDTOs;
 using VaccinationSystem.Config;
 using VaccinationSystem.Models;
+using System.Diagnostics;
 
 namespace VaccinationSystem.Controllers
 {
@@ -17,6 +19,9 @@ namespace VaccinationSystem.Controllers
     public class AdminController : ControllerBase
     {
         private readonly VaccinationSystemDbContext _context;
+        private readonly string _dateFormat = "dd-MM-yyyy";
+        private readonly string _dateTimeFormat = "dd-MM-yyyy HH\\:mm";
+        private readonly string _timeSpanFormat = "hh\\:mm";
 
         public AdminController(VaccinationSystemDbContext context)
         {
@@ -45,7 +50,7 @@ namespace VaccinationSystem.Controllers
                 patientDTO.mail = patient.Mail;
                 try
                 {
-                    patientDTO.dateOfBirth = patient.DateOfBirth.ToString("dd-MM-yyyy");
+                    patientDTO.dateOfBirth = patient.DateOfBirth.ToString(_dateFormat);
                 }
                 catch(FormatException)
                 {
@@ -93,20 +98,18 @@ namespace VaccinationSystem.Controllers
                 if(doctor != null)
                 {
                     doctor.Active = false;
-                    foreach(Appointment appointment in doctor.Vaccinations)
+
+                    foreach(var appointment in _context.Appointments.Where(a => a.TimeSlot.DoctorId == doctor.Id && a.State == AppointmentState.Planned).Include("TimeSlots").ToList())
                     {
-                        if(appointment.State == AppointmentState.Planned)
-                        {
-                            appointment.State = AppointmentState.Cancelled;
-                            appointment.TimeSlot.Active = false;
-                            //powiadomić pacjentów
-                        }
+                        appointment.State = AppointmentState.Cancelled; // powiadomić pacjentów
+                        var timeSlot = _context.TimeSlots.SingleOrDefault(ts => ts.Id == appointment.TimeSlotId);
+                        if (timeSlot == null)
+                            return NotFound();
+                        appointment.TimeSlot = timeSlot;
+                        appointment.TimeSlot.Active = false;
                     }
-                    var timeSlots = _context.TimeSlots.Where(slot => slot.DoctorId == doctor.Id && slot.Active == false).ToList();
-                    foreach(TimeSlot timeSlot in timeSlots)
-                    {
-                        timeSlot.Active = false;
-                    }
+                    _context.TimeSlots.Where(slot => slot.DoctorId == doctor.Id && slot.Active == true).ToList().ForEach(slot => { slot.Active = false; });
+
                 }
                 patient.Active = false;
                 _context.SaveChanges();
@@ -122,14 +125,20 @@ namespace VaccinationSystem.Controllers
             var result = GetAllDoctors();
             if (result != null)
                 return Ok(result);
-            return StatusCode(404);
+            return NotFound();
         }
 
         private IEnumerable<GetDoctorsResponseDTO> GetAllDoctors()
         {
             List<GetDoctorsResponseDTO> result = new List<GetDoctorsResponseDTO>();
-            foreach(Doctor doc in _context.Doctors.ToList())
+            foreach(Doctor doc in _context.Doctors.Include(doc => doc.PatientAccount).ToList())
             {
+                var patientAccount = _context.Patients.SingleOrDefault(p => p.Id == doc.PatientId);
+                if(patientAccount == null)
+                {
+                    return null;
+                }
+                doc.PatientAccount = patientAccount;
                 GetDoctorsResponseDTO getDoctorsResponseDTO = new GetDoctorsResponseDTO();
                 getDoctorsResponseDTO.id = doc.Id.ToString();
                 getDoctorsResponseDTO.PESEL = doc.PatientAccount.PESEL;
@@ -138,7 +147,7 @@ namespace VaccinationSystem.Controllers
                 getDoctorsResponseDTO.mail = doc.PatientAccount.Mail;
                 try
                 {
-                    getDoctorsResponseDTO.dateOfBirth = doc.PatientAccount.DateOfBirth.ToString("dd-MM-yyyy");
+                    getDoctorsResponseDTO.dateOfBirth = doc.PatientAccount.DateOfBirth.ToString(_dateFormat);
                 }
                 catch(FormatException)
                 {
@@ -146,6 +155,12 @@ namespace VaccinationSystem.Controllers
                 }
                 getDoctorsResponseDTO.phoneNumber = doc.PatientAccount.PhoneNumber;
                 getDoctorsResponseDTO.active = doc.Active;
+                var vaccinationCenter = _context.VaccinationCenters.SingleOrDefault(vc => vc.Id == doc.VaccinationCenterId);
+                if(vaccinationCenter == null)
+                {
+                    return null;
+                }
+                doc.VaccinationCenter = vaccinationCenter;
                 getDoctorsResponseDTO.vaccinationCenterId = doc.VaccinationCenterId.ToString();
                 getDoctorsResponseDTO.name = doc.VaccinationCenter.Name;
                 getDoctorsResponseDTO.city = doc.VaccinationCenter.City;
@@ -177,17 +192,23 @@ namespace VaccinationSystem.Controllers
             }
             catch (FormatException)
             {
-                return StatusCode(404);
+                return NotFound();
             }
             catch (ArgumentNullException)
             {
-                return StatusCode(404);
+                return NotFound();
             }
             Doctor doctor = new Doctor();
+            doctor.Id = Guid.NewGuid();
+            doctor.PatientId = id;
             doctor.PatientAccount = _context.Patients.Where(patient => patient.Active == true && patient.Id == id).FirstOrDefault();
             if(doctor.PatientAccount == null)
             {
-                return StatusCode(404);
+                return NotFound();
+            }
+            if(_context.Doctors.Where(doc => doc.PatientId == id && doc.Active == true).Any())
+            {
+                return NotFound();
             }
             Guid vcId;
             try
@@ -196,29 +217,24 @@ namespace VaccinationSystem.Controllers
             }
             catch (FormatException)
             {
-                return StatusCode(404);
+                return NotFound();
             }
             catch (ArgumentNullException)
             {
-                return StatusCode(404);
+                return NotFound();
             }
             doctor.VaccinationCenterId = vcId;
             doctor.VaccinationCenter = _context.VaccinationCenters.Where(vc => vc.Active == true && vc.Id == vcId).FirstOrDefault();
             if(doctor.VaccinationCenter == null)
             {
-                return StatusCode(404);
+                return NotFound();
             }
-            doctor.Vaccinations = new List<Appointment>();
-            var entry = _context.Doctors.Add(doctor);
-            if (entry.State != Microsoft.EntityFrameworkCore.EntityState.Added)
-            {
-                return StatusCode(404);
-            }
-            if (_context.SaveChanges() < 1)
-            {
-                return StatusCode(404);
-            }
-            return StatusCode(200);
+            //doctor.Vaccinations = new List<Appointment>();
+            doctor.Active = true;
+            //Debug.WriteLine(_context.Doctors.Add(doctor).State);
+            _context.Doctors.Add(doctor);
+            Debug.WriteLine(_context.SaveChanges());
+            return Ok();
 
         }
 
@@ -238,40 +254,36 @@ namespace VaccinationSystem.Controllers
             }
             catch (FormatException)
             {
-                return StatusCode(404);
+                return NotFound();
             }
             catch (ArgumentNullException)
             {
-                return StatusCode(404);
+                return NotFound();
             }
 
-            Doctor doctor;
-            if((doctor = _context.Doctors.Where(doc => doc.Active == true && doc.Id == id).SingleOrDefault()) != null)
-            {             
-                foreach (Appointment appointment in doctor.Vaccinations)
+            Doctor doctor = _context.Doctors.Where(doc => doc.Active == true && doc.Id == id).SingleOrDefault();
+            if(doctor != null)
+            {
+
+                foreach(var appointment in _context.Appointments.Include("TimeSlots").Where(a => a.TimeSlot.DoctorId == doctor.Id && a.State == AppointmentState.Planned).ToList())
                 {
-                    if (appointment.State == AppointmentState.Planned)
+                    appointment.State = AppointmentState.Cancelled; // powiadomić pacjentów
+                    var timeSlot = _context.TimeSlots.SingleOrDefault(ts => ts.Id == appointment.TimeSlotId);
+                    if(timeSlot == null)
                     {
-                        appointment.State = AppointmentState.Cancelled;
-                        appointment.TimeSlot.Active = false;
-                        //powiadomić pacjentów
+                        return NotFound();
                     }
+                    appointment.TimeSlot = timeSlot;
+                    appointment.TimeSlot.Active = false;
                 }
-                foreach (TimeSlot timeSlot in _context.TimeSlots.Where(slot => slot.DoctorId == doctor.Id && slot.Active == false).ToList())
-                {
-                    timeSlot.Active = false;
-                }
+                _context.TimeSlots.Where(slot => slot.DoctorId == doctor.Id && slot.Active == true).ToList().ForEach(slot => { slot.Active = false; }) ;
+
                 doctor.Active = false;
-                if (_context.SaveChanges() < 1)
-                {
-                    return StatusCode(404);
-                }
-                else
-                {
-                    return StatusCode(200);
-                }
+
+                _context.SaveChanges();
+                return Ok();
             }
-            return StatusCode(404);
+            return NotFound();
 
         }
 
@@ -281,7 +293,7 @@ namespace VaccinationSystem.Controllers
             var result = GetAllVaccinationCenters();
             if (result != null)
                 return Ok(result);
-            return StatusCode(404);
+            return NotFound();
         }
 
         private IEnumerable<VaccinationCenterDTO> GetAllVaccinationCenters()
@@ -295,27 +307,52 @@ namespace VaccinationSystem.Controllers
                 centerDTO.city = center.City;
                 centerDTO.street = center.Address;
                 List<VaccineInVaccinationCenterDTO> vaccines = new List<VaccineInVaccinationCenterDTO>();
-                foreach(Vaccine vaccine in center.AvailableVaccines)
+                foreach (VaccinesInVaccinationCenter vaccine in _context.VaccinesInVaccinationCenter.Where(v => v.VaccinationCenterId == center.Id).Include("Vaccines").ToList())
                 {
                     VaccineInVaccinationCenterDTO vaccineDTO = new VaccineInVaccinationCenterDTO();
-                    vaccineDTO.id = vaccine.Id.ToString();
-                    vaccineDTO.name = vaccine.Name;
-                    vaccineDTO.companyName = vaccine.Company;
-                    vaccineDTO.virus = vaccine.Virus.ToString();
+                    var vaccineObject = _context.Vaccines.SingleOrDefault(v => v.Id == vaccine.VaccineId);
+                    if(vaccineObject == null)
+                    {
+                        return null;
+                    }
+                    vaccine.Vaccine = vaccineObject;
+                    vaccineDTO.id = vaccine.Vaccine.Id.ToString();
+                    vaccineDTO.name = vaccine.Vaccine.Name;
+                    vaccineDTO.companyName = vaccine.Vaccine.Company;
+                    vaccineDTO.virus = vaccine.Vaccine.Virus.ToString();
                     vaccines.Add(vaccineDTO);
                 }
                 centerDTO.vaccines = vaccines;
                 List<OpeningHoursDayDTO> openingHours = new List<OpeningHoursDayDTO>();
-                foreach(OpeningHours oh in center.OpeningHours)
+                //foreach(OpeningHours oh in center.OpeningHours)
+                List<OpeningHours> tempOpeningHours = _context.OpeningHours.Where(x => x.VaccinationCenterId == center.Id).ToList();
+                tempOpeningHours.Sort(delegate(OpeningHours a, OpeningHours b)
                 {
+                    return a.WeekDay.CompareTo(b.WeekDay);
+                });
+                if (tempOpeningHours.Count != 7)
+                {
+                    Debug.WriteLine("Wrong opening hours");
+                    return null;
+                }
+                int day = 0;
+                foreach (OpeningHours oh in tempOpeningHours)
+                {
+                    if((int)oh.WeekDay != day)
+                    {
+                        Debug.WriteLine("Wrong opening hours day");
+                        return null;
+                    }
+                    day++;
                     OpeningHoursDayDTO ohDTO = new OpeningHoursDayDTO();
                     try
                     {
-                        ohDTO.From = oh.From.ToString(@"HH\:mm");
-                        ohDTO.To = oh.To.ToString(@"HH\:mm");
+                        ohDTO.From = oh.From.ToString(_timeSpanFormat);
+                        ohDTO.To = oh.To.ToString(_timeSpanFormat);
                     }
                     catch(FormatException)
                     {
+                        Debug.WriteLine("Wrong timespan format");
                         return null;
                     }
                     openingHours.Add(ohDTO);
@@ -323,6 +360,7 @@ namespace VaccinationSystem.Controllers
                 centerDTO.openingHoursDays = openingHours;
                 centerDTO.active = center.Active;
                 result.Add(centerDTO);
+                Debug.WriteLine("Added center");
             }
             return result;
         }
@@ -337,10 +375,14 @@ namespace VaccinationSystem.Controllers
         private IActionResult AddNewVaccinationCenter(AddVaccinationCenterRequestDTO addVaccinationCenterRequestDTO)
         {
             VaccinationCenter vaccinationCenter = new VaccinationCenter();
+            vaccinationCenter.Id = Guid.NewGuid();
             vaccinationCenter.Name = addVaccinationCenterRequestDTO.name;
             vaccinationCenter.City = addVaccinationCenterRequestDTO.city;
             vaccinationCenter.Address = addVaccinationCenterRequestDTO.street;
-            List<Vaccine> vaccines = new List<Vaccine>();
+            //List<Vaccine> vaccines = new List<Vaccine>();
+            List<VaccinesInVaccinationCenter> vaccines = new List<VaccinesInVaccinationCenter>();
+            List<OpeningHours> openingHours = new List<OpeningHours>();
+
             foreach(String vaccineId in addVaccinationCenterRequestDTO.vaccineIds)
             {
                 Guid id;
@@ -350,51 +392,64 @@ namespace VaccinationSystem.Controllers
                 }
                 catch(FormatException)
                 {
-                    return StatusCode(404);
+                    return NotFound();
                 }
                 catch(ArgumentNullException)
                 {
-                    return StatusCode(404);
+                    return NotFound();
                 }
                 Vaccine vaccine;
                 if((vaccine = _context.Vaccines.Where(vac => vac.Active == true && vac.Id == id).FirstOrDefault()) != null)
                 {
-                    vaccines.Add(vaccine);
+                    VaccinesInVaccinationCenter vivc = new VaccinesInVaccinationCenter();
+                    vivc.VaccinationCenterId = vaccinationCenter.Id;
+                    vivc.VaccinationCenter = vaccinationCenter;
+                    vivc.VaccineId = vaccine.Id;
+                    vivc.Vaccine = vaccine;
+                    vaccines.Add(vivc);
+                    Debug.WriteLine("added vaccine");
                 }
                 else
                 {
-                    return StatusCode(404);
+                    return NotFound();
                 }
             }
-            vaccinationCenter.AvailableVaccines = vaccines;
-            List<OpeningHours> openingHours = new List<OpeningHours>();
-            foreach(OpeningHoursDayDTO ohDTO in addVaccinationCenterRequestDTO.openingHoursDays)
+            //vaccinationCenter.AvailableVaccines = vaccines;
+            //List<OpeningHours> openingHours = new List<OpeningHours>();
+            //foreach(OpeningHoursDayDTO ohDTO in addVaccinationCenterRequestDTO.openingHoursDays)
+            if (addVaccinationCenterRequestDTO.openingHoursDays.Count != 7)
+                return NotFound();
+
+            for(int i = 0;i < addVaccinationCenterRequestDTO.openingHoursDays.Count();i++)
             {
                 OpeningHours oh = new OpeningHours();
+                oh.VaccinationCenterId = vaccinationCenter.Id;
+                oh.VaccinationCenter = vaccinationCenter;
                 try
                 {
-                    oh.From = TimeSpan.ParseExact(ohDTO.From, "HH:mm", null);
-                    oh.To = TimeSpan.ParseExact(ohDTO.To, "HH:mm", null);
+                    oh.From = TimeSpan.ParseExact(addVaccinationCenterRequestDTO.openingHoursDays[i].From, _timeSpanFormat, null);
+                    oh.To = TimeSpan.ParseExact(addVaccinationCenterRequestDTO.openingHoursDays[i].To, _timeSpanFormat, null);
                 }
                 catch(FormatException)
                 {
-                    return StatusCode(404);
+                    return NotFound();
                 }
-                openingHours.Add(oh);
+
+                oh.WeekDay = (WeekDay)i;
+
+                openingHours.Add(oh); 
+                //openingHours.Add(oh);
             }
-            vaccinationCenter.OpeningHours = openingHours;
-            vaccinationCenter.Doctors = new List<Doctor>();
+            //vaccinationCenter.OpeningHours = openingHours;
+            //vaccinationCenter.Doctors = new List<Doctor>();
             vaccinationCenter.Active = addVaccinationCenterRequestDTO.active;
-            var entry = _context.VaccinationCenters.Add(vaccinationCenter);
-            if (entry.State != Microsoft.EntityFrameworkCore.EntityState.Added)
-            {
-                return StatusCode(404);
-            }
-            if (_context.SaveChanges() < 1)
-            {
-                return StatusCode(404);
-            }
-            return StatusCode(200);
+            foreach(var v in vaccines)
+                _context.VaccinesInVaccinationCenter.Add(v);
+            foreach(var oh in openingHours)
+                _context.OpeningHours.Add(oh);
+            _context.VaccinationCenters.Add(vaccinationCenter);
+            _context.SaveChanges();
+            return Ok();
         }
 
         [HttpPost("vaccinationCenters/editVaccinationCenter")]
@@ -419,42 +474,36 @@ namespace VaccinationSystem.Controllers
             }
             catch(FormatException)
             {
-                return StatusCode(404);
+                return NotFound();
+            }
+            catch(ArgumentNullException)
+            {
+                return NotFound();
             }
             VaccinationCenter vaccinationCenter;
             if((vaccinationCenter = _context.VaccinationCenters.Where(vc => vc.Active == true && vc.Id == id).SingleOrDefault())!=null)
             {
-                foreach(Doctor doctor in vaccinationCenter.Doctors)
+                foreach(Doctor doctor in _context.Doctors.Where(doc => doc.Active == true && doc.VaccinationCenterId == id).ToList())
                 {
-                    if (doctor.Active)
+                    foreach(var appointment in _context.Appointments.Include("TimeSlots").Where(a => a.TimeSlot.DoctorId == doctor.Id && a.State == AppointmentState.Planned).ToList())
                     {
-                        foreach (Appointment appointment in doctor.Vaccinations)
+                        appointment.State = AppointmentState.Cancelled;
+                        var timeSlot = _context.TimeSlots.SingleOrDefault(ts => ts.Id == appointment.TimeSlotId);
+                        if(timeSlot == null)
                         {
-                            if (appointment.State == AppointmentState.Planned)
-                            {
-                                appointment.State = AppointmentState.Cancelled;
-                                appointment.TimeSlot.Active = false;
-                                //powiadomić pacjentów
-                            }
+                            return NotFound();
                         }
-                        foreach (TimeSlot timeSlot in _context.TimeSlots.Where(slot => slot.DoctorId == doctor.Id && slot.Active == false).ToList())
-                        {
-                            timeSlot.Active = false;
-                        }
-                        doctor.Active = false;
+                        appointment.TimeSlot = timeSlot;
+                        appointment.TimeSlot.Active = false;
                     }
+                    _context.TimeSlots.Where(slot => slot.DoctorId == doctor.Id && slot.Active == true).ToList().ForEach(ts => ts.Active = false);
+                    doctor.Active = false;
                 }
                 vaccinationCenter.Active = false;
-                if (_context.SaveChanges() < 1)
-                {
-                    return StatusCode(404);
-                }
-                else
-                {
-                    return StatusCode(200);
-                }
+                _context.SaveChanges();
+                    return Ok();
             }
-            return StatusCode(404);
+            return NotFound();
         }
 
         [HttpGet("vaccines")]
@@ -463,7 +512,7 @@ namespace VaccinationSystem.Controllers
             var result = GetAllVaccines();
             if (result != null)
                 return Ok(result);
-            return StatusCode(404);
+            return NotFound();
         }
 
         private IEnumerable<VaccineDTO> GetAllVaccines()
@@ -501,12 +550,12 @@ namespace VaccinationSystem.Controllers
             vaccine.Name = addVaccineRequestDTO.name;
             vaccine.NumberOfDoses = addVaccineRequestDTO.numberOfDoses;
             if (vaccine.NumberOfDoses < 1)
-                return StatusCode(404);
+                return NotFound();
             vaccine.MinDaysBetweenDoses = addVaccineRequestDTO.minDaysBetweenDoses;
             vaccine.MaxDaysBetweenDoses = addVaccineRequestDTO.maxDaysBetweenDoses;
             if (vaccine.MinDaysBetweenDoses >= 0 && vaccine.MaxDaysBetweenDoses >= 0 && vaccine.MaxDaysBetweenDoses < vaccine.MinDaysBetweenDoses)
             {
-                return StatusCode(404);
+                return NotFound();
             }
             try
             {
@@ -514,33 +563,26 @@ namespace VaccinationSystem.Controllers
             }
             catch (ArgumentNullException)
             {
-                return StatusCode(404);
+                return NotFound();
             }
             catch (ArgumentException)
             {
-                return StatusCode(404);
+                return NotFound();
             }
             catch (OverflowException)
             {
-                return StatusCode(404);
+                return NotFound();
             }
             vaccine.MinPatientAge = addVaccineRequestDTO.minPatientAge;
             vaccine.MaxPatientAge = addVaccineRequestDTO.maxPatientAge;
             if (vaccine.MinPatientAge >= 0 && vaccine.MaxPatientAge >= 0 && vaccine.MaxPatientAge < vaccine.MinPatientAge)
             {
-                return StatusCode(404);
+                return NotFound();
             }
             vaccine.Active = addVaccineRequestDTO.active;
-            var entry = _context.Vaccines.Add(vaccine);
-            if (entry.State != Microsoft.EntityFrameworkCore.EntityState.Added)
-            {
-                return StatusCode(404);
-            }
-            if (_context.SaveChanges() < 1)
-            {
-                return StatusCode(404);
-            }
-            return StatusCode(200);
+            _context.Vaccines.Add(vaccine);
+            _context.SaveChanges();
+            return Ok();
         }
 
         [HttpPost("vaccines/editVaccine")]
@@ -565,26 +607,26 @@ namespace VaccinationSystem.Controllers
             }
             catch(FormatException)
             {
-                return StatusCode(404);
+                return NotFound();
+            }
+            catch(ArgumentNullException)
+            {
+                return NotFound();
             }
             Vaccine vaccine;
             if ((vaccine = _context.Vaccines.Where(vac => vac.Active == true && vac.Id == id).SingleOrDefault()) != null)
             {
-                foreach(Appointment appointment in _context.Appointments.Where(a => a.State == AppointmentState.Planned && a.TimeSlot.Active == true && a.VaccineId == id).ToList())
+                foreach(Appointment appointment in _context.Appointments.Where(a => a.State == AppointmentState.Planned && a.VaccineId == id).ToList())
                 {
-                    appointment.State = AppointmentState.Cancelled;
+                    appointment.State = AppointmentState.Cancelled; // powiadomić pacjentów
                 }
                 vaccine.Active = false;
-                if (_context.SaveChanges() < 1)
-                {
-                    return StatusCode(404);
-                }
-                else
-                {
-                    return StatusCode(200);
-                }
+                _context.SaveChanges();
+
+                 return Ok();
+
             }
-            return StatusCode(404);
+            return NotFound();
         }
 
         [HttpGet("doctors/timeSlots/{doctorId}")]
@@ -593,7 +635,7 @@ namespace VaccinationSystem.Controllers
             var result = GetAllDoctorTimeSlots(doctorId);
             if (result != null)
                 return Ok(result);
-            return StatusCode(404);
+            return NotFound();
         }
 
         private IEnumerable<TimeSlotDTO> GetAllDoctorTimeSlots(string doctorId)
@@ -608,14 +650,22 @@ namespace VaccinationSystem.Controllers
             {
                 return null;
             }
+            catch(ArgumentNullException)
+            {
+                return null;
+            }
+            if(_context.Doctors.SingleOrDefault(doc => doc.Id == id) == null)
+            {
+                return null;
+            }
             foreach (TimeSlot timeSlot in _context.TimeSlots.Where(ts => ts.DoctorId == id).ToList())
             {
                 TimeSlotDTO timeSlotDTO = new TimeSlotDTO();
                 timeSlotDTO.id = timeSlot.Id.ToString();
                 try
                 {
-                    timeSlotDTO.from = timeSlot.From.ToString(@"dd-MM-yyyy HH\:mm");
-                    timeSlotDTO.to = timeSlot.To.ToString(@"dd-MM-yyyy HH\:mm");
+                    timeSlotDTO.from = timeSlot.From.ToString(_dateTimeFormat);
+                    timeSlotDTO.to = timeSlot.To.ToString(_dateTimeFormat);
                 }
                 catch(FormatException)
                 {
@@ -637,21 +687,19 @@ namespace VaccinationSystem.Controllers
 
         private IActionResult FindAndDeleteDoctorTimeSlots(IEnumerable<string> ids)
         {
+            bool anyDeleted = false;
             foreach(string stringId in ids)
             {
-                if(!FindAndDeleteDoctorTimeSlot(stringId))
+                if(FindAndDeleteDoctorTimeSlot(stringId))
                 {
-                    return StatusCode(404);
+                    anyDeleted = true;
                 }
             }
-            if (_context.SaveChanges() < 1)
-            {
-                return StatusCode(404);
-            }
-            else
-            {
-                return StatusCode(200);
-            }
+            _context.SaveChanges();
+            if(anyDeleted)
+                return Ok();
+            return NotFound();
+            
 
         }
         private bool FindAndDeleteDoctorTimeSlot(string timeSlotId)
@@ -662,6 +710,10 @@ namespace VaccinationSystem.Controllers
                 id = Guid.Parse(timeSlotId);
             }
             catch(FormatException)
+            {
+                return false;
+            }
+            catch(ArgumentNullException)
             {
                 return false;
             }

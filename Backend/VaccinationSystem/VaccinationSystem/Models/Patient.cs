@@ -12,8 +12,8 @@ namespace VaccinationSystem.Models
         //public Dictionary<Virus, int> VaccinationsCount { get; set; }
         //public IEnumerable<Appointment> VaccinationHistory { get; set; }
         //public IEnumerable<Appointment> FutureVaccinations { get; set; }
-        public IEnumerable<Appointment> Vaccinations { get; set; }
-        public IEnumerable<Certificate> Certificates { get; set; }
+        //public IEnumerable<Appointment> Vaccinations { get; set; }
+        //public IEnumerable<Certificate> Certificates { get; set; }
         [Required]
         public bool Active { get; set; }
     }

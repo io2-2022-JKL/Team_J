@@ -17,10 +17,11 @@ namespace VaccinationSystem.Config
         public virtual DbSet<TimeSlot> TimeSlots { get; set; }
         public virtual DbSet<VaccinationCenter> VaccinationCenters { get; set; }
         public virtual DbSet<Vaccine> Vaccines { get; set; }
+        public virtual DbSet<VaccinesInVaccinationCenter> VaccinesInVaccinationCenter { get; set; }
 
         public VaccinationSystemDbContext()
         {
-
+            
         }
         public VaccinationSystemDbContext(DbContextOptions<VaccinationSystemDbContext> options) : base(options)
         {
@@ -49,6 +50,7 @@ namespace VaccinationSystem.Config
             modelBuilder.Entity<TimeSlot>().ToTable("TimeSlot");
             modelBuilder.Entity<VaccinationCenter>().ToTable("VaccinationCenter");
             modelBuilder.Entity<Vaccine>().ToTable("Vaccine");
+            modelBuilder.Entity<VaccinesInVaccinationCenter>().ToTable("VaccineeInVaccinationCenter");
         }
 
     }

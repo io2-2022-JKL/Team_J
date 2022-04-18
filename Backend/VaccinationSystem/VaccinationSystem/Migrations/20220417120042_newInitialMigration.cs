@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace VaccinationSystem.Migrations
 {
-    public partial class initialMigration : Migration
+    public partial class newInitialMigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -60,6 +60,73 @@ namespace VaccinationSystem.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Vaccine",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(nullable: false),
+                    Company = table.Column<string>(type: "varchar(50)", nullable: false),
+                    Name = table.Column<string>(type: "varchar(50)", nullable: false),
+                    NumberOfDoses = table.Column<int>(nullable: false),
+                    MinDaysBetweenDoses = table.Column<int>(nullable: false),
+                    MaxDaysBetweenDoses = table.Column<int>(nullable: false),
+                    Virus = table.Column<int>(nullable: false),
+                    MinPatientAge = table.Column<int>(nullable: false),
+                    MaxPatientAge = table.Column<int>(nullable: false),
+                    Active = table.Column<bool>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Vaccine", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Doctor",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(nullable: false),
+                    VaccinationCenterId = table.Column<Guid>(nullable: false),
+                    PatientId = table.Column<Guid>(nullable: false),
+                    Active = table.Column<bool>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Doctor", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Doctor_Patient_PatientId",
+                        column: x => x.PatientId,
+                        principalTable: "Patient",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Doctor_VaccinationCenter_VaccinationCenterId",
+                        column: x => x.VaccinationCenterId,
+                        principalTable: "VaccinationCenter",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "OpeningHours",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(nullable: false),
+                    From = table.Column<TimeSpan>(nullable: false),
+                    To = table.Column<TimeSpan>(nullable: false),
+                    WeekDay = table.Column<int>(nullable: false),
+                    VaccinationCenterId = table.Column<Guid>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OpeningHours", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_OpeningHours_VaccinationCenter_VaccinationCenterId",
+                        column: x => x.VaccinationCenterId,
+                        principalTable: "VaccinationCenter",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Certificate",
                 columns: table => new
                 {
@@ -77,80 +144,37 @@ namespace VaccinationSystem.Migrations
                         principalTable: "Patient",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Certificate_Vaccine_VaccineId",
+                        column: x => x.VaccineId,
+                        principalTable: "Vaccine",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Doctor",
+                name: "VaccineeInVaccinationCenter",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
                     VaccinationCenterId = table.Column<Guid>(nullable: false),
-                    PatientAccountId = table.Column<Guid>(nullable: false),
-                    Active = table.Column<bool>(nullable: false)
+                    VaccineId = table.Column<Guid>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Doctor", x => x.Id);
+                    table.PrimaryKey("PK_VaccineeInVaccinationCenter", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Doctor_Patient_PatientAccountId",
-                        column: x => x.PatientAccountId,
-                        principalTable: "Patient",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Doctor_VaccinationCenter_VaccinationCenterId",
+                        name: "FK_VaccineeInVaccinationCenter_VaccinationCenter_VaccinationCenterId",
                         column: x => x.VaccinationCenterId,
                         principalTable: "VaccinationCenter",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "OpeningHours",
-                columns: table => new
-                {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    From = table.Column<TimeSpan>(nullable: false),
-                    To = table.Column<TimeSpan>(nullable: false),
-                    VaccinationCenterId = table.Column<Guid>(nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_OpeningHours", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_OpeningHours_VaccinationCenter_VaccinationCenterId",
-                        column: x => x.VaccinationCenterId,
-                        principalTable: "VaccinationCenter",
+                        name: "FK_VaccineeInVaccinationCenter_Vaccine_VaccineId",
+                        column: x => x.VaccineId,
+                        principalTable: "Vaccine",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Vaccine",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(nullable: false),
-                    Company = table.Column<string>(type: "varchar(50)", nullable: false),
-                    Name = table.Column<string>(type: "varchar(50)", nullable: false),
-                    NumberOfDoses = table.Column<int>(nullable: false),
-                    MinDaysBetweenDoses = table.Column<int>(nullable: false),
-                    MaxDaysBetweenDoses = table.Column<int>(nullable: false),
-                    Virus = table.Column<int>(nullable: false),
-                    MinPatientAge = table.Column<int>(nullable: false),
-                    MaxPatientAge = table.Column<int>(nullable: false),
-                    Active = table.Column<bool>(nullable: false),
-                    VaccinationCenterId = table.Column<Guid>(nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Vaccine", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Vaccine_VaccinationCenter_VaccinationCenterId",
-                        column: x => x.VaccinationCenterId,
-                        principalTable: "VaccinationCenter",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -185,18 +209,11 @@ namespace VaccinationSystem.Migrations
                     PatientId = table.Column<Guid>(nullable: false),
                     VaccineId = table.Column<Guid>(nullable: false),
                     State = table.Column<int>(nullable: false),
-                    VaccineBatchNumber = table.Column<string>(type: "varchar(100)", nullable: true),
-                    DoctorId = table.Column<Guid>(nullable: true)
+                    VaccineBatchNumber = table.Column<string>(type: "varchar(100)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Appointment", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Appointment_Doctor_DoctorId",
-                        column: x => x.DoctorId,
-                        principalTable: "Doctor",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Appointment_Patient_PatientId",
                         column: x => x.PatientId,
@@ -216,11 +233,6 @@ namespace VaccinationSystem.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Appointment_DoctorId",
-                table: "Appointment",
-                column: "DoctorId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Appointment_PatientId",
@@ -243,9 +255,14 @@ namespace VaccinationSystem.Migrations
                 column: "PatientId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Doctor_PatientAccountId",
+                name: "IX_Certificate_VaccineId",
+                table: "Certificate",
+                column: "VaccineId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Doctor_PatientId",
                 table: "Doctor",
-                column: "PatientAccountId");
+                column: "PatientId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Doctor_VaccinationCenterId",
@@ -263,9 +280,14 @@ namespace VaccinationSystem.Migrations
                 column: "DoctorId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Vaccine_VaccinationCenterId",
-                table: "Vaccine",
+                name: "IX_VaccineeInVaccinationCenter_VaccinationCenterId",
+                table: "VaccineeInVaccinationCenter",
                 column: "VaccinationCenterId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_VaccineeInVaccinationCenter_VaccineId",
+                table: "VaccineeInVaccinationCenter",
+                column: "VaccineId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -281,6 +303,9 @@ namespace VaccinationSystem.Migrations
 
             migrationBuilder.DropTable(
                 name: "OpeningHours");
+
+            migrationBuilder.DropTable(
+                name: "VaccineeInVaccinationCenter");
 
             migrationBuilder.DropTable(
                 name: "TimeSlot");

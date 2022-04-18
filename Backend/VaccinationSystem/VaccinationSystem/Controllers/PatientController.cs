@@ -34,7 +34,7 @@ namespace VaccinationSystem.Controllers
         }
         private IEnumerable<TimeSlotFilterResponseDTO> fetchFilteredTimeSlots(string city, string dateFrom, string dateTo, string virus)
         {
-            var result = from timeSlot in this._context.TimeSlots
+            /*var result = from timeSlot in this._context.TimeSlots
                          join doctor in this._context.Doctors
                             on timeSlot.DoctorId equals doctor.Id
                          join vaccinationCenter in this._context.VaccinationCenters
@@ -73,6 +73,8 @@ namespace VaccinationSystem.Controllers
                              DoctorLastName = doctor.PatientAccount.LastName,
                          };
             return result.AsEnumerable();
+            */
+            return null;
         }
 
         [HttpPost("timeSlots/Book/{patientId}/{timeSlotId}")]

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using VaccinationSystem.Config;
@@ -34,23 +35,23 @@ namespace VaccinationSystem.Controllers
         {
             Patient patient = new Patient();
             patient.PESEL = registerRequestDTO.PESEL;
-            if(patient.PESEL.Length != 11 || !int.TryParse(patient.PESEL, out _))
+            if(patient.PESEL == null || patient.PESEL.Length != 11 || !long.TryParse(patient.PESEL, out _))
             {
-                return StatusCode(400);
+                return BadRequest();
             }
-            if(_context.Patients.Where(u=>u.PESEL == patient.PESEL).Any())
+            if(_context.Patients.Where(u=> u.PESEL == patient.PESEL && u.Active == true ).Any())
             {
-                return StatusCode(400);
+                return BadRequest();
             }
             patient.FirstName = registerRequestDTO.names;
-            if(ContainsSymbol(patient.FirstName))
+            if(patient.FirstName == null || patient.FirstName.Length == 0 || ContainsSymbol(patient.FirstName))
             {
-                return StatusCode(400);
+                return BadRequest();
             }
             patient.LastName = registerRequestDTO.surname;
-            if(ContainsSymbol(patient.LastName))
+            if(patient.LastName == null || patient.LastName.Length == 0 || ContainsSymbol(patient.LastName))
             {
-                return StatusCode(400);
+                return BadRequest();
             }
             try
             {
@@ -58,32 +59,41 @@ namespace VaccinationSystem.Controllers
             }
             catch(FormatException)
             {
-                return StatusCode(400);
+                return BadRequest();
+            }
+            catch(ArgumentNullException)
+            {
+                return BadRequest();
             }
             patient.Mail = registerRequestDTO.mail;
-            if(!new EmailAddressAttribute().IsValid(patient.Mail))
+            if(patient.Mail == null || !new EmailAddressAttribute().IsValid(patient.Mail))
             {
-                return StatusCode(400);
+                return BadRequest();
+            }
+            if (_context.Patients.Where(u => u.Mail == patient.Mail && u.Active == true).Any())
+            {
+                return BadRequest();
             }
             patient.Password = registerRequestDTO.password;
+            if(patient.Password == null || patient.Password.Length == 0)
+            {
+                return BadRequest();
+            }
+            if(registerRequestDTO.phoneNumber == null)
+            {
+                return BadRequest();
+            }
             patient.PhoneNumber = new string(registerRequestDTO.phoneNumber.ToCharArray().Where(c => !Char.IsWhiteSpace(c)).ToArray());
-            if(!IsPhoneNumber(patient.PhoneNumber))
+            if(patient.PhoneNumber.Length == 0 || !IsPhoneNumber(patient.PhoneNumber))
             {
-                return StatusCode(400);
+                return BadRequest();
             }
-            patient.Vaccinations = new List<Appointment>();
-            patient.Certificates = new List<Certificate>();
+            //patient.Vaccinations = new List<Appointment>();
+            //patient.Certificates = new List<Certificate>();
             patient.Active = true;
-            var entry = _context.Patients.Add(patient);
-            if(entry.State != Microsoft.EntityFrameworkCore.EntityState.Added)
-            {
-                return StatusCode(400);
-            }
-            if(_context.SaveChanges() != 1)
-            {
-                return StatusCode(400);
-            }
-            return StatusCode(200);
+            _context.Patients.Add(patient);
+            _context.SaveChanges();
+            return Ok();
         }
 
         private bool ContainsSymbol(string s)
@@ -97,12 +107,12 @@ namespace VaccinationSystem.Controllers
                 return false;
             if (s[0] == '+')
             {
-                if (!int.TryParse(s.Substring(1), out _))
+                if (!long.TryParse(s.Substring(1), out _))
                     return false;
             }
             else
             {
-                if (!int.TryParse(s, out _))
+                if (!long.TryParse(s, out _))
                     return false;
             }
             return true;
@@ -114,26 +124,29 @@ namespace VaccinationSystem.Controllers
             var result = FindUser(signinRequestDTO);
             if (result != null)
                 return Ok(result);
-            return StatusCode(400);
+            return BadRequest();
         }
 
         private SigninResponseDTO FindUser(SigninRequestDTO signinRequestDTO)
         {
             SigninResponseDTO result = new SigninResponseDTO();
             User account;
-            if ((account = _context.Doctors.Where(doc => doc.PatientAccount.Active == true && doc.PatientAccount.Mail == signinRequestDTO.mail && doc.PatientAccount.Password == signinRequestDTO.password).SingleOrDefault().PatientAccount) != null)
+            account = _context.Patients.SingleOrDefault(patient => patient.Active == true && patient.Mail == signinRequestDTO.mail && patient.Password == signinRequestDTO.password);
+            if (account != null)
             {
-                result.userID = account.Id.ToString();
-                result.userType = "doctor";
-                return result;
-            }
-            if((account = _context.Patients.Where(patient => patient.Active == true && patient.Mail == signinRequestDTO.mail && patient.Password == signinRequestDTO.password).SingleOrDefault()) != null)
-            {
+                var docAccount = _context.Doctors.Include("Patients").SingleOrDefault(doc => doc.Active == true && doc.PatientId == account.Id);
+                if (docAccount != null)
+                {
+                    result.userID = docAccount.Id.ToString();
+                    result.userType = "doctor";
+                    return result;
+                }
                 result.userID = account.Id.ToString();
                 result.userType = "patient";
                 return result;
             }
-            if((account = _context.Admins.Where(admin => admin.Mail == signinRequestDTO.mail && admin.Password == signinRequestDTO.password).SingleOrDefault()) != null)
+            account = _context.Admins.SingleOrDefault(admin => admin.Mail == signinRequestDTO.mail && admin.Password == signinRequestDTO.password);
+            if (account != null)
             {
                 result.userID = account.Id.ToString();
                 result.userType = "admin";

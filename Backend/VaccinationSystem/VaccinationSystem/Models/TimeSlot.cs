@@ -16,8 +16,8 @@ namespace VaccinationSystem.Models
         [Required]
         public DateTime To { get; set; }
         [ForeignKey("Doctor")]
-        public Guid? DoctorId { get; set; }
-        public Doctor Doctor { get; set; }
+        public virtual Guid? DoctorId { get; set; }
+        public virtual Doctor Doctor { get; set; }
         [Required]
         public bool IsFree { get; set; }
         [Required]
