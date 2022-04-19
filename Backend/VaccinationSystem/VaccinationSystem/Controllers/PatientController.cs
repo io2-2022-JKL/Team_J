@@ -44,6 +44,10 @@ namespace VaccinationSystem.Controllers
             {
                 return null;
             }
+            catch (ArgumentNullException)
+            {
+                return null;
+            }
             var timeSlots = _context.TimeSlots.Where(timeSlot => timeSlot.Active == true && timeSlot.IsFree == true && timeSlot.From >= From && timeSlot.To <= To).Include(timeSlot => timeSlot.Doctor);
             foreach (TimeSlot timeSlot in timeSlots)
             {
@@ -139,6 +143,10 @@ namespace VaccinationSystem.Controllers
             {
                 return null;
             }
+            catch (ArgumentNullException)
+            {
+                return null;
+            }
             var appointments = _context.Appointments.Where(ap => ap.PatientId == patId && ap.State == Models.AppointmentState.Planned).Include(ap => ap.TimeSlot).Include(ap => ap.Vaccine);
             foreach(Appointment appointment in appointments)
             {
@@ -187,6 +195,10 @@ namespace VaccinationSystem.Controllers
             {
                 return false;
             }
+            catch (ArgumentNullException)
+            {
+                return false;
+            }
             var appointment = _context.Appointments.Where(a => a.Id == appId && a.PatientId == patId).FirstOrDefault();
             if (appointment == null || appointment.State != AppointmentState.Planned) return false;
             Guid timeSlotId = appointment.TimeSlotId.GetValueOrDefault();
@@ -219,6 +231,10 @@ namespace VaccinationSystem.Controllers
                 patId = Guid.Parse(patientId);
             }
             catch(FormatException)
+            {
+                return null;
+            }
+            catch (ArgumentNullException)
             {
                 return null;
             }
@@ -269,6 +285,10 @@ namespace VaccinationSystem.Controllers
                 patId = Guid.Parse(patientId);
             }
             catch(FormatException)
+            {
+                return null;
+            }
+            catch (ArgumentNullException)
             {
                 return null;
             }

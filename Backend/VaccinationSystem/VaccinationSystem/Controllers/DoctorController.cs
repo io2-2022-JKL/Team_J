@@ -8,6 +8,7 @@ using VaccinationSystem.DTO.DoctorDTOs;
 using VaccinationSystem.DTO;
 using VaccinationSystem.Config;
 using VaccinationSystem.Models;
+using System.Data.Entity;
 
 namespace VaccinationSystem.Controllers
 {
@@ -20,6 +21,38 @@ namespace VaccinationSystem.Controllers
         public DoctorController(VaccinationSystemDbContext context)
         {
             _context = context;
+        }
+        [HttpGet("{doctorId}/patientId")]
+        public ActionResult<GetDoctorPatientIdResponse> GetDoctorPatientId(string doctorId)
+        {
+            // TODO: Token verification for 401 and 403 error codes
+            GetDoctorPatientIdResponse result = FetchDoctorPatientId(doctorId);
+            if (result == null) return NotFound();
+            return Ok(result);
+        }
+        private GetDoctorPatientIdResponse FetchDoctorPatientId(string doctorId)
+        {
+            Guid docId;
+            try
+            {
+                docId = Guid.Parse(doctorId);
+            }
+            catch (FormatException)
+            {
+                return null;
+            }
+            catch (ArgumentNullException)
+            {
+                return null;
+            }
+            var doctorAccount = _context.Doctors.Where(doc => doc.Id == docId).Include(doc => doc.PatientAccount).SingleOrDefault();
+            if (doctorAccount == null) return null;
+            Guid patientAccountId = doctorAccount.PatientAccount.Id;
+            GetDoctorPatientIdResponse result = new GetDoctorPatientIdResponse()
+            {
+                patientId = patientAccountId.ToString(),
+            };
+            return result;
         }
         [HttpPost("timeSlots/{doctorId}")]
         public ActionResult<IEnumerable<ExistingTimeSlotDTO>> GetExistingTimeSlots(string doctorId)
@@ -37,6 +70,10 @@ namespace VaccinationSystem.Controllers
                 docId = Guid.Parse(doctorId);
             }
             catch(FormatException)
+            {
+                return null;
+            }
+            catch (ArgumentNullException)
             {
                 return null;
             }
@@ -78,6 +115,10 @@ namespace VaccinationSystem.Controllers
             {
                 return false;
             }
+            catch (ArgumentNullException)
+            {
+                return false;
+            }
             currentTo = currentFrom + increment;
             var existingTimeSlots = _context.TimeSlots.Where(ts => ts.Active == true && ts.DoctorId == docId);
             while (currentTo <= endTo)
@@ -105,30 +146,51 @@ namespace VaccinationSystem.Controllers
         }
 
         [HttpDelete("timeSlots/Delete/{doctorId}")]
-        public IActionResult DeleteAppointment(string doctorId, IEnumerable<string> ids)
+        public IActionResult DeleteTimeSlot(string doctorId, IEnumerable<string> ids)
         {
             // TODO: Token verification for 401 and 403 error codes
-            if (!modifyDeleteAppointment(doctorId, ids)) return NotFound();
+            if (!modifyDeleteTimeSlot(doctorId, ids)) return NotFound();
             return Ok();
         }
 
-        private bool modifyDeleteAppointment(string doctorId, IEnumerable<string> ids)
+        private bool modifyDeleteTimeSlot(string doctorId, IEnumerable<string> ids)
         {
             // Disallow deleting timeSlots that already passed?
-            foreach (string id in ids)
+            int changedTimeSlots = 0;
+            List<Guid> parsedIDs = new List<Guid>();
+            Guid docId;
+            try
             {
-                var tempTimeSlot = this._context.TimeSlots.SingleOrDefault(ts => ts.DoctorId == Guid.Parse(doctorId) && ts.Id == Guid.Parse(id));
-                if (tempTimeSlot == null) continue; // Maybe throw an error or something?
-                var possibleAppointment = this._context.Appointments.SingleOrDefault(a => a.TimeSlotId == tempTimeSlot.Id && a.State == Models.AppointmentState.Planned);
+                docId = Guid.Parse(doctorId);
+                foreach(string id in ids)
+                {
+                    Guid newGuid = Guid.Parse(id);
+                    parsedIDs.Add(newGuid);
+                }
+            }
+            catch (FormatException)
+            {
+                return false;
+            }
+            catch (ArgumentNullException)
+            {
+                return false;
+            }
+            foreach (Guid id in parsedIDs)
+            {
+                var tempTimeSlot = _context.TimeSlots.Where(ts => ts.DoctorId == docId && ts.Id == id && ts.Active == true).SingleOrDefault();
+                if (tempTimeSlot == null) continue;
+                var possibleAppointment = this._context.Appointments.Where(a => a.TimeSlotId == tempTimeSlot.Id && a.State == Models.AppointmentState.Planned).SingleOrDefault();
                 if (possibleAppointment != null)
                 {
                     possibleAppointment.State = Models.AppointmentState.Cancelled;
-                    // TODO: Take care of patient assigned to the appointment
+                    // TODO: Take care of patient assigned to the appointment (email)
                 }
                 tempTimeSlot.Active = false;
                 this._context.SaveChanges();
+                changedTimeSlots++;
             }
-            return true;
+            return changedTimeSlots > 0;
         }
 
         [HttpPost("timeSlots/modify/{doctorId}/{timeSlotId}")]
@@ -142,35 +204,45 @@ namespace VaccinationSystem.Controllers
         {
             // TODO: Token verification for 401 and 403 error codes
             IEnumerable<DoctorFormerAppointmentDTO> result = fetchFormerAppointments(doctorId);
-            if (result.Count() == 0) return NotFound();
+            if (result == null || result.Count() == 0) return NotFound();
             return Ok(result);
         }
         private IEnumerable<DoctorFormerAppointmentDTO> fetchFormerAppointments(string doctorId)
         {
-            var result = from appointment in this._context.Appointments
-                         join timeSlot in this._context.TimeSlots
-                         on appointment.TimeSlotId equals timeSlot.Id
-                         join vaccine in this._context.Vaccines
-                         on appointment.VaccineId equals vaccine.Id
-                         join patient in this._context.Patients
-                         on appointment.PatientId equals patient.Id
-                         where timeSlot.DoctorId == Guid.Parse(doctorId) && appointment.State == Models.AppointmentState.Finished
-                         select new DoctorFormerAppointmentDTO
-                         {
-                             VaccineName = vaccine.Name,
-                             VaccineCompany = vaccine.Company,
-                             VaccineVirus = vaccine.Virus.ToString(),
-                             WhichVaccineDose = appointment.WhichDose,
-                             AppointmentId = appointment.Id.ToString(),
-                             PatientFirstName = patient.FirstName,
-                             PatientLastName = patient.LastName,
-                             PESEL = patient.PESEL,
-                             State = appointment.State.ToString(),
-                             BatchNumber = appointment.VaccineBatchNumber,
-                             From = timeSlot.From.ToString(),
-                             To = timeSlot.To.ToString(),
-                         };
-            return result.AsEnumerable();
+            Guid docId;
+            try
+            {
+                docId = Guid.Parse(doctorId);
+            }
+            catch(FormatException)
+            {
+                return null;
+            }
+            catch(ArgumentNullException)
+            {
+                return null;
+            }
+            List<DoctorFormerAppointmentDTO> result = new List<DoctorFormerAppointmentDTO>();
+            var appointments = _context.Appointments.Where(ap => ap.State != AppointmentState.Planned).Include(ap => ap.TimeSlot).Include(ap => ap.Patient).Include(ap => ap.Vaccine);
+            foreach(Appointment appointment in appointments)
+            {
+                if (appointment.TimeSlot.Active == false || appointment.TimeSlot.DoctorId != docId) continue;
+                DoctorFormerAppointmentDTO doctorFormerAppointmentDTO = new DoctorFormerAppointmentDTO();
+                doctorFormerAppointmentDTO.VaccineName = appointment.Vaccine.Name;
+                doctorFormerAppointmentDTO.VaccineCompany = appointment.Vaccine.Company;
+                doctorFormerAppointmentDTO.VaccineVirus = appointment.Vaccine.Virus.ToString();
+                doctorFormerAppointmentDTO.WhichVaccineDose = appointment.WhichDose;
+                doctorFormerAppointmentDTO.AppointmentId = appointment.Id.ToString();
+                doctorFormerAppointmentDTO.PatientFirstName = appointment.Patient.FirstName;
+                doctorFormerAppointmentDTO.PatientLastName = appointment.Patient.LastName;
+                doctorFormerAppointmentDTO.PESEL = appointment.Patient.PESEL;
+                doctorFormerAppointmentDTO.State = appointment.State.ToString();
+                doctorFormerAppointmentDTO.BatchNumber = appointment.VaccineBatchNumber;
+                doctorFormerAppointmentDTO.From = appointment.TimeSlot.From.ToString();
+                doctorFormerAppointmentDTO.To = appointment.TimeSlot.To.ToString();
+                result.Add(doctorFormerAppointmentDTO);
+            }
+            return result;
 
         }
         [HttpGet("incomingAppointments/{doctorId}")]
@@ -178,33 +250,43 @@ namespace VaccinationSystem.Controllers
         {
             // TODO: Token verification for 401 and 403 error codes
             IEnumerable<DoctorIncomingAppointmentDTO> result = fetchIncomingAppointments(doctorId);
-            if (result.Count() == 0) return NotFound();
+            if (result == null || result.Count() == 0) return NotFound();
             return Ok(result);
         }
         private IEnumerable<DoctorIncomingAppointmentDTO> fetchIncomingAppointments(string doctorId)
         {
-            var result = from appointment in this._context.Appointments
-                         join timeSlot in this._context.TimeSlots
-                         on appointment.TimeSlotId equals timeSlot.Id
-                         join vaccine in this._context.Vaccines
-                         on appointment.VaccineId equals vaccine.Id
-                         join patient in this._context.Patients
-                         on appointment.PatientId equals patient.Id
-                         where timeSlot.DoctorId == Guid.Parse(doctorId) && appointment.State == Models.AppointmentState.Planned && patient.Active && timeSlot.Active && vaccine.Active
-                         select new DoctorIncomingAppointmentDTO
-                         {
-                             VaccineName = vaccine.Name,
-                             VaccineCompany = vaccine.Company,
-                             VaccineVirus = vaccine.Virus.ToString(),
-                             WhichVaccineDose = appointment.WhichDose,
-                             AppointmentId = appointment.Id.ToString(),
-                             PatientFirstName = patient.FirstName,
-                             PatientLastName = patient.LastName,
-                             From = timeSlot.From.ToString(),
-                             To = timeSlot.To.ToString(),
-                         };
+            Guid docId;
+            try
+            {
+                docId = Guid.Parse(doctorId);
+            }
+            catch (FormatException)
+            {
+                return null;
+            }
+            catch (ArgumentNullException)
+            {
+                return null;
+            }
+            List<DoctorIncomingAppointmentDTO> result = new List<DoctorIncomingAppointmentDTO>();
+            var appointments = _context.Appointments.Where(ap => ap.State == AppointmentState.Planned).Include(ap => ap.TimeSlot).Include(ap => ap.Patient).Include(ap => ap.Vaccine);
+            foreach (Appointment appointment in appointments)
+            {
+                if (appointment.TimeSlot.Active == false || appointment.TimeSlot.DoctorId != docId ||
+                    appointment.Patient.Active == false || appointment.Vaccine.Active == false) continue;
+                DoctorIncomingAppointmentDTO doctorFormerAppointmentDTO = new DoctorIncomingAppointmentDTO();
+                doctorFormerAppointmentDTO.VaccineName = appointment.Vaccine.Name;
+                doctorFormerAppointmentDTO.VaccineCompany = appointment.Vaccine.Company;
+                doctorFormerAppointmentDTO.VaccineVirus = appointment.Vaccine.Virus.ToString();
+                doctorFormerAppointmentDTO.WhichVaccineDose = appointment.WhichDose;
+                doctorFormerAppointmentDTO.AppointmentId = appointment.Id.ToString();
+                doctorFormerAppointmentDTO.PatientFirstName = appointment.Patient.FirstName;
+                doctorFormerAppointmentDTO.PatientLastName = appointment.Patient.LastName;
+                doctorFormerAppointmentDTO.From = appointment.TimeSlot.From.ToString();
+                doctorFormerAppointmentDTO.To = appointment.TimeSlot.To.ToString();
+                result.Add(doctorFormerAppointmentDTO);
+            }
             return result.AsEnumerable();
-
         }
 
         [HttpGet("vaccinate/{doctorId}/{appointmentId}")]

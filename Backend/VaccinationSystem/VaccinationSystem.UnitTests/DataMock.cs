@@ -525,7 +525,7 @@ namespace VaccinationSystem.UnitTests
             string format = "dd-MM-yyyy HH\\:mm";
             var data = new List<TimeSlot>
             {
-                new TimeSlot
+                new TimeSlot // 0
                 {
                     Id = Guid.Parse("a0780125-a945-4e20-b2ab-02bcf0ce8f3b"),
                     From = DateTime.ParseExact("01-03-2022 10:00", format, null),
@@ -535,7 +535,7 @@ namespace VaccinationSystem.UnitTests
                     IsFree = true,
                     Active = true
                 },
-                new TimeSlot
+                new TimeSlot // 1
                 {
                     Id = Guid.Parse("a1780125-a945-4e20-b2ab-02bcf0ce8f3b"),
                     From = DateTime.ParseExact("01-03-2022 10:15", format, null),
@@ -545,7 +545,7 @@ namespace VaccinationSystem.UnitTests
                     IsFree = false,
                     Active = true
                 },
-                new TimeSlot
+                new TimeSlot // 2
                 {
                     Id = Guid.Parse("a2780125-a945-4e20-b2ab-02bcf0ce8f3b"),
                     From = DateTime.ParseExact("01-03-2022 10:30", format, null),
@@ -555,7 +555,7 @@ namespace VaccinationSystem.UnitTests
                     IsFree = false,
                     Active = false
                 },
-                new TimeSlot
+                new TimeSlot // 3
                 {
                     Id = Guid.Parse("a3780125-a945-4e20-b2ab-02bcf0ce8f3b"),
                     From = DateTime.ParseExact("01-03-2022 10:45", format, null),
@@ -565,7 +565,7 @@ namespace VaccinationSystem.UnitTests
                     IsFree = true,
                     Active = false
                 },
-                new TimeSlot
+                new TimeSlot // 4
                 {
                     Id = Guid.Parse("b0780125-a945-4e20-b2ab-02bcf0ce8f3b"),
                     From = DateTime.ParseExact("01-03-2022 10:00", format, null),
@@ -575,7 +575,7 @@ namespace VaccinationSystem.UnitTests
                     IsFree = true,
                     Active = true
                 },
-                new TimeSlot
+                new TimeSlot // 5
                 {
                     Id = Guid.Parse("b1780125-a945-4e20-b2ab-02bcf0ce8f3b"),
                     From = DateTime.ParseExact("01-03-2022 10:15", format, null),
@@ -585,7 +585,7 @@ namespace VaccinationSystem.UnitTests
                     IsFree = false,
                     Active = true
                 },
-                new TimeSlot
+                new TimeSlot // 6
                 {
                     Id = Guid.Parse("b2780125-a945-4e20-b2ab-02bcf0ce8f3b"),
                     From = DateTime.ParseExact("01-03-2022 10:30", format, null),
@@ -595,7 +595,7 @@ namespace VaccinationSystem.UnitTests
                     IsFree = false,
                     Active = false
                 },
-                new TimeSlot
+                new TimeSlot // 7
                 {
                     Id = Guid.Parse("b3780125-a945-4e20-b2ab-02bcf0ce8f3b"),
                     From = DateTime.ParseExact("01-03-2022 10:45", format, null),
@@ -605,7 +605,7 @@ namespace VaccinationSystem.UnitTests
                     IsFree = true,
                     Active = false
                 },
-                new TimeSlot
+                new TimeSlot // 8
                 {
                     Id = Guid.Parse("b4781125-a945-4e20-b2ab-02bcf0ce8f3b"),
                     From = DateTime.ParseExact("01-01-2022 10:45", format, null),
@@ -614,7 +614,27 @@ namespace VaccinationSystem.UnitTests
                     Doctor = GetDoctorsData().ElementAt(2),
                     IsFree = false,
                     Active = false
-                }
+                },
+                new TimeSlot // 9
+                {
+                    Id = Guid.Parse("a4780125-a945-4e20-b2ab-02bcf0ce8f3b"),
+                    From = DateTime.ParseExact("01-03-2022 11:00", format, null),
+                    To = DateTime.ParseExact("01-03-2022 11:15", format, null),
+                    DoctorId = GetDoctorsData().ElementAt(0).Id,
+                    Doctor = GetDoctorsData().ElementAt(0),
+                    IsFree = false,
+                    Active = true
+                },
+                new TimeSlot // 10
+                {
+                    Id = Guid.Parse("a5780125-a945-4e20-b2ab-02bcf0ce8f3b"),
+                    From = DateTime.ParseExact("01-03-2022 11:15", format, null),
+                    To = DateTime.ParseExact("01-03-2022 11:30", format, null),
+                    DoctorId = GetDoctorsData().ElementAt(0).Id,
+                    Doctor = GetDoctorsData().ElementAt(0),
+                    IsFree = false,
+                    Active = true
+                },
             }.AsQueryable();
             return data;
         }
@@ -674,7 +694,33 @@ namespace VaccinationSystem.UnitTests
                     Vaccine = GetVaccinesData().ElementAt(1),
                     State = AppointmentState.Cancelled,
                     VaccineBatchNumber = null
-                }
+                },
+                new Appointment
+                {
+                    Id = Guid.Parse("baa46325-e151-4cd6-a829-254c0314faad"),
+                    WhichDose = 1,
+                    TimeSlotId = GetTimeSlotsData().ElementAt(9).Id,
+                    TimeSlot = GetTimeSlotsData().ElementAt(9),
+                    PatientId = GetPatientsData().ElementAt(1).Id,
+                    Patient = GetPatientsData().ElementAt(1),
+                    VaccineId = GetVaccinesData().ElementAt(0).Id,
+                    Vaccine = GetVaccinesData().ElementAt(0),
+                    State = AppointmentState.Finished,
+                    VaccineBatchNumber = "KORW-KR"
+                },
+                new Appointment
+                {
+                    Id = Guid.Parse("baa46325-e151-4cd6-a829-254c0314faad"),
+                    WhichDose = 1,
+                    TimeSlotId = GetTimeSlotsData().ElementAt(10).Id,
+                    TimeSlot = GetTimeSlotsData().ElementAt(10),
+                    PatientId = GetPatientsData().ElementAt(5).Id,
+                    Patient = GetPatientsData().ElementAt(5),
+                    VaccineId = GetVaccinesData().ElementAt(0).Id,
+                    Vaccine = GetVaccinesData().ElementAt(0),
+                    State = AppointmentState.Cancelled,
+                    VaccineBatchNumber = null
+                },
             }.AsQueryable();
             return data;
         }
