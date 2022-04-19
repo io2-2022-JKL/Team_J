@@ -11,6 +11,7 @@ import PrivateRoute from './PrivateRoute';
 import DoctorMainPage from './Doctor/DoctorMainPage';
 import AddNewDoctor from './Admin/AddDoctor';
 import AddNewVaccine from './Admin/AddVaccine';
+import FilterTimeSlots from './Patient/FIlterTimeSlots';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
           <Route exact path='/admin/vaccinationCenters' element={<VaccinationCentersPage />} />
           <Route exact path='/admin/vaccines' element={<VaccinesPage />} />
           <Route exact path='/admin/vaccines/addVaccine' element={<AddNewVaccine />} />
+          <Route exact path='/patient/timeSlots' element={<FilterTimeSlots />} />
           <Route path="" element={<Navigate to="/signin" />} />
         </Routes>
       </BrowserRouter>
