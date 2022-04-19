@@ -56,30 +56,33 @@ export default function LoginPage() {
         });
     };
 
+    async function getPatientsData() {
+        try {
+            const { data: response } = await axios.get('https://localhost:5001/admin/patients');
+            return response;
+        } catch (error) {
+            console.error(error.message);
+        }
+    }
+  
     const logInUser = async () => {
         // request i response
         if (emailError) return;
 
-        try{
-            const {data:response} = await axios({
-                method:'POST',
-                url: 'https://localhost:44393/signin',
+        try {
+            const { data: response } = await axios({
+                method: 'post',
+                //url: 'http://systemszczepien.azurewebsites.net/login',
+                url: 'https://localhost:5001/login',
                 data: {
                     email: 'adi222@wp.pl',
                     password: 'haslohaslo'
                 }
             });
-        }
-        catch(error)
-        {
+            return response;
+        } catch (error) {
             console.error(error.message);
         }
-        /*const response = fetch("https://localhost:5001/patient/certificates/{31241412}");
-
-
-        console.log({
-            cos: response.status
-        })*/
 
         const userType = email.includes("admin") ? "admin" : email.includes("patient") ? "patient" : "doctor";
         console.log({
