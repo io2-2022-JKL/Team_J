@@ -1,7 +1,7 @@
 import * as React from 'react';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import { Box } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import { randomAddress, randomCity, randomCommodity, randomCompanyName, randomDate, randomInt, randomId, randomTraderName } from '@mui/x-data-grid-generator';
 import { useNavigate } from 'react-router-dom';
 import { FixedSizeList } from 'react-window';
@@ -39,20 +39,19 @@ function renderRow(props) {
     const { index, style, data } = props;
     const item = data[index];
     return (
-        <Box
-            sx={{
-                marginTop: 8,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-            }}
-        >
-            <ListItem style={style} key={index} component="div" disablePadding>
-                <ListItemText primary={"Miasto: "+item.vaccinationCenterCity} secondary={"Ulica: "+item.vaccinationCenterStreet} />
-                <ListItemText primary={"Wirus: "+item.vaccineVirus} secondary={"Numer dawki: "+item.whichVaccineDose} />
-                <ListItemText primary={"Lekarz: "+item.doctorFirstName+" "+item.doctorLastName} secondary={"Data szczepienia: "+item.windowEnd} />
-            </ListItem>
-        </Box>
+        <ListItem style={style} key={index} component="div" disablePadding>
+            <Grid container direction={"row"} spacing={1}>
+                <Grid item xs={4}>
+                    <ListItemText primary={"Wirus: " + item.vaccineVirus} secondary={"Numer dawki: " + item.whichVaccineDose} />
+                </Grid>
+                <Grid item xs={4}>
+                    <ListItemText primary={"Miasto: " + item.vaccinationCenterCity} secondary={"Ulica: " + item.vaccinationCenterStreet} />
+                </Grid>
+                <Grid item xs={4}>
+                    <ListItemText primary={"Lekarz: " + item.doctorFirstName + " " + item.doctorLastName} secondary={"Data szczepienia: " + item.windowEnd} />
+                </Grid>
+            </Grid>
+        </ListItem>
     );
 }
 
@@ -89,7 +88,7 @@ export default function FormerAppointment() {
                         <FixedSizeList
                             height={600}
                             width="60%"
-                            itemSize={60}
+                            itemSize={100}
                             itemCount={data.length}
                             overscanCount={5}
                             itemData={data}
