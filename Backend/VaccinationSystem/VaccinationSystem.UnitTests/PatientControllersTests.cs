@@ -240,9 +240,9 @@ namespace VaccinationSystem.UnitTests
             if (appointmentBefore != null && appointmentAfter != null) Assert.True(appointmentBefore.State == appointmentAfter.State);
         }
         [Theory]
-        [InlineData("81a130d2-502f-4cf1-a376-63edeb000e9c")]
-        [InlineData("81a130d2-502f-4cf1-a376-63edeb000e9f")]
-        public void GetFormerVisitsTest(string patientId)
+        [InlineData("81a130d2-502f-4cf1-a376-63edeb000e9c", 1)]
+        [InlineData("81a130d2-502f-4cf1-a376-63edeb000e9f", 2)]
+        public void GetFormerVisitsTest(string patientId, int expectedVisitCount)
         {
             // Arrange
             var appointmentData = GetAppointmentsData().ToList();
@@ -283,7 +283,7 @@ namespace VaccinationSystem.UnitTests
             Assert.IsType<List<FormerAppointmentDTO>>(list.Value);
 
             var appointments = list.Value as List<FormerAppointmentDTO>;
-            Assert.Single(appointments);
+            Assert.Equal(expectedVisitCount, appointments.Count());
         }
         [Theory]
         [InlineData("81a130d2-502f-4cf1-a376-63edeb000e9a")]
