@@ -25,6 +25,7 @@ export async function getPatientsData() {
         return response;
     } catch (error) {
         console.error(error.message);
+        return [];
     }
 }
 
@@ -49,9 +50,8 @@ export function getRandomPatientData() {
 }
 
 const createRandomRow = () => {
-    var id = randomId();
     return {
-        id: id,
+        id: randomId(),
         PESEL: randomInt(10000000000, 100000000000).toString(),
         firstName: randomTraderName().split(' ')[0],
         lastName: randomTraderName().split(' ')[1],

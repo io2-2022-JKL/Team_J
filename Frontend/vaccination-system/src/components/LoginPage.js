@@ -64,11 +64,10 @@ export default function LoginPage() {
             console.error(error.message);
         }
     }
-
+  
     const logInUser = async () => {
         // request i response
         if (emailError) return;
-
 
         try {
             const { data: response } = await axios({
@@ -89,7 +88,7 @@ export default function LoginPage() {
         console.log({
             email,
             bool: email.includes("admin"),
-            userType
+            userType,
         })
         switch (userType) {
             case "admin":

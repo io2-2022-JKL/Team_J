@@ -12,6 +12,7 @@ import DoctorMainPage from './Doctor/DoctorMainPage';
 import AddNewDoctor from './Admin/AddDoctor';
 import AddNewVaccine from './Admin/AddVaccine';
 import FilterTimeSlots from './Patient/FIlterTimeSlots';
+import FormerAppointment from './Patient/FormerAppointments';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route exact path='/signin' element={< LoginPage />} />
           <Route exact path='/register' element={<RegisterPage />} />
           <Route exact path='/patient' element={<PatientMainPage />} />
+          <Route exact path='/patient/appointments/formerAppointments' element={<FormerAppointment />} />
           <Route exact path='/doctor' element={<DoctorMainPage />} />
           <Route exact path='/admin' element={<AdminMainPage />} />
           <Route exact path='/admin/patients' element={<PatientsPage />} />
