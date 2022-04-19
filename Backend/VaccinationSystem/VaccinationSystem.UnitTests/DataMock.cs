@@ -85,7 +85,7 @@ namespace VaccinationSystem.UnitTests
                     Active = true
                 },
                 new Patient{Id = Guid.Parse("81a130d2-502f-4cf1-a376-63edeb000e8a"),
-                    PESEL = "00000000005",
+                    PESEL = "00000000055",
                     FirstName = "Jan",
                     LastName = "Kowalski",
                     DateOfBirth = DateTime.ParseExact("01-01-1975", "dd-MM-yyyy", null),
@@ -193,7 +193,7 @@ namespace VaccinationSystem.UnitTests
                     City = "Gdańsk",
                     Address = "ul. morska 7",
                     Active = false
-                },
+                }
             }.AsQueryable();
             return data;
         }
@@ -257,7 +257,7 @@ namespace VaccinationSystem.UnitTests
                     VaccinationCenter = GetVaccinationCentersData().ElementAt(2),
                     VaccineId = GetVaccinesData().ElementAt(3).Id,
                     Vaccine = GetVaccinesData().ElementAt(3)
-                },
+                }
             }.AsQueryable();
             return data;
         }
@@ -634,7 +634,7 @@ namespace VaccinationSystem.UnitTests
                     Doctor = GetDoctorsData().ElementAt(0),
                     IsFree = false,
                     Active = true
-                },
+                }
             }.AsQueryable();
             return data;
         }
@@ -720,7 +720,7 @@ namespace VaccinationSystem.UnitTests
                     Vaccine = GetVaccinesData().ElementAt(0),
                     State = AppointmentState.Cancelled,
                     VaccineBatchNumber = null
-                },
+                }
             }.AsQueryable();
             return data;
         }
@@ -764,7 +764,7 @@ namespace VaccinationSystem.UnitTests
                     Patient = GetPatientsData().ElementAt(3),
                     VaccineId = GetVaccinesData().ElementAt(2).Id,
                     Vaccine = GetVaccinesData().ElementAt(2),
-                },
+                }
             }.AsQueryable();
             return data;
         }
