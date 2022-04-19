@@ -13,6 +13,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from 'react';
 import validator from 'validator';
 import { CoPresent } from '@mui/icons-material';
+import axios from 'axios';
 
 const theme = createTheme();
 
@@ -55,11 +56,24 @@ export default function LoginPage() {
         });
     };
 
-    const logInUser = () => {
+    const logInUser = async () => {
         // request i response
         if (emailError) return;
 
-
+        try{
+            const {data:response} = await axios({
+                method:'POST',
+                url: 'https://localhost:44393/signin',
+                data: {
+                    email: 'adi222@wp.pl',
+                    password: 'haslohaslo'
+                }
+            });
+        }
+        catch(error)
+        {
+            console.error(error.message);
+        }
         /*const response = fetch("https://localhost:5001/patient/certificates/{31241412}");
 
 
@@ -71,7 +85,7 @@ export default function LoginPage() {
         console.log({
             email,
             bool: email.includes("admin"),
-            userType
+            userType,
         })
         switch (userType) {
             case "admin":

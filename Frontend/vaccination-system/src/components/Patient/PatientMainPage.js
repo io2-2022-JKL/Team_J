@@ -62,7 +62,7 @@ export default function PatientMainPage() {
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
                             onClick={() => {
-                                //navigate("") 
+                                navigate("/patient/appointments/formerAppointments") 
                             }}
                         >
                             Historia szczepień
