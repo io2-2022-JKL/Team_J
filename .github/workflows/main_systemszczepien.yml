@@ -5,7 +5,8 @@ name: Build and deploy ASP.Net Core app to Azure Web App - systemszczepien
 
 on:
   workflow_dispatch:
-  push:
+  pull_request:
+    types: [review_requested]
     branches: [ deploy ]
     paths:
     - '**.cs'
