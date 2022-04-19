@@ -21,10 +21,11 @@ import DataDisplayArray from '../DataDisplayArray';
 
 export async function getPatientsData() {
     try {
-        const { data: response } = await axios.get('https://localhost:44393/admin/patients');
+        const { data: response } = await axios.get('https://localhost:5001/admin/patients');
         return response;
     } catch (error) {
         console.error(error.message);
+        return [];
     }
 }
 
@@ -49,9 +50,8 @@ export function getRandomPatientData() {
 }
 
 const createRandomRow = () => {
-    var id = randomId();
     return {
-        id: id,
+        id: randomId(),
         PESEL: randomInt(10000000000, 100000000000).toString(),
         firstName: randomTraderName().split(' ')[0],
         lastName: randomTraderName().split(' ')[1],
