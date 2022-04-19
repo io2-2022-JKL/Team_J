@@ -222,6 +222,8 @@ export default function PatientsPage() {
             event.defaultMuiPrevented = true;
         }
         console.log(params.row.PESEL);
+
+
     }
 
     const confirmOptionsInPolish = {
@@ -355,7 +357,7 @@ export default function PatientsPage() {
                             fullWidth
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
-                            onClick={() => { navigate("/admin") }}
+                            onClick={async () => { /*navigate("/admin"),*/ console.log(await getPatientsData()) }}
                         >
                             Powrót
                         </Button>

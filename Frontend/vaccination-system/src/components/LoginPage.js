@@ -13,6 +13,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from 'react';
 import validator from 'validator';
 import { CoPresent } from '@mui/icons-material';
+import axios from 'axios';
 
 const theme = createTheme();
 
@@ -55,17 +56,34 @@ export default function LoginPage() {
         });
     };
 
-    const logInUser = () => {
+    async function getPatientsData() {
+        try {
+            const { data: response } = await axios.get('https://localhost:5001/admin/patients');
+            return response;
+        } catch (error) {
+            console.error(error.message);
+        }
+    }
+
+    const logInUser = async () => {
         // request i response
         if (emailError) return;
 
 
-        /*const response = fetch("https://localhost:5001/patient/certificates/{31241412}");
-
-
-        console.log({
-            cos: response.status
-        })*/
+        try {
+            const { data: response } = await axios({
+                method: 'post',
+                //url: 'http://systemszczepien.azurewebsites.net/login',
+                url: 'https://localhost:5001/login',
+                data: {
+                    email: 'adi222@wp.pl',
+                    password: 'haslohaslo'
+                }
+            });
+            return response;
+        } catch (error) {
+            console.error(error.message);
+        }
 
         const userType = email.includes("admin") ? "admin" : email.includes("patient") ? "patient" : "doctor";
         console.log({

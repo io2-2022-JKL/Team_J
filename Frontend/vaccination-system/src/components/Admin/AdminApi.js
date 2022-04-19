@@ -21,7 +21,7 @@ import DataDisplayArray from '../DataDisplayArray';
 
 export async function getPatientsData() {
     try {
-        const { data: response } = await axios.get('https://localhost:44393/admin/patients');
+        const { data: response } = await axios.get('https://localhost:5001/admin/patients');
         return response;
     } catch (error) {
         console.error(error.message);
