@@ -10,8 +10,6 @@ using VaccinationSystem.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using VaccinationSystem.DTO;
 using VaccinationSystem.DTO.PatientDTOs;
-using VaccinationSystem.DTO.AdminDTOs;
-
 
 namespace VaccinationSystem.UnitTests
 {

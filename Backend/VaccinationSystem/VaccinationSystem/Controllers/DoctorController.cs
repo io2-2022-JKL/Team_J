@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using VaccinationSystem.DTO.DoctorDTOs;
 using VaccinationSystem.DTO;
 using VaccinationSystem.Config;
+using VaccinationSystem.Models;
 
 namespace VaccinationSystem.Controllers
 {
@@ -16,75 +17,91 @@ namespace VaccinationSystem.Controllers
     {
         private readonly VaccinationSystemDbContext _context;
 
-        private readonly ILogger<DoctorController> _logger;
-
-        public DoctorController(ILogger<DoctorController> logger, VaccinationSystemDbContext context)
+        public DoctorController(VaccinationSystemDbContext context)
         {
-            _logger = logger;
             _context = context;
         }
         [HttpPost("timeSlots/{doctorId}")]
-        public ActionResult<IEnumerable<ExistingTimeSlotDTO>> GetExistingAppointments(string doctorId)
+        public ActionResult<IEnumerable<ExistingTimeSlotDTO>> GetExistingTimeSlots(string doctorId)
         {
             // TODO: Token verification for 401 and 403 error codes
-            IEnumerable<ExistingTimeSlotDTO> result = fetchExistingAppointments(doctorId);
-            if (result.Count() == 0) return NotFound();
+            IEnumerable<ExistingTimeSlotDTO> result = fetchExistingTimeSlots(doctorId);
+            if (result == null || result.Count() == 0) return NotFound();
             return Ok(result);
         }
-        private IEnumerable<ExistingTimeSlotDTO> fetchExistingAppointments(string doctorId)
+        private IEnumerable<ExistingTimeSlotDTO> fetchExistingTimeSlots(string doctorId)
         {
-            var result = from appointment in this._context.Appointments
-                         join timeSlot in this._context.TimeSlots
-                            on appointment.TimeSlotId equals timeSlot.Id
-                         where timeSlot.DoctorId == Guid.Parse(doctorId) && timeSlot.Active
-                         select new ExistingTimeSlotDTO
-                         {
-                             Id = timeSlot.Id.ToString(),
-                             From = timeSlot.From.ToString(),
-                             To = timeSlot.To.ToString(),
-                             IsFree = timeSlot.IsFree,
-                         };
-            return result.AsEnumerable();
+            Guid docId;
+            try
+            {
+                docId = Guid.Parse(doctorId);
+            }
+            catch(FormatException)
+            {
+                return null;
+            }
+            List<ExistingTimeSlotDTO> result = new List<ExistingTimeSlotDTO>();
+            var timeSlots = _context.TimeSlots.Where(ts => ts.DoctorId == docId && ts.Active == true);
+            foreach(TimeSlot timeSlot in timeSlots)
+            {
+                ExistingTimeSlotDTO existingTimeSlotDTO = new ExistingTimeSlotDTO();
+                existingTimeSlotDTO.Id = timeSlot.Id.ToString();
+                existingTimeSlotDTO.From = timeSlot.From.ToString();
+                existingTimeSlotDTO.To = timeSlot.To.ToString();
+                existingTimeSlotDTO.IsFree = timeSlot.IsFree;
+                result.Add(existingTimeSlotDTO);
+            }
+            return result;
         }
         [HttpPost("timeSlots/create/{doctorId}")]
-        public IActionResult CreateAppointments(string doctorId, CreateNewVisitsRequestDTO createNewVisitsRequestDTO)
+        public IActionResult CreateTimeSlots(string doctorId, CreateNewVisitsRequestDTO createNewVisitsRequestDTO)
         {
             // TODO: Token verification for 401 and 403 error codes
-            if (!createNewAppointments(doctorId, createNewVisitsRequestDTO)) return BadRequest();
+            if (createNewVisitsRequestDTO.timeSlotDurationInMinutes == 0) return BadRequest();
+            if (!createNewTimeSlots(doctorId, createNewVisitsRequestDTO)) return BadRequest();
             return Ok();
         }
-        private bool createNewAppointments(string doctorId, CreateNewVisitsRequestDTO createNewVisitsRequestDTO)
+        private bool createNewTimeSlots(string doctorId, CreateNewVisitsRequestDTO createNewVisitsRequestDTO)
         {
-            DateTime currentFrom = DateTime.Parse(createNewVisitsRequestDTO.from);
-            TimeSpan increment = TimeSpan.FromMinutes(createNewVisitsRequestDTO.timeSlotDurationInMinutes);
-            DateTime currentTo = currentFrom + increment;
-            DateTime endTo = DateTime.Parse(createNewVisitsRequestDTO.to);
-            var result = from timeSlot in this._context.TimeSlots
-                         where timeSlot.DoctorId == Guid.Parse(doctorId) && timeSlot.Active == true
-                         select timeSlot; // my beautiful baby <3
+            int addedTimeSlotsCount = 0;
+            Guid docId;
+            DateTime currentFrom, currentTo, endTo;
+            TimeSpan increment;
+            try
+            {
+                docId = Guid.Parse(doctorId);
+                currentFrom = DateTime.Parse(createNewVisitsRequestDTO.from);
+                increment = TimeSpan.FromMinutes(createNewVisitsRequestDTO.timeSlotDurationInMinutes);
+                endTo = DateTime.Parse(createNewVisitsRequestDTO.to);
+            }
+            catch(FormatException)
+            {
+                return false;
+            }
+            currentTo = currentFrom + increment;
+            var existingTimeSlots = _context.TimeSlots.Where(ts => ts.Active == true && ts.DoctorId == docId);
             while (currentTo <= endTo)
             {
-                var tempResult = from timeSlot in result
-                                 where (timeSlot.From < currentFrom && currentFrom < timeSlot.To) ||
-                                 (timeSlot.From < currentTo && currentTo < timeSlot.To) ||
-                                 (currentFrom < timeSlot.From && timeSlot.To < currentTo) ||
-                                 (timeSlot.From < currentFrom && currentTo < timeSlot.To)
-                                 select timeSlot.Id;  // my beautiful baby <3
+                var tempResult = existingTimeSlots.Where(ts => (ts.From <= currentFrom && currentFrom < ts.To) ||
+                                 (ts.From < currentTo && currentTo <= ts.To) ||
+                                 (currentFrom <= ts.From && ts.To <= currentTo) ||
+                                 (ts.From <= currentFrom && currentTo <= ts.To));
                 if (tempResult.Count() == 0) // no colliding time slots
                 {
-                    this._context.TimeSlots.Add(new Models.TimeSlot
-                    {
-                        From = currentFrom,
-                        To = currentTo,
-                        DoctorId = Guid.Parse(doctorId),
-                        IsFree = true,
-                        Active = true,
-                    });
+                    var newTimeSlot = new TimeSlot();
+                    newTimeSlot.From = currentFrom;
+                    newTimeSlot.To = currentTo;
+                    newTimeSlot.DoctorId = docId;
+                    newTimeSlot.IsFree = true;
+                    newTimeSlot.Active = true;
+                    _context.TimeSlots.Add(newTimeSlot);
+                    _context.SaveChanges();
+                    addedTimeSlotsCount++;
                 }
                 currentTo += increment;
                 currentFrom += increment;
             }
-            return true;
+            return (addedTimeSlotsCount > 0);
         }
 
         [HttpDelete("timeSlots/Delete/{doctorId}")]

@@ -83,6 +83,18 @@ namespace VaccinationSystem.UnitTests
                     //Vaccinations = new List<Appointment>(),
                     //Certificates = new List<Certificate>(),
                     Active = true
+                },
+                new Patient{Id = Guid.Parse("81a130d2-502f-4cf1-a376-63edeb000e8a"),
+                    PESEL = "00000000005",
+                    FirstName = "Jan",
+                    LastName = "Kowalski",
+                    DateOfBirth = DateTime.ParseExact("01-01-1975", "dd-MM-yyyy", null),
+                    Mail = "jan.kowalski@mail.com",
+                    Password = "qwerty",
+                    PhoneNumber = "+48987654318",
+                    //Vaccinations = new List<Appointment>(),
+                    //Certificates = new List<Certificate>(),
+                    Active = true
                 }
             }.AsQueryable();
             //foreach (var patient in data)
@@ -135,6 +147,16 @@ namespace VaccinationSystem.UnitTests
                     PatientId = GetPatientsData().ElementAt(3).Id,
                     PatientAccount = GetPatientsData().ElementAt(3),
                     Active = false
+                },
+                new Doctor
+                {
+                    Id = Guid.Parse("e0d50915-5548-4993-dddd-edddab4e1df5"),
+                    VaccinationCenterId = GetVaccinationCentersData().ElementAt(2).Id,
+                    VaccinationCenter = GetVaccinationCentersData().ElementAt(2),
+                    //Vaccinations = new List<Appointment>(),
+                    PatientId = GetPatientsData().ElementAt(5).Id,
+                    PatientAccount = GetPatientsData().ElementAt(5),
+                    Active = true
                 }
             }.AsQueryable();
             //foreach (var doc in data)
