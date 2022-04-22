@@ -1399,7 +1399,7 @@ namespace VaccinationSystem.UnitTests
 
             var controller = new AdminController(mockContext.Object);
 
-            string format = "dd-MM-yyyy HH\\:mm";
+            //string format = "dd-MM-yyyy HH\\:mm";
 
             // Act
 
