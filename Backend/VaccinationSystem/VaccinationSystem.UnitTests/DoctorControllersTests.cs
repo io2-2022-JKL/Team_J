@@ -124,7 +124,7 @@ namespace VaccinationSystem.UnitTests
         [InlineData("e0d50915-5548-4993-dddd-edddab4e1df5", "01-03-2022 10:00", "01-03-2022 11:00", 15, 4)]
         [InlineData("e0d50915-5548-4993-dddd-edddab4e1df3", "01-03-2022 11:00", "01-03-2022 12:00", 10, 6)]
         [InlineData("e0d50915-5548-4993-dddd-edddab4e1df3", "01-03-2022 11:00", "01-03-2022 12:00", 11, 5)]
-        public void CreateTimeSlotsTest(string doctorId, string from, string to, int timeSlotDurationInMinutes, int expectedadditionalTimeSlots)
+        public void CreateTimeSlotsTest(string doctorId, string from, string to, int timeSlotDurationInMinutes, int expectedAdditionalTimeSlots)
         {
             // Arrange
             var timeSlotData = GetTimeSlotsData().ToList();
@@ -133,8 +133,12 @@ namespace VaccinationSystem.UnitTests
                 timeSlotData.Add(ts);
             });
 
+            var doctorData = GetDoctorsData().ToList();
+            var doctorMockSet = GetMock(doctorData.AsQueryable());
+
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
+            mockContext.Setup(c => c.Doctors).Returns(doctorMockSet.Object);
 
             var controller = new DoctorController(mockContext.Object);
             CreateNewVisitsRequestDTO requestBody = new CreateNewVisitsRequestDTO()
@@ -144,7 +148,8 @@ namespace VaccinationSystem.UnitTests
                 timeSlotDurationInMinutes = timeSlotDurationInMinutes,
             };
 
-            int timeSlotsBefore = mockContext.Object.TimeSlots.Where(ts => ts.DoctorId.ToString() == doctorId && ts.Active == true).Count();
+            //var shiet = mockContext.Object.TimeSlots.Where(ts => ts.Active == true && ts.DoctorId.ToString() == doctorId);
+            int timeSlotsBefore = mockContext.Object.TimeSlots.Where(ts => ts.Active == true && ts.DoctorId.ToString() == doctorId).Count();
 
             // Act
             var result = controller.CreateTimeSlots(doctorId, requestBody);
@@ -152,9 +157,10 @@ namespace VaccinationSystem.UnitTests
             // Assert
             Assert.IsType<OkResult>(result);
 
-            int timeSlotsAfter = mockContext.Object.TimeSlots.Where(ts => ts.DoctorId.ToString() == doctorId && ts.Active == true).Count();
+            //shiet = mockContext.Object.TimeSlots.Where(ts => ts.Active == true && ts.DoctorId.ToString() == doctorId);
+            int timeSlotsAfter = mockContext.Object.TimeSlots.Where(ts => ts.Active == true && ts.DoctorId.ToString() == doctorId).Count();
 
-            Assert.Equal(expectedadditionalTimeSlots, timeSlotsAfter - timeSlotsBefore);
+            Assert.Equal(expectedAdditionalTimeSlots, timeSlotsAfter - timeSlotsBefore);
         }
         [Theory]
         [InlineData("e0d50915-5548-4993-dddd-edddab4e1df1", "01-03-2022 10:00", "01-03-2022 10:10", 15)]
@@ -171,12 +177,13 @@ namespace VaccinationSystem.UnitTests
             // Arrange
             var timeSlotData = GetTimeSlotsData().ToList();
             var timeSlotMockSet = GetMock(timeSlotData.AsQueryable());
-            timeSlotMockSet.Setup(c => c.Add(It.IsAny<TimeSlot>())).Callback(delegate (TimeSlot ts) {
-                timeSlotData.Add(ts);
-            });
+
+            var doctorData = GetDoctorsData().ToList();
+            var doctorMockSet = GetMock(doctorData.AsQueryable());
 
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
+            mockContext.Setup(c => c.Doctors).Returns(doctorMockSet.Object);
 
             var controller = new DoctorController(mockContext.Object);
             CreateNewVisitsRequestDTO requestBody = new CreateNewVisitsRequestDTO()

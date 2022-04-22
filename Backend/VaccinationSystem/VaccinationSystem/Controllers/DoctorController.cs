@@ -119,8 +119,10 @@ namespace VaccinationSystem.Controllers
             {
                 return false;
             }
+            Doctor doctor = _context.Doctors.Where(doc => doc.Id == docId).SingleOrDefault();
+            if (doctor == null) return false;
             currentTo = currentFrom + increment;
-            var existingTimeSlots = _context.TimeSlots.Where(ts => ts.Active == true && ts.DoctorId == docId);
+            var existingTimeSlots = _context.TimeSlots.Where(ts => ts.Active == true && ts.DoctorId == docId); 
             while (currentTo <= endTo)
             {
                 var tempResult = existingTimeSlots.Where(ts => (ts.From <= currentFrom && currentFrom < ts.To) ||
@@ -130,18 +132,20 @@ namespace VaccinationSystem.Controllers
                 if (tempResult.Count() == 0) // no colliding time slots
                 {
                     var newTimeSlot = new TimeSlot();
+                    newTimeSlot.Id = Guid.NewGuid();
                     newTimeSlot.From = currentFrom;
                     newTimeSlot.To = currentTo;
+                    newTimeSlot.Doctor = doctor;
                     newTimeSlot.DoctorId = docId;
                     newTimeSlot.IsFree = true;
                     newTimeSlot.Active = true;
                     _context.TimeSlots.Add(newTimeSlot);
-                    _context.SaveChanges();
                     addedTimeSlotsCount++;
                 }
                 currentTo += increment;
                 currentFrom += increment;
             }
+            _context.SaveChanges();
             return (addedTimeSlotsCount > 0);
         }
 
