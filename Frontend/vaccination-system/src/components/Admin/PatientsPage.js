@@ -97,9 +97,9 @@ export default function PatientsPage() {
 
     const [loading, setLoading] = React.useState(true);
 
-    const [rows, setRows] = React.useState();
+    //const [rows, setRows] = React.useState();
 
-    //const [rows, setRows] = React.useState([]);
+    const [rows, setRows] = React.useState([]);
 
     React.useEffect(() => {
         let patientData;

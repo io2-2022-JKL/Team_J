@@ -21,7 +21,7 @@ import DataDisplayArray from '../DataDisplayArray';
 
 export async function getPatientsData() {
     try {
-        const { data: response } = await axios.get('https://localhost:5001/admin/patients');
+        const { data: response } = await axios.get('https://systemszczepien.azurewebsites.net/admin/patients');
         return response;
     } catch (error) {
         console.error(error.message);
