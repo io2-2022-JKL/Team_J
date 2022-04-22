@@ -97,6 +97,80 @@ namespace VaccinationSystem.UnitTests
             Assert.IsType<NotFoundResult>(result.Result);
         }
         [Theory]
+        [InlineData("00000000-0000-0000-0000-000000000000", "a0780125-a945-4e20-b2ab-02bcf0ce8f3b", "e0d50915-5548-4993-aaaa-edddab4e1df1", 1)]
+        [InlineData("81a130d2-502f-4cf1-a376-63edeb000e9c", "b0780125-a945-4e20-b2ab-02bcf0ce8f3b", "e0d50915-5548-4993-aaaa-edddab4e1df3", 2)]
+        public void BookVisitTest(string patientId, string timeSlotId, string vaccineId, int expectedDose)
+        {
+            // Arrange
+            var timeSlotData = GetTimeSlotsData().ToList();
+            var timeSlotMockSet = GetMock(timeSlotData.AsQueryable());
+            var vaccinesData = GetVaccinesData().ToList();
+            var vaccineMockSet = GetMock(vaccinesData.AsQueryable());
+            var patientData = GetPatientsData().ToList();
+            var patientMockSet = GetMock(patientData.AsQueryable());
+            var appointmentData = GetAppointmentsData().ToList();
+            var appointmentMockSet = GetMock(appointmentData.AsQueryable());
+            appointmentMockSet.Setup(c => c.Add(It.IsAny<Appointment>())).Callback(delegate (Appointment ap)
+            {
+                appointmentData.Add(ap);
+            });
+
+            var mockContext = new Mock<VaccinationSystemDbContext>();
+            mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
+            mockContext.Setup(c => c.Vaccines).Returns(vaccineMockSet.Object);
+            mockContext.Setup(c => c.Patients).Returns(patientMockSet.Object);
+            mockContext.Setup(c => c.Appointments).Returns(appointmentMockSet.Object);
+
+            var controller = new PatientController(mockContext.Object);
+
+            // Act
+            var result = controller.BookVisit(patientId, timeSlotId, vaccineId);
+
+            // Assert
+            Assert.IsType<OkResult>(result);
+            var changedTimeSlot = mockContext.Object.TimeSlots.Where(ts => ts.Id.ToString() == timeSlotId && ts.Active == true).SingleOrDefault();
+            Assert.True(changedTimeSlot.IsFree == false);
+            var newAppointment = mockContext.Object.Appointments.Where(ap => ap.PatientId.ToString() == patientId && ap.TimeSlotId.ToString() == timeSlotId
+            && ap.VaccineId.ToString() == vaccineId && ap.State == AppointmentState.Planned).SingleOrDefault();
+            Assert.Equal(expectedDose, newAppointment.WhichDose);
+        }
+        [Theory]
+        [InlineData("kfdkffffff", "a0780125-a945-4e20-b2ab-02bcf0ce8f3b", "e0d50915-5548-4993-aaaa-edddab4e1df1")]
+        [InlineData("81a130d2-502f-4cf1-a376-63edeb000e9c", "uhnfuhfew", "e0d50915-5548-4993-aaaa-edddab4e1df3")]
+        [InlineData("81a130d2-502f-4cf1-a376-63edeb000e9c", "a0780125-a945-4e20-b2ab-02bcf0ce8f3b", "afsdnjkfasdunfsda")]
+        [InlineData(null, "a0780125-a945-4e20-b2ab-02bcf0ce8f3b", "e0d50915-5548-4993-aaaa-edddab4e1df3")]
+        [InlineData("81a130d2-502f-4cf1-a376-63edeb000e9c", null, "e0d50915-5548-4993-aaaa-edddab4e1df3")]
+        [InlineData("81a130d2-502f-4cf1-a376-63edeb000e9c", "a0780125-a945-4e20-b2ab-02bcf0ce8f3b", null)]
+        [InlineData("81a130d2-502f-4cf1-a376-63edeb000e9c", "b0780125-a945-4e20-b2ab-02bcf0ce8f3b", "e0d50915-5548-4993-aaaa-edddab4e1df2")]
+        [InlineData("81a130d2-502f-4cf1-a376-63edeb000e9c", "b1780125-a945-4e20-b2ab-02bcf0ce8f3b", "e0d50915-5548-4993-aaaa-edddab4e1df3")]
+        [InlineData("81a130d2-502f-4cf1-a376-63edeb000e9c", "b2780125-a945-4e20-b2ab-02bcf0ce8f3b", "e0d50915-5548-4993-aaaa-edddab4e1df3")]
+        public void BookVisitEmptyTest(string patientId, string timeSlotId, string vaccineId)
+        {
+            // Arrange
+            var timeSlotData = GetTimeSlotsData().ToList();
+            var timeSlotMockSet = GetMock(timeSlotData.AsQueryable());
+            var vaccinesData = GetVaccinesData().ToList();
+            var vaccineMockSet = GetMock(vaccinesData.AsQueryable());
+            var patientData = GetPatientsData().ToList();
+            var patientMockSet = GetMock(patientData.AsQueryable());
+            var appointmentData = GetAppointmentsData().ToList();
+            var appointmentMockSet = GetMock(appointmentData.AsQueryable());
+
+            var mockContext = new Mock<VaccinationSystemDbContext>();
+            mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
+            mockContext.Setup(c => c.Vaccines).Returns(vaccineMockSet.Object);
+            mockContext.Setup(c => c.Patients).Returns(patientMockSet.Object);
+            mockContext.Setup(c => c.Appointments).Returns(appointmentMockSet.Object);
+
+            var controller = new PatientController(mockContext.Object);
+
+            // Act
+            var result = controller.BookVisit(patientId, timeSlotId, vaccineId);
+
+            // Assert
+            Assert.IsType<NotFoundResult>(result);
+        }
+        [Theory]
         [InlineData("81a130d2-502f-4cf1-a376-63edeb000e9a")]
         [InlineData("81a130d2-502f-4cf1-a376-63edeb000e9c")]
         public void GetIncomingVisitsTest(string patientId)
@@ -205,7 +279,7 @@ namespace VaccinationSystem.UnitTests
 
             // Assert
             Assert.IsType<OkResult>(result);
-            Appointment appointmentAfter = mockContext.Object.Appointments.Where(app => app.Id.ToString() == appointmentId).FirstOrDefault();
+            Appointment appointmentAfter = mockContext.Object.Appointments.Where(app => app.Id.ToString() == appointmentId).SingleOrDefault();
             Assert.True(appointmentAfter != null && appointmentAfter.State == AppointmentState.Cancelled);
             
         }

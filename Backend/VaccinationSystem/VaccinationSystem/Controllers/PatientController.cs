@@ -118,10 +118,58 @@ namespace VaccinationSystem.Controllers
             return result;
         }
 
-        [HttpPost("timeSlots/Book/{patientId}/{timeSlotId}")]
-        public IActionResult BookVisit(string patientId, string timeSlotId)
+        [HttpPost("timeSlots/Book/{patientId}/{timeSlotId}/{vaccineId}")]
+        public IActionResult BookVisit(string patientId, string timeSlotId, string vaccineId)
         {
-            return NotFound();
+            // TODO: Token verification for 401 and 403 error codes
+            if (!tryBookVisit(patientId, timeSlotId, vaccineId)) return NotFound();
+            return Ok();
+        }
+        private bool tryBookVisit(string patientId, string timeSlotId, string vaccineId)
+        {
+            Guid patId, tsId, vacId;
+            try
+            {
+                patId = Guid.Parse(patientId);
+                tsId = Guid.Parse(timeSlotId);
+                vacId = Guid.Parse(vaccineId);
+            }
+            catch(ArgumentNullException)
+            {
+                return false;
+            }
+            catch(FormatException)
+            {
+                return false;
+            }
+            var vaccine = _context.Vaccines.Where(vac => vac.Id == vacId && vac.Active == true).SingleOrDefault();
+            if (vaccine == null) return false;
+            var patient = _context.Patients.Where(patient => patient.Id == patId && patient.Active == true).SingleOrDefault();
+            if (patient == null) return false;
+            var timeSlot = _context.TimeSlots.Where(ts => ts.Id == tsId && ts.Active == true && ts.IsFree == true).SingleOrDefault();
+            if (timeSlot == null) return false;
+            int whichDose = _context.Appointments.Where(ap => ap.PatientId == patId && ap.VaccineId == vacId && ap.State == AppointmentState.Finished).Count();
+            whichDose++;
+            var virus = vaccine.Virus;
+            var vaccinatedAgainst = _context.Appointments.Where(ap => ap.PatientId == patId && ap.State == AppointmentState.Finished).Include(ap => ap.Vaccine);
+            int differentVaccines = vaccinatedAgainst.Where(ap => ap.Vaccine.Virus == virus && ap.VaccineId != vacId).Count();
+            if (differentVaccines > 0 || whichDose > vaccine.NumberOfDoses) return false; // TODO: add checking for minimum/maximum days between doses
+            Appointment appointment = new Appointment()
+            {
+                Id = Guid.NewGuid(),
+                WhichDose = whichDose,
+                TimeSlotId = tsId,
+                TimeSlot = timeSlot,
+                PatientId = patId,
+                Patient = patient,
+                VaccineId = vacId,
+                Vaccine = vaccine,
+                State = AppointmentState.Planned
+            };
+            _context.Appointments.Add(appointment);
+            timeSlot.IsFree = false;
+            _context.SaveChanges();
+            return true;
         }
 
         [HttpGet("appointments/incomingAppointments/{patientId}")]
