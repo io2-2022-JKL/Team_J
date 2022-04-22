@@ -50,7 +50,7 @@ namespace VaccinationSystem.Controllers
             {
                 return null;
             }
-            var timeSlots = _context.TimeSlots.Where(timeSlot => timeSlot.Active == true && timeSlot.IsFree == true && timeSlot.From >= From && timeSlot.To <= To).Include(timeSlot => timeSlot.Doctor);
+            var timeSlots = _context.TimeSlots.Where(timeSlot => timeSlot.Active == true && timeSlot.IsFree == true && timeSlot.From >= From && timeSlot.To <= To).Include(timeSlot => timeSlot.Doctor).ToList();
             foreach (TimeSlot timeSlot in timeSlots)
             {
                 Patient patientAccount = _context.Patients.Where(patient => patient.Id == timeSlot.Doctor.PatientId).SingleOrDefault();
@@ -119,7 +119,7 @@ namespace VaccinationSystem.Controllers
         }
 
         [HttpPost("timeSlots/Book/{patientId}/{timeSlotId}")]
-        public IActionResult BookVisit(string patientId, string windowId)
+        public IActionResult BookVisit(string patientId, string timeSlotId)
         {
             return NotFound();
         }
