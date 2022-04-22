@@ -79,7 +79,7 @@ namespace VaccinationSystem.Controllers
                 return null;
             }
             List<ExistingTimeSlotDTO> result = new List<ExistingTimeSlotDTO>();
-            var timeSlots = _context.TimeSlots.Where(ts => ts.DoctorId == docId && ts.Active == true);
+            var timeSlots = _context.TimeSlots.Where(ts => ts.DoctorId == docId && ts.Active == true).ToList();
             foreach(TimeSlot timeSlot in timeSlots)
             {
                 ExistingTimeSlotDTO existingTimeSlotDTO = new ExistingTimeSlotDTO();
@@ -125,14 +125,14 @@ namespace VaccinationSystem.Controllers
             Doctor doctor = _context.Doctors.Where(doc => doc.Id == docId).SingleOrDefault();
             if (doctor == null) return false;
             currentTo = currentFrom + increment;
-            var existingTimeSlots = _context.TimeSlots.Where(ts => ts.Active == true && ts.DoctorId == docId); 
+            var existingTimeSlots = _context.TimeSlots.Where(ts => ts.Active == true && ts.DoctorId == docId).ToList(); 
             while (currentTo <= endTo)
             {
                 var tempResult = existingTimeSlots.Where(ts => (ts.From <= currentFrom && currentFrom < ts.To) ||
                                  (ts.From < currentTo && currentTo <= ts.To) ||
                                  (currentFrom <= ts.From && ts.To <= currentTo) ||
-                                 (ts.From <= currentFrom && currentTo <= ts.To));
-                if (tempResult.Count() == 0) // no colliding time slots
+                                 (ts.From <= currentFrom && currentTo <= ts.To)).Count();
+                if (tempResult == 0) // no colliding time slots
                 {
                     var newTimeSlot = new TimeSlot();
                     newTimeSlot.Id = Guid.NewGuid();
@@ -230,7 +230,8 @@ namespace VaccinationSystem.Controllers
                 return null;
             }
             List<DoctorFormerAppointmentDTO> result = new List<DoctorFormerAppointmentDTO>();
-            var appointments = _context.Appointments.Where(ap => ap.State != AppointmentState.Planned).Include(ap => ap.TimeSlot).Include(ap => ap.Patient).Include(ap => ap.Vaccine);
+            var appointments = _context.Appointments.Where(ap => ap.State != AppointmentState.Planned).Include(ap => ap.TimeSlot)
+                .Include(ap => ap.Patient).Include(ap => ap.Vaccine).ToList();
             foreach(Appointment appointment in appointments)
             {
                 if (appointment.TimeSlot.Active == false || appointment.TimeSlot.DoctorId != docId) continue;
@@ -276,7 +277,7 @@ namespace VaccinationSystem.Controllers
                 return null;
             }
             List<DoctorIncomingAppointmentDTO> result = new List<DoctorIncomingAppointmentDTO>();
-            var appointments = _context.Appointments.Where(ap => ap.State == AppointmentState.Planned).Include(ap => ap.TimeSlot).Include(ap => ap.Patient).Include(ap => ap.Vaccine);
+            var appointments = _context.Appointments.Where(ap => ap.State == AppointmentState.Planned).Include(ap => ap.TimeSlot).Include(ap => ap.Patient).Include(ap => ap.Vaccine).ToList();
             foreach (Appointment appointment in appointments)
             {
                 if (appointment.TimeSlot.Active == false || appointment.TimeSlot.DoctorId != docId ||

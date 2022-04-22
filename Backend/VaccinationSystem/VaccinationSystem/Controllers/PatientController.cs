@@ -197,7 +197,7 @@ namespace VaccinationSystem.Controllers
             {
                 return null;
             }
-            var appointments = _context.Appointments.Where(ap => ap.PatientId == patId && ap.State == Models.AppointmentState.Planned).Include(ap => ap.TimeSlot).Include(ap => ap.Vaccine);
+            var appointments = _context.Appointments.Where(ap => ap.PatientId == patId && ap.State == Models.AppointmentState.Planned).Include(ap => ap.TimeSlot).Include(ap => ap.Vaccine).ToList();
             foreach(Appointment appointment in appointments)
             {
                 FutureAppointmentDTO futureAppointmentDTO = new FutureAppointmentDTO();
@@ -288,7 +288,8 @@ namespace VaccinationSystem.Controllers
             {
                 return null;
             }
-            var appointments = _context.Appointments.Where(ap => ap.PatientId == patId && ap.State != Models.AppointmentState.Planned).Include(ap => ap.TimeSlot).Include(ap => ap.Vaccine);
+            var appointments = _context.Appointments.Where(ap => ap.PatientId == patId && ap.State != Models.AppointmentState.Planned).Include(ap => ap.TimeSlot)
+                .Include(ap => ap.Vaccine).ToList();
             foreach(Appointment appointment in appointments)
             {
                 FormerAppointmentDTO formerAppointmentDTO = new FormerAppointmentDTO();
@@ -343,7 +344,7 @@ namespace VaccinationSystem.Controllers
                 return null;
             }
             List<BasicCertificateInfoDTO> result = new List<BasicCertificateInfoDTO>();
-            var certificates = _context.Certificates.Where(c => c.PatientId == patId).Include(c => c.Vaccine);
+            var certificates = _context.Certificates.Where(c => c.PatientId == patId).Include(c => c.Vaccine).ToList();
             foreach(Certificate certificate in certificates)
             {
                 result.Add(new BasicCertificateInfoDTO()
