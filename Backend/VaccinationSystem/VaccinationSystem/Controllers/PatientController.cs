@@ -17,7 +17,7 @@ namespace VaccinationSystem.Controllers
     public class PatientController : ControllerBase
     {
         private readonly VaccinationSystemDbContext _context;
-
+        private readonly string _dateTimeFormat = "dd-MM-yyyy HH\\:mm";
         public PatientController(VaccinationSystemDbContext context)
         {
             _context = context;
@@ -37,8 +37,10 @@ namespace VaccinationSystem.Controllers
             DateTime From, To;
             try
             {
-                From = DateTime.Parse(dateFrom);
-                To = DateTime.Parse(dateTo);
+                //From = DateTime.Parse(dateFrom);
+                From = DateTime.ParseExact(dateFrom, _dateTimeFormat, null);
+                //To = DateTime.Parse(dateTo);
+                To = DateTime.ParseExact(dateTo, _dateTimeFormat, null);
             }
             catch (FormatException)
             {

@@ -17,6 +17,7 @@ namespace VaccinationSystem.Controllers
     public class DoctorController : ControllerBase
     {
         private readonly VaccinationSystemDbContext _context;
+        private readonly string _dateTimeFormat = "dd-MM-yyyy HH\\:mm";
 
         public DoctorController(VaccinationSystemDbContext context)
         {
@@ -107,9 +108,11 @@ namespace VaccinationSystem.Controllers
             try
             {
                 docId = Guid.Parse(doctorId);
-                currentFrom = DateTime.Parse(createNewVisitsRequestDTO.from);
+                //currentFrom = DateTime.Parse(createNewVisitsRequestDTO.from);
+                currentFrom = DateTime.ParseExact(createNewVisitsRequestDTO.from, _dateTimeFormat, null);
                 increment = TimeSpan.FromMinutes(createNewVisitsRequestDTO.timeSlotDurationInMinutes);
-                endTo = DateTime.Parse(createNewVisitsRequestDTO.to);
+                //endTo = DateTime.Parse(createNewVisitsRequestDTO.to);
+                endTo = DateTime.ParseExact(createNewVisitsRequestDTO.to, _dateTimeFormat, null);
             }
             catch(FormatException)
             {
