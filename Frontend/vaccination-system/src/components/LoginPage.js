@@ -19,7 +19,7 @@ const theme = createTheme();
 
 export default function LoginPage() {
     const navigate = useNavigate();
-    const [email, setEmail] = useState('');
+    const [mail, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [emailError, setEmailError] = useState('');
     const [emailErrorState, setEmailErrorState] = useState(false);
@@ -68,27 +68,32 @@ export default function LoginPage() {
     const logInUser = async () => {
         // request i response
         if (emailError) return;
-
+        let userType = 'doctor';
         try {
             const { data: response } = await axios({
                 method: 'post',
-                //url: 'http://systemszczepien.azurewebsites.net/login',
-                url: 'https://localhost:5001/login',
+                url: 'https://systemszczepien.azurewebsites.net/signin',
+                //url: 'https://localhost:5001/login',
                 data: {
-                    email: 'adi222@wp.pl',
-                    password: 'haslohaslo'
+                    mail: "korwinKrul@wp.pl",
+                    password: "5Procent"
                 }
             });
-            return response;
+            console.log({
+                response
+            })
+            userType = response.userType;
         } catch (error) {
             console.error(error.message);
         }
 
-        const userType = email.includes("admin") ? "admin" : email.includes("patient") ? "patient" : "doctor";
+        //const userType = mail.includes("admin") ? "admin" : mail.includes("patient") ? "patient" : "doctor";
+        
         console.log({
-            email,
-            bool: email.includes("admin"),
+            mail,
+            bool: mail.includes("admin"),
             userType,
+           
         })
         switch (userType) {
             case "admin":
