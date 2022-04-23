@@ -9,16 +9,21 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState } from 'react';
 import validator from 'validator';
 import { CoPresent } from '@mui/icons-material';
 import axios from 'axios';
 import CircularProgress from '@mui/material/CircularProgress';
-import { colors } from '@mui/material';
 import { blue } from '@mui/material/colors';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
 
 const theme = createTheme();
+
+const Alert = React.forwardRef(function Alert(props, ref) {
+    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 export default function LoginPage() {
     const navigate = useNavigate();
@@ -28,6 +33,15 @@ export default function LoginPage() {
     const [emailErrorState, setEmailErrorState] = useState(false);
     const [loading, setLoading] = useState(false);
 
+    const location = useLocation();
+    const [snackbar, setSnackbar] = useState(location.state != null ? location.state.openSnackbar : false);
+
+    const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setSnackbar(false);
+    };
     const handleEmialChangeWithValidation = (e) => {
         var emailFiledValue = e.target.value
 
@@ -64,6 +78,7 @@ export default function LoginPage() {
 
 
     const logInUser = async () => {
+
         // request i response
         if (emailError) return;
         let response;
@@ -75,6 +90,7 @@ export default function LoginPage() {
                     mail: mail,
                     password: password
                 }
+                
             });
             console.log({
                 response
@@ -157,8 +173,9 @@ export default function LoginPage() {
                         >
                             Zaloguj się
                         </Button>
-
-                        {loading && (
+                        {
+                        loading && 
+                        (
                             <CircularProgress
                                 size={24}
                                 sx={{
@@ -169,7 +186,16 @@ export default function LoginPage() {
                                     left: '50%'
                                 }}
                             />
-                        )}
+
+                        )
+                        }
+                        <Snackbar open={snackbar} autoHideDuration={6000} onClose={handleClose}>
+                            <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
+                                Rejestarcja powiodła się
+                            </Alert>
+                        </Snackbar>
+
+
                         <Grid container>
                             <Grid item>
                                 <Link to='/register' variant="body2">

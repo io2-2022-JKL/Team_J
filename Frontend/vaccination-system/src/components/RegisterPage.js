@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Fragment } from 'react';
 import { useState } from 'react';
 import validator from 'validator';
 import Avatar from '@mui/material/Avatar';
@@ -11,13 +12,21 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { Link } from "react-router-dom";
+import { Link, useNavigate} from "react-router-dom";
 import axios from 'axios';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import CircularProgress from '@mui/material/CircularProgress';
+import { blue } from '@mui/material/colors';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
 
 const theme = createTheme();
+
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 export default function SignUp() {
   const [emailError, setEmailError] = useState('');
@@ -27,6 +36,10 @@ export default function SignUp() {
   const [password2ErrorState, setPassword2ErrorState] = useState(false);
   const [loading, setLoading] = useState(false);
   const [date, setDate] = useState(null);
+  const [registerError, setRegisterError] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  const navigate = useNavigate();
 
   const validateEmail = (e) => {
     var email = e.target.value
@@ -79,49 +92,38 @@ export default function SignUp() {
       console.log({
         response
       })
-      //userType = response.userType;
+      setSuccess(true);
     } catch (error) {
       console.error(error.message);
+      setRegisterError(true);
+      setSuccess(false);
     }
     setLoading(false);
-
-
-    //const userType = mail.includes("admin") ? "admin" : mail.includes("patient") ? "patient" : "doctor";
-    /*
-    console.log({
-        mail,
-        bool: mail.includes("admin"),
-        userType,
-
-    })
-
-    switch (userType) {
-        case "admin":
-            navigate("/admin");
-            break;
-        case "patient":
-            navigate("/patient", { state: { name: "Jan", surname: "Kowalski" } });
-            break;
-        case "doctor":
-            navigate("/doctor",);
-    }
-    */
   }
 
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     console.log({
-      pesel: data.get('PESEL'),
-      name: data.get('firstName'),
-      surname: data.get('lastName'),
+      PESEL: data.get('PESEL'),
+      firstName: data.get('firstName'),
+      lastName: data.get('lastName'),
       mail: data.get('mail'),
       dateOfBirth: data.get('dateOfBirth'),
       password: data.get('password'),
-      phoneNumber: data.get('phoneNubmer')
+      phoneNumber: data.get('phoneNumber')
     });
-    signInUser(data.get('PESEL'), data.get('firstName'), data.get('lastName'), data.get('mail'), data.get('dateOfBirth'), data.get('password'), data.get('phoneNubmer'));
+    signInUser(data.get('PESEL'), data.get('firstName'), data.get('lastName'), data.get('mail'), data.get('dateOfBirth'), data.get('password'), data.get('phoneNumber'));
   };
+
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setRegisterError(false);
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <Container component="main" maxWidth="xs">
@@ -217,11 +219,19 @@ export default function SignUp() {
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                   <DatePicker
                     label="Data urodzenia"
+                    views={['year', 'month', 'day']}
+                    inputFormat="dd-MM-yyyy"
+                    mask="__-__-____"
                     value={date}
                     onChange={(newDate) => {
                       setDate(newDate);
                     }}
-                    renderInput={(params) => <TextField {...params} />}
+                    renderInput={(params) => <TextField
+                      {...params}
+                      fullWidth
+                      id='dateOfBirth'
+                      name='dateOfBirth'
+                    />}
                   />
                 </LocalizationProvider>
               </Grid>
@@ -241,10 +251,35 @@ export default function SignUp() {
               type="submit"
               fullWidth
               variant="contained"
+              disabled={loading}
               sx={{ mt: 3, mb: 2 }}
             >
               Zarejestruj się
             </Button>
+            {loading && (
+              <CircularProgress
+                size={24}
+                sx={{
+                  color: blue,
+                  position: 'absolute',
+                  alignSelf: 'center',
+                  bottom: '37%',
+                  left: '50%'
+                }}
+              />
+            )}
+            {registerError && (
+              <Snackbar open={registerError} autoHideDuration={6000} onClose={handleClose}>
+                <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
+                  Rejestarcja nie powiodła się
+                </Alert>
+              </Snackbar>
+            )}
+            {success &&
+              (
+                navigate("/signin", { state: { openSnackbar: success } })
+              )
+            }
             <Grid container justifyContent="flex-end">
               <Grid item>
                 <Link to='/signin' variant="body2">
