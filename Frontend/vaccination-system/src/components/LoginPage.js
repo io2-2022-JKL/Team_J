@@ -62,48 +62,37 @@ export default function LoginPage() {
         });
     };
 
-    async function getPatientsData() {
-        try {
-            const { data: response } = await axios.get('https://localhost:5001/admin/patients');
-            return response;
-        } catch (error) {
-            console.error(error.message);
-        }
-    }
 
-    const logInUser = async (mail, password) => {
+    const logInUser = async () => {
         // request i response
         if (emailError) return;
-        let userType;//mail.includes("admin") ? "admin" : mail.includes("patient") ? "patient" : "doctor";
-        setLoading(true);
+        let response;
         try {
-            const { data: response } = await axios({
+            response = await axios({
                 method: 'post',
                 url: 'https://systemszczepien.azurewebsites.net/signin',
-                //url: 'https://localhost:5001/login',
                 data: {
-                    mail: mail,//"korwinKrul@wp.pl",
-                    password: password//"5Procent"
+                    mail: mail,
+                    password: password
                 }
             });
             console.log({
                 response
             })
-            userType = response.userType;
         } catch (error) {
             console.error(error.message);
         }
-        setLoading(false);
-        //const userType = mail.includes("admin") ? "admin" : mail.includes("patient") ? "patient" : "doctor";
+
+        localStorage.setItem('userID', response.data.userID)
 
         console.log({
+            response,
             mail,
             bool: mail.includes("admin"),
-            userType,
+            userType: response.data.userType,
 
         })
-
-        switch (userType) {
+        switch (response.data.userType) {
             case "admin":
                 navigate("/admin");
                 break;
@@ -175,12 +164,12 @@ export default function LoginPage() {
                                 sx={{
                                     color: blue,
                                     position: 'absolute',
-                                    alignSelf:'center',
+                                    alignSelf: 'center',
                                     bottom: '37%',
                                     left: '50%'
                                 }}
                             />
-                            )}
+                        )}
                         <Grid container>
                             <Grid item>
                                 <Link to='/register' variant="body2">
