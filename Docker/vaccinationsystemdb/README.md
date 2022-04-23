@@ -1,5 +1,5 @@
-#Obraz przykładowej bazy danych.
-##Aby utworzyć obraz, trzeba zainstalować Dockera, a następnie:
+# Obraz przykładowej bazy danych.
+## Aby utworzyć obraz, trzeba zainstalować Dockera, a następnie:
 - otwieramy konsolę, przechodzimy do tego folderu;
 - wpisujemy `docker build -t [nazwa_tworzonego_obrazu] .`;
 - uruchamiamy kontener:
