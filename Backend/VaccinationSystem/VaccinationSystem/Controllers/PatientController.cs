@@ -23,7 +23,7 @@ namespace VaccinationSystem.Controllers
             _context = context;
         }
 
-        [HttpPost("timeSlots/Filter")]
+        [HttpGet("timeSlots/Filter")]
         public ActionResult<IEnumerable<TimeSlotFilterResponseDTO>> FilterTimeSlots(string city, string dateFrom, string dateTo, string virus)
         {
             // TODO: Token verification for 401 and 403 error codes
