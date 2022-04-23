@@ -46,9 +46,9 @@ namespace VaccinationSystem.Controllers
             {
                 return null;
             }
-            var doctorAccount = _context.Doctors.Where(doc => doc.Id == docId).Include(doc => doc.PatientAccount).SingleOrDefault();
+            var doctorAccount = _context.Doctors.Where(doc => doc.Id == docId).SingleOrDefault();
             if (doctorAccount == null) return null;
-            Guid patientAccountId = doctorAccount.PatientAccount.Id;
+            Guid patientAccountId = doctorAccount.PatientId;
             GetDoctorPatientIdResponse result = new GetDoctorPatientIdResponse()
             {
                 patientId = patientAccountId.ToString(),
@@ -84,8 +84,8 @@ namespace VaccinationSystem.Controllers
             {
                 ExistingTimeSlotDTO existingTimeSlotDTO = new ExistingTimeSlotDTO();
                 existingTimeSlotDTO.Id = timeSlot.Id.ToString();
-                existingTimeSlotDTO.From = timeSlot.From.ToString();
-                existingTimeSlotDTO.To = timeSlot.To.ToString();
+                existingTimeSlotDTO.From = timeSlot.From.ToString(_dateTimeFormat);
+                existingTimeSlotDTO.To = timeSlot.To.ToString(_dateTimeFormat);
                 existingTimeSlotDTO.IsFree = timeSlot.IsFree;
                 result.Add(existingTimeSlotDTO);
             }
@@ -148,8 +148,12 @@ namespace VaccinationSystem.Controllers
                 currentTo += increment;
                 currentFrom += increment;
             }
-            _context.SaveChanges();
-            return (addedTimeSlotsCount > 0);
+            if(addedTimeSlotsCount > 0)
+            {
+                _context.SaveChanges();
+                return true;
+            }
+            return false;
         }
 
         [HttpDelete("timeSlots/Delete/{doctorId}")]
@@ -230,24 +234,41 @@ namespace VaccinationSystem.Controllers
                 return null;
             }
             List<DoctorFormerAppointmentDTO> result = new List<DoctorFormerAppointmentDTO>();
-            var appointments = _context.Appointments.Where(ap => ap.State != AppointmentState.Planned).Include(ap => ap.TimeSlot)
-                .Include(ap => ap.Patient).Include(ap => ap.Vaccine).ToList();
-            foreach(Appointment appointment in appointments)
+            var appointments = _context.Appointments.Where(ap => ap.State != Models.AppointmentState.Planned).Include(ap => ap.TimeSlot).Include(ap => ap.Patient).Include(ap => ap.Vaccine).ToList();
+            foreach (Appointment appointment in appointments)
             {
-                if (appointment.TimeSlot.Active == false || appointment.TimeSlot.DoctorId != docId) continue;
+                TimeSlot timeSlot = appointment.TimeSlot;
+                Patient patient = appointment.Patient;
+                Vaccine vaccine = appointment.Vaccine;
+                if(timeSlot == null)
+                {
+                    timeSlot = _context.TimeSlots.Where(ts => ts.Id == appointment.TimeSlotId && ts.Active == true).SingleOrDefault();
+                    if (timeSlot == null) continue;
+                }
+                if (patient == null)
+                {
+                    patient = _context.Patients.Where(pt => pt.Id == appointment.PatientId && pt.Active == true).SingleOrDefault();
+                    if (patient == null) continue;
+                }
+                if (vaccine == null)
+                {
+                    vaccine = _context.Vaccines.Where(vc => vc.Id == appointment.VaccineId && vc.Active == true).SingleOrDefault();
+                    if (vaccine == null) continue;
+                }
+                if (timeSlot.Active == false || timeSlot.DoctorId != docId) continue;
                 DoctorFormerAppointmentDTO doctorFormerAppointmentDTO = new DoctorFormerAppointmentDTO();
-                doctorFormerAppointmentDTO.VaccineName = appointment.Vaccine.Name;
-                doctorFormerAppointmentDTO.VaccineCompany = appointment.Vaccine.Company;
-                doctorFormerAppointmentDTO.VaccineVirus = appointment.Vaccine.Virus.ToString();
+                doctorFormerAppointmentDTO.VaccineName = vaccine.Name;
+                doctorFormerAppointmentDTO.VaccineCompany = vaccine.Company;
+                doctorFormerAppointmentDTO.VaccineVirus = vaccine.Virus.ToString();
                 doctorFormerAppointmentDTO.WhichVaccineDose = appointment.WhichDose;
                 doctorFormerAppointmentDTO.AppointmentId = appointment.Id.ToString();
-                doctorFormerAppointmentDTO.PatientFirstName = appointment.Patient.FirstName;
-                doctorFormerAppointmentDTO.PatientLastName = appointment.Patient.LastName;
-                doctorFormerAppointmentDTO.PESEL = appointment.Patient.PESEL;
+                doctorFormerAppointmentDTO.PatientFirstName = patient.FirstName;
+                doctorFormerAppointmentDTO.PatientLastName = patient.LastName;
+                doctorFormerAppointmentDTO.PESEL = patient.PESEL;
                 doctorFormerAppointmentDTO.State = appointment.State.ToString();
                 doctorFormerAppointmentDTO.BatchNumber = appointment.VaccineBatchNumber;
-                doctorFormerAppointmentDTO.From = appointment.TimeSlot.From.ToString();
-                doctorFormerAppointmentDTO.To = appointment.TimeSlot.To.ToString();
+                doctorFormerAppointmentDTO.From = timeSlot.From.ToString(_dateTimeFormat);
+                doctorFormerAppointmentDTO.To = timeSlot.To.ToString(_dateTimeFormat);
                 result.Add(doctorFormerAppointmentDTO);
             }
             return result;
@@ -280,18 +301,36 @@ namespace VaccinationSystem.Controllers
             var appointments = _context.Appointments.Where(ap => ap.State == AppointmentState.Planned).Include(ap => ap.TimeSlot).Include(ap => ap.Patient).Include(ap => ap.Vaccine).ToList();
             foreach (Appointment appointment in appointments)
             {
-                if (appointment.TimeSlot.Active == false || appointment.TimeSlot.DoctorId != docId ||
-                    appointment.Patient.Active == false || appointment.Vaccine.Active == false) continue;
+                TimeSlot timeSlot = appointment.TimeSlot;
+                Patient patient = appointment.Patient;
+                Vaccine vaccine = appointment.Vaccine;
+                if (timeSlot == null)
+                {
+                    timeSlot = _context.TimeSlots.Where(ts => ts.Id == appointment.TimeSlotId && ts.Active == true).SingleOrDefault();
+                    if (timeSlot == null) continue;
+                }
+                if (patient == null)
+                {
+                    patient = _context.Patients.Where(pt => pt.Id == appointment.PatientId && pt.Active == true).SingleOrDefault();
+                    if (patient == null) continue;
+                }
+                if (vaccine == null)
+                {
+                    vaccine = _context.Vaccines.Where(vc => vc.Id == appointment.VaccineId && vc.Active == true).SingleOrDefault();
+                    if (vaccine == null) continue;
+                }
+                if (timeSlot.Active == false || timeSlot.DoctorId != docId ||
+                    patient.Active == false || vaccine.Active == false) continue;
                 DoctorIncomingAppointmentDTO doctorFormerAppointmentDTO = new DoctorIncomingAppointmentDTO();
-                doctorFormerAppointmentDTO.VaccineName = appointment.Vaccine.Name;
-                doctorFormerAppointmentDTO.VaccineCompany = appointment.Vaccine.Company;
-                doctorFormerAppointmentDTO.VaccineVirus = appointment.Vaccine.Virus.ToString();
+                doctorFormerAppointmentDTO.VaccineName = vaccine.Name;
+                doctorFormerAppointmentDTO.VaccineCompany = vaccine.Company;
+                doctorFormerAppointmentDTO.VaccineVirus = vaccine.Virus.ToString();
                 doctorFormerAppointmentDTO.WhichVaccineDose = appointment.WhichDose;
                 doctorFormerAppointmentDTO.AppointmentId = appointment.Id.ToString();
-                doctorFormerAppointmentDTO.PatientFirstName = appointment.Patient.FirstName;
-                doctorFormerAppointmentDTO.PatientLastName = appointment.Patient.LastName;
-                doctorFormerAppointmentDTO.From = appointment.TimeSlot.From.ToString();
-                doctorFormerAppointmentDTO.To = appointment.TimeSlot.To.ToString();
+                doctorFormerAppointmentDTO.PatientFirstName = patient.FirstName;
+                doctorFormerAppointmentDTO.PatientLastName = patient.LastName;
+                doctorFormerAppointmentDTO.From = timeSlot.From.ToString(_dateTimeFormat);
+                doctorFormerAppointmentDTO.To = timeSlot.To.ToString(_dateTimeFormat);
                 result.Add(doctorFormerAppointmentDTO);
             }
             return result.AsEnumerable();
