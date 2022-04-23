@@ -19,45 +19,11 @@ import axios from 'axios';
 import LinearProgress from '@mui/material/LinearProgress';
 import DataDisplayArray from '../DataDisplayArray';
 
-export async function getPatientsData() {
+export async function getFreeTimeSlots() {
     try {
-        const { data: response } = await axios.get('https://systemszczepien.azurewebsites.net/admin/patients');
+        const { data: response } = await axios.get('https://localhost:5001/admin/patients');
         return response;
     } catch (error) {
         console.error(error.message);
-        return [];
     }
 }
-
-export function getRandomPatientData() {
-
-    return [createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()]
-}
-
-const createRandomRow = () => {
-    return {
-        id: randomId(),
-        PESEL: randomInt(10000000000, 100000000000).toString(),
-        firstName: randomTraderName().split(' ')[0],
-        lastName: randomTraderName().split(' ')[1],
-        email: randomEmail(),
-        dateOfBirth: dateFormat(randomDate(new Date(50, 1), new Date("1/1/30")), "isoDate").toString(),
-        phoneNumber: randomPhoneNumber(),
-        active: randomBoolean()
-    }
-};

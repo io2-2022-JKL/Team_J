@@ -13,15 +13,20 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from 'react';
 import validator from 'validator';
 import { CoPresent } from '@mui/icons-material';
+import axios from 'axios';
+import CircularProgress from '@mui/material/CircularProgress';
+import { colors } from '@mui/material';
+import { blue } from '@mui/material/colors';
 
 const theme = createTheme();
 
 export default function LoginPage() {
     const navigate = useNavigate();
-    const [email, setEmail] = useState('');
+    const [mail, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [emailError, setEmailError] = useState('');
     const [emailErrorState, setEmailErrorState] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const handleEmialChangeWithValidation = (e) => {
         var emailFiledValue = e.target.value
@@ -49,30 +54,55 @@ export default function LoginPage() {
     const handleSubmit = (event) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
+        setEmail(data.get('email'));
+        setPassword(data.get('password'));
         console.log({
-            email: data.get('email'),
-            password: data.get('password'),
+            email: mail,
+            password: password,
         });
     };
 
-    const logInUser = () => {
+    async function getPatientsData() {
+        try {
+            const { data: response } = await axios.get('https://localhost:5001/admin/patients');
+            return response;
+        } catch (error) {
+            console.error(error.message);
+        }
+    }
+
+    const logInUser = async (mail, password) => {
         // request i response
         if (emailError) return;
-
-
-        /*const response = fetch("https://localhost:5001/patient/certificates/{31241412}");
-
+        let userType;//mail.includes("admin") ? "admin" : mail.includes("patient") ? "patient" : "doctor";
+        setLoading(true);
+        try {
+            const { data: response } = await axios({
+                method: 'post',
+                url: 'https://systemszczepien.azurewebsites.net/signin',
+                //url: 'https://localhost:5001/login',
+                data: {
+                    mail: mail,//"korwinKrul@wp.pl",
+                    password: password//"5Procent"
+                }
+            });
+            console.log({
+                response
+            })
+            userType = response.userType;
+        } catch (error) {
+            console.error(error.message);
+        }
+        setLoading(false);
+        //const userType = mail.includes("admin") ? "admin" : mail.includes("patient") ? "patient" : "doctor";
 
         console.log({
-            cos: response.status
-        })*/
+            mail,
+            bool: mail.includes("admin"),
+            userType,
 
-        const userType = email.includes("admin") ? "admin" : email.includes("patient") ? "patient" : "doctor";
-        console.log({
-            email,
-            bool: email.includes("admin"),
-            userType
         })
+
         switch (userType) {
             case "admin":
                 navigate("/admin");
@@ -133,10 +163,24 @@ export default function LoginPage() {
                             fullWidth
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
-                            onClick={() => { logInUser() }}
+                            disabled={loading}
+                            onClick={() => { logInUser(mail, password) }}
                         >
                             Zaloguj się
                         </Button>
+
+                        {loading && (
+                            <CircularProgress
+                                size={24}
+                                sx={{
+                                    color: blue,
+                                    position: 'absolute',
+                                    alignSelf:'center',
+                                    bottom: '37%',
+                                    left: '50%'
+                                }}
+                            />
+                            )}
                         <Grid container>
                             <Grid item>
                                 <Link to='/register' variant="body2">

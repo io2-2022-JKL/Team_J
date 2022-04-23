@@ -6,80 +6,19 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import { useNavigate } from "react-router-dom";
 import Grid from "@material-ui/core/Grid";
-import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid';
-import { randomDate, randomEmail, randomId, randomPhoneNumber, randomTraderName, randomBoolean, randomInt } from '@mui/x-data-grid-generator';
-import dateFormat from 'dateformat';
+import { GridActionsCellItem } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
 import clsx from 'clsx';
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
 import Avatar from '@mui/material/Avatar';
 import { confirm } from "react-confirm-box";
-import { PlayCircleFilledWhiteRounded } from '@mui/icons-material';
-import axios from 'axios';
-import LinearProgress from '@mui/material/LinearProgress';
 import DataDisplayArray from '../DataDisplayArray';
-import { getPatientsData } from './AdminApi';
+import { getPatientsData, getRandomPatientData } from './AdminApi';
+import { FilteringHelepers } from '../FilteringHelepers';
 
 const theme = createTheme();
 
-const filterFirstName = (array, filter) => {
-    return array.filter((item) => item.firstName.includes(filter));
-};
-const filterLastName = (array, filter) => {
-    return array.filter((item) => item.lastName.includes(filter));
-};
-const filterEmail = (array, filter) => {
-    return array.filter((item) => item.email.includes(filter));
-};
-const filterPhoneNumber = (array, filter) => {
-    return array.filter((item) => item.phoneNumber.includes(filter));
-};
-const filterPESEL = (array, filter) => {
-    return array.filter((item) => item.PESEL.includes(filter));
-};
-
-const filterId = (array, filter) => {
-    return array.filter((item) => item.id.includes(filter));
-};
-
-const filterDate = (array, filter) => {
-    return array.filter((item) => {
-        if (filter.length !== 10)
-            return true;
-        else
-            return item.dateOfBirth === filter;
-    });
-}
-
-const filterActive = (array, filter) => {
-    return array.filter((item) => {
-        if (filter === "aktywny")
-            return item.active === true;
-        else if (filter === "nieaktywny")
-            return item.active === false;
-        else
-            return true;
-    });
-}
-
-let id = randomId();
-const createRandomRow = () => {
-    id = randomId();
-    return {
-        id: id,
-        PESEL: randomInt(10000000000, 100000000000).toString(),
-        firstName: randomTraderName().split(' ')[0],
-        lastName: randomTraderName().split(' ')[1],
-        email: randomEmail(),
-        dateOfBirth: dateFormat(randomDate(new Date(50, 1), new Date("1/1/30")), "isoDate").toString(),
-        phoneNumber: randomPhoneNumber(),
-        active: randomBoolean()
-    }
-};
-
 export default function PatientsPage() {
-
-    const [data, setData] = React.useState([])
 
     const navigate = useNavigate();
 
@@ -158,35 +97,40 @@ export default function PatientsPage() {
 
     const [loading, setLoading] = React.useState(true);
 
-    // const [rows, setRows] = React.useState([]);
+    //const [rows, setRows] = React.useState();
+
+    const [rows, setRows] = React.useState([]);
 
     React.useEffect(() => {
+        let patientData;
         const fetchData = async () => {
             setLoading(true);
-            //data = getPatientsData();
-            setLoading(false);
-        }
-        fetchData();
-    }, []);
 
-    const [rows, setRows] = React.useState(() => [
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-    ]);
+            patientData = await getPatientsData();
+            console.log(patientData)
+            //if (patientData.length === 0)
+            patientData = getRandomPatientData();
+
+            console.log(getRandomPatientData())
+
+            //setTimeout(() => {
+            setRows(patientData);
+            setFilteredRows(rows);
+            //});
+
+            console.log(filteredRows)
+
+            setLoading(false);
+
+        }
+
+        fetchData();
+
+        setRows(getRandomPatientData())
+        console.log("run useEffect")
+
+
+    }, []);
 
     const [filteredRows, setFilteredRows] = React.useState(rows);
 
@@ -222,6 +166,8 @@ export default function PatientsPage() {
             event.defaultMuiPrevented = true;
         }
         console.log(params.row.PESEL);
+
+
     }
 
     const confirmOptionsInPolish = {
@@ -235,14 +181,14 @@ export default function PatientsPage() {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
         let result = rows;
-        result = filterId(result, data.get('idFilter'));
-        result = filterPESEL(result, data.get('peselFilter'));
-        result = filterFirstName(result, data.get('firstNameFilter'));
-        result = filterLastName(result, data.get('lastNameFilter'));
-        result = filterEmail(result, data.get('emailFilter'));
-        result = filterDate(result, data.get('dateOfBirthFilter'));
-        result = filterPhoneNumber(result, data.get('phoneNumberFilter'));
-        result = filterActive(result, data.get('activeFilter'));
+        result = FilteringHelepers.filterId(result, data.get('idFilter'));
+        result = FilteringHelepers.filterPESEL(result, data.get('peselFilter'));
+        result = FilteringHelepers.filterFirstName(result, data.get('firstNameFilter'));
+        result = FilteringHelepers.filterLastName(result, data.get('lastNameFilter'));
+        result = FilteringHelepers.filterEmail(result, data.get('emailFilter'));
+        result = FilteringHelepers.filterDate(result, data.get('dateOfBirthFilter'));
+        result = FilteringHelepers.filterPhoneNumber(result, data.get('phoneNumberFilter'));
+        result = FilteringHelepers.filterActive(result, data.get('activeFilter'));
         setFilteredRows(result);
     };
 
@@ -268,13 +214,10 @@ export default function PatientsPage() {
                             component='form'
                             noValidate
                             onChange={handleSubmit}
-                            //onSubmit={handleSubmit}
                             sx={{
                                 marginTop: 2,
                                 marginBottom: 2,
                                 display: 'flex',
-                                //flexDirection: 'row',
-                                //alignItems: 'center'
                             }}
                         >
                             <Grid container direction={"row"} spacing={1} >
@@ -355,7 +298,7 @@ export default function PatientsPage() {
                             fullWidth
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
-                            onClick={() => { navigate("/admin") }}
+                            onClick={async () => { /*navigate("/admin"),*/ console.log(await getPatientsData()) }}
                         >
                             Powrót
                         </Button>
