@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Button from '@mui/material/Button';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { Container, CssBaseline, TextField } from '@mui/material';
+import { Container, CssBaseline, ListItemButton, TextField } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import { useNavigate } from "react-router-dom";
@@ -38,12 +38,12 @@ export default function FilterTimeSlots() {
     };
 
     function getDayFromDate(date) {
-        console.log(date.substring(0, 9))
-        return date.substring(0, 9)
+        //console.log(date.substring(0, 10))
+        return date.substring(0, 10)
     }
 
     function divideCenterIntoDays(center) {
-        console.log('divideCenterIntoDays')
+        //console.log('divideCenterIntoDays')
         const days = center.reduce((days, item) => {
             const day = getDayFromDate(item.from)
             const group = (days[day] || []);
@@ -67,13 +67,13 @@ export default function FilterTimeSlots() {
         }, {});
 
         //console.log(data);
-        //console.log(centers);
+        console.log("centers", centers);
 
-        let result = []
+        let centersDays = []
 
         for (let c in centers) {
-            console.log(centers[c])
-            result.push(divideCenterIntoDays(centers[c]))
+            console.log("centrum", centers[c])
+            centersDays.push(divideCenterIntoDays(centers[c]))
         }
 
         /*for (let i = 0; i < Object.keys(centers).length; i++) {
@@ -81,15 +81,34 @@ export default function FilterTimeSlots() {
             result.push(divideCenterIntoDays(Object.keys(centers)[i]))
         }*/
 
-        setDaysInCenters(result)
+        setDaysInCenters(centersDays)
 
-        console.log(
-            "days", daysInCenters
-        )
+        console.log("centers days", centersDays)
 
+        for (let r in centersDays) {
+            console.log(r)
+            console.log("dzień w centrum", centersDays[r])
+            console.log(Object.keys(centersDays[r])[0])
+            console.log(centersDays[r][Object.keys(centersDays[r])[0]])
+            console.log("key", Object.keys(r))
+            console.log(Object.keys(r))
+        }
 
         setShowDaysList(true);
 
+    }
+
+    function getWeekDayNumberForDate(date) {
+        let day = getDayFromDate(date)
+        const d = new Date(day.substring(6, 10), day.substring(3, 5) - 1, day.substring(0, 2));
+        console.log(day.substring(6, 10), day.substring(3, 5) - 1, day.substring(0, 2))
+        console.log(d)
+        return (d.getDay() - 1) % 7;
+    }
+
+    function getWeekDayName(num) {
+        const weekdays = ["Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota", "Niedziela"];
+        return weekdays[num];
     }
 
     return (
@@ -158,10 +177,30 @@ export default function FilterTimeSlots() {
                         </Box>
                         {showDaysList &&
                             <Box>
-
-
-                                {daysInCenters.map(dayInCenter => (<div> {dayInCenter.type} </div>))
-                                }
+                                <List
+                                    sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}
+                                    component="nav"
+                                    aria-labelledby="nested-list-subheader"
+                                >
+                                    {daysInCenters &&
+                                        daysInCenters.map(dayInCenter =>
+                                        (<ListItemButton>
+                                            <ListItemText
+                                                primary={dayInCenter[Object.keys(dayInCenter)[0]][0].vaccinationCenterName + ", " +
+                                                    dayInCenter[Object.keys(dayInCenter)[0]][0].vaccinationCenterStreet + "\n" +
+                                                    getWeekDayName(getWeekDayNumberForDate(dayInCenter[Object.keys(dayInCenter)[0]][0].from)) + ", " +
+                                                    getDayFromDate(dayInCenter[Object.keys(dayInCenter)[0]][0].from)
+                                                }
+                                                secondary={"Godziny otwarcia: " +
+                                                    dayInCenter[Object.keys(dayInCenter)[0]][0].openingHours
+                                                    [getWeekDayNumberForDate(dayInCenter[Object.keys(dayInCenter)[0]][0].from)].form + " - " +
+                                                    dayInCenter[Object.keys(dayInCenter)[0]][0].openingHours
+                                                    [getWeekDayNumberForDate(dayInCenter[Object.keys(dayInCenter)[0]][0].form)].to
+                                                }
+                                            />
+                                        </ListItemButton>))
+                                    }
+                                </List>
                             </Box>
                         }
                         {!showDaysList && <Button
