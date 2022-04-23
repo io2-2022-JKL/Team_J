@@ -40,7 +40,8 @@ export default function PatientMainPage() {
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
                             onClick={() => {
-                                //navigate("") 
+                                navigate("/patient/appointments/incomingAppointments")
+                                console.log("/patient/appointments/incomingAppointments") 
                             }}
                         >
                             Twoje szczepienia
@@ -74,7 +75,7 @@ export default function PatientMainPage() {
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
                             onClick={() => {
-                                //navigate("") 
+                                navigate("/patient/certificates") 
                             }}
                         >
                             Twoje certyfikaty szczepień
