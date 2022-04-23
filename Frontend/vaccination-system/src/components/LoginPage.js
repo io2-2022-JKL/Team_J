@@ -76,39 +76,39 @@ export default function LoginPage() {
         });
     };
 
-    const logInUser = async (mail, password) => {
+
+    const logInUser = async () => {
+
         // request i response
         if (emailError) return;
-        let userType;//mail.includes("admin") ? "admin" : mail.includes("patient") ? "patient" : "doctor";
-        setLoading(true);
+        let response;
         try {
-            const { data: response } = await axios({
+            response = await axios({
                 method: 'post',
                 url: 'https://systemszczepien.azurewebsites.net/signin',
                 data: {
-                    mail: mail,//"korwinKrul@wp.pl",
-                    password: password//"5Procent"
+                    mail: mail,
+                    password: password
                 }
                 
             });
             console.log({
                 response
             })
-            userType = response.userType;
         } catch (error) {
             console.error(error.message);
         }
-        setLoading(false);
-        //const userType = mail.includes("admin") ? "admin" : mail.includes("patient") ? "patient" : "doctor";
+
+        localStorage.setItem('userID', response.data.userID)
 
         console.log({
+            response,
             mail,
             bool: mail.includes("admin"),
-            userType,
+            userType: response.data.userType,
 
         })
-
-        switch (userType) {
+        switch (response.data.userType) {
             case "admin":
                 navigate("/admin");
                 break;
@@ -186,6 +186,7 @@ export default function LoginPage() {
                                     left: '50%'
                                 }}
                             />
+
                         )
                         }
                         <Snackbar open={snackbar} autoHideDuration={6000} onClose={handleClose}>
@@ -193,6 +194,7 @@ export default function LoginPage() {
                                 Rejestarcja powiodła się
                             </Alert>
                         </Snackbar>
+
 
                         <Grid container>
                             <Grid item>

@@ -44,9 +44,9 @@ namespace VaccinationSystem.UnitTests
 
             var request = new RegisterRequestDTO()
             {
-                PESEL = pesel,
-                names = names,
-                surname = surname,
+                pesel = pesel,
+                firstName = names,
+                lastName = surname,
                 mail = mail,
                 dateOfBirth = dateOfBirth,
                 password = password,
@@ -101,9 +101,9 @@ namespace VaccinationSystem.UnitTests
 
             var request = new RegisterRequestDTO()
             {
-                PESEL = pesel,
-                names = names,
-                surname = surname,
+                pesel = pesel,
+                firstName = names,
+                lastName = surname,
                 mail = mail,
                 dateOfBirth = dateOfBirth,
                 password = password,
@@ -175,9 +175,9 @@ namespace VaccinationSystem.UnitTests
 
             var request = new RegisterRequestDTO()
             {
-                PESEL = pesel,
-                names = names,
-                surname = surname,
+                pesel = pesel,
+                firstName = names,
+                lastName = surname,
                 mail = mail,
                 dateOfBirth = dateOfBirth,
                 password = password,

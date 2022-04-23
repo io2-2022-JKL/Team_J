@@ -34,7 +34,10 @@ export default function FilterTimeSlots() {
     const navigate = useNavigate();
     const [showDaysList, setShowDaysList] = React.useState(false);
 
-    const handleSubmit = (event) => { };
+    const handleSubmit = (event) => {
+        console.log(localStorage.getItem('userID'))
+
+    };
 
 
 
@@ -59,7 +62,7 @@ export default function FilterTimeSlots() {
                         <Box
                             component='form'
                             noValidate
-                            //onChange={handleSubmit}
+                            onChange={handleSubmit}
                             //onSubmit={handleSubmit}
                             sx={{
                                 marginTop: 2,
