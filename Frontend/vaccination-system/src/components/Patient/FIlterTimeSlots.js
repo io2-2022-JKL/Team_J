@@ -6,26 +6,14 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import { useNavigate } from "react-router-dom";
 import Grid from "@material-ui/core/Grid";
-import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid';
-import { randomDate, randomEmail, randomId, randomPhoneNumber, randomTraderName, randomBoolean, randomInt } from '@mui/x-data-grid-generator';
-import dateFormat from 'dateformat';
-import DeleteIcon from '@mui/icons-material/Delete';
-import clsx from 'clsx';
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
 import Avatar from '@mui/material/Avatar';
-import { confirm } from "react-confirm-box";
-import { HomeOutlined, PlayCircleFilledWhiteRounded } from '@mui/icons-material';
-import axios from 'axios';
-import LinearProgress from '@mui/material/LinearProgress';
-import DataDisplayArray from '../DataDisplayArray';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
-import ImageIcon from '@mui/icons-material/Image';
-import WorkIcon from '@mui/icons-material/Work';
 import HomeIcon from '@mui/icons-material/Home';
-import BeachAccessIcon from '@mui/icons-material/BeachAccess';
+import { getFreeTimeSlots } from './PatientApi';
 
 const theme = createTheme();
 
@@ -33,13 +21,76 @@ export default function FilterTimeSlots() {
 
     const navigate = useNavigate();
     const [showDaysList, setShowDaysList] = React.useState(false);
+    const [city, setCity] = React.useState();
+    const [virus, setVirus] = React.useState();
+    const [dateFrom, setDateFrom] = React.useState();
+    const [dateTo, setDateTo] = React.useState();
+
+    const [daysInCenters, setDaysInCenters] = React.useState();
 
     const handleSubmit = (event) => {
-        console.log(localStorage.getItem('userID'))
+        const data = new FormData(event.currentTarget);
 
+        setCity(data.get('cityFilter'))
+        setVirus(data.get('virusFilter'))
+        setDateFrom(data.get('dateFrom'))
+        setDateTo(data.get('dateTo'))
     };
 
+    function getDayFromDate(date) {
+        console.log(date.substring(0, 9))
+        return date.substring(0, 9)
+    }
 
+    function divideCenterIntoDays(center) {
+        console.log('divideCenterIntoDays')
+        const days = center.reduce((days, item) => {
+            const day = getDayFromDate(item.from)
+            const group = (days[day] || []);
+            group.push(item);
+            days[day] = group;
+            return days;
+        }, {});
+        return days;
+    }
+
+    const submitSearch = async () => {
+        const data = await getFreeTimeSlots(city, dateFrom, dateTo, virus)
+
+        //data.sort((a, b) => (a.vaccinationCenterName > b.vaccinationCenterName) ? 1 : -1)
+
+        const centers = data.reduce((centers, item) => {
+            const group = (centers[item.vaccinationCenterName] || []);
+            group.push(item);
+            centers[item.vaccinationCenterName] = group;
+            return centers;
+        }, {});
+
+        //console.log(data);
+        //console.log(centers);
+
+        let result = []
+
+        for (let c in centers) {
+            console.log(centers[c])
+            result.push(divideCenterIntoDays(centers[c]))
+        }
+
+        /*for (let i = 0; i < Object.keys(centers).length; i++) {
+            console.log(Object.keys(centers))
+            result.push(divideCenterIntoDays(Object.keys(centers)[i]))
+        }*/
+
+        setDaysInCenters(result)
+
+        console.log(
+            "days", daysInCenters
+        )
+
+
+        setShowDaysList(true);
+
+    }
 
     return (
         <ThemeProvider theme={theme}>
@@ -63,13 +114,10 @@ export default function FilterTimeSlots() {
                             component='form'
                             noValidate
                             onChange={handleSubmit}
-                            //onSubmit={handleSubmit}
                             sx={{
                                 marginTop: 2,
                                 marginBottom: 2,
                                 display: 'flex',
-                                //flexDirection: 'row',
-                                //alignItems: 'center'
                             }}
                         >
                             <Grid container direction={"row"} spacing={1} >
@@ -110,24 +158,10 @@ export default function FilterTimeSlots() {
                         </Box>
                         {showDaysList &&
                             <Box>
-                                <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
-                                    <ListItem>
-                                        <ListItemAvatar>
-                                            <Avatar>
-                                                <HomeIcon />
-                                            </Avatar>
-                                        </ListItemAvatar>
-                                        <ListItemText primary="Centrum szczepień 1" secondary="Jan 9, 2014" />
-                                    </ListItem>
-                                    <ListItem>
-                                        <ListItemAvatar>
-                                            <Avatar>
-                                                <HomeIcon />
-                                            </Avatar>
-                                        </ListItemAvatar>
-                                        <ListItemText primary="Centrum szczepień 1" secondary="Jan 7, 2014" />
-                                    </ListItem>
-                                </List>
+
+
+                                {daysInCenters.map(dayInCenter => (<div> {dayInCenter.type} </div>))
+                                }
                             </Box>
                         }
                         {!showDaysList && <Button
@@ -135,7 +169,7 @@ export default function FilterTimeSlots() {
                             fullWidth
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
-                            onClick={async () => { setShowDaysList(true) }}
+                            onClick={async () => { submitSearch() }}
                         >
                             Wybierz
                         </Button>}
