@@ -13,5 +13,5 @@
 	- Authentication: SQL Server Authentication
 	- Login: sa
 	- Password: Pass123word!
-- mamy lokalną bazę danych!
+- mamy lokalną bazę danych!  
 Możemy też użyć obrazu `docker pull jakubgazewski/io2-2022-j:vaccinationsystemdb` zamiast samemu go tworzyć lokalnie (bezpieczniej jednak utworzyć).
