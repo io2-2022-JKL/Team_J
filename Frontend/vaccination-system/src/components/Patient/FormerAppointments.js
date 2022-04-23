@@ -11,6 +11,9 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Container, CssBaseline } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import dateFormat from 'dateformat';
+import { getFormerAppointments } from './PatientApi';
+import CircularProgress from '@mui/material/CircularProgress';
+import { blue } from '@mui/material/colors';
 
 const theme = createTheme();
 
@@ -18,12 +21,11 @@ let id = randomId();
 const createRandomRow = () => {
     id = randomId();
     return {
-        appointmentId: id,
         vaccineName: randomCompanyName(),
-        companyName: randomCompanyName(),
+        vaccineCompany: randomCompanyName(),
         vaccineVirus: "Koronavirus",
         whichVaccineDose: randomInt(1, 3),
-        //appointmentId: ,
+        appointmentId: id,
         windowBegin: dateFormat(randomDate(new Date(50, 1), new Date("1/1/30")), "isoDate").toString(),
         windowEnd: dateFormat(randomDate(new Date(50, 1), new Date("1/1/30")), "isoDate").toString(),
         vaccinationCenterName: randomCommodity(),
@@ -31,7 +33,7 @@ const createRandomRow = () => {
         vaccinationCenterStreet: randomAddress(),
         doctorFirstName: randomTraderName().split(' ')[0],
         doctorLastName: randomTraderName().split(' ')[1],
-        visitedState: "Finished"
+        visitState: "Finished"
     }
 };
 
@@ -41,14 +43,17 @@ function renderRow(props) {
     return (
         <ListItem style={style} key={index} component="div" disablePadding>
             <Grid container direction={"row"} spacing={1}>
-                <Grid item xs={4}>
+                <Grid item xs={3}>
                     <ListItemText primary={"Wirus: " + item.vaccineVirus} secondary={"Numer dawki: " + item.whichVaccineDose} />
                 </Grid>
-                <Grid item xs={4}>
+                <Grid item xs={3}>
                     <ListItemText primary={"Miasto: " + item.vaccinationCenterCity} secondary={"Ulica: " + item.vaccinationCenterStreet} />
                 </Grid>
-                <Grid item xs={4}>
+                <Grid item xs={3}>
                     <ListItemText primary={"Lekarz: " + item.doctorFirstName + " " + item.doctorLastName} secondary={"Data szczepienia: " + item.windowEnd} />
+                </Grid>
+                <Grid item xs={3}>
+                    <ListItemText primary={"Status: " + item.visitState} />
                 </Grid>
             </Grid>
         </ListItem>
@@ -57,6 +62,7 @@ function renderRow(props) {
 
 export default function FormerAppointment() {
     const navigate = useNavigate();
+    /*
     const [data, setData] = React.useState(() => [
         createRandomRow(),
         createRandomRow(),
@@ -70,6 +76,10 @@ export default function FormerAppointment() {
         createRandomRow(),
         createRandomRow(),
     ]);
+    */
+    const [data, setData] = React.useState([]);
+    const [loading, setLoading] = React.useState(false);
+
     return (
         <ThemeProvider theme={theme}>
             <Container component="main" maxWidth="lg">
@@ -85,6 +95,35 @@ export default function FormerAppointment() {
                         <Typography component="h1" variant='h5'>
                             Historia szczepień
                         </Typography>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            sx={{ mt: 3, mb: 2 }}
+                            onClick={async () => {
+                                setLoading(true);
+                                let userID = localStorage.getItem('userID');
+                                let patientData = await getFormerAppointments(userID);
+                                setData(patientData);
+                                setLoading(false);
+                            }}
+                        >
+                            Pobierz dane
+                        </Button>
+                        {
+                            loading &&
+                            (
+                                <CircularProgress
+                                    size={24}
+                                    sx={{
+                                        color: blue,
+                                        position: 'absolute',
+                                        alignSelf: 'center',
+                                        bottom: '37%',
+                                        left: '50%'
+                                    }}
+                                />
+                            )
+                        }
                         <FixedSizeList
                             height={600}
                             width="60%"

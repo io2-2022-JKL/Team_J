@@ -82,6 +82,7 @@ export default function LoginPage() {
         // request i response
         if (emailError) return;
         let response;
+        setLoading(true);
         try {
             response = await axios({
                 method: 'post',
@@ -98,7 +99,7 @@ export default function LoginPage() {
         } catch (error) {
             console.error(error.message);
         }
-
+        setLoading(false);
         localStorage.setItem('userID', response.data.userID)
 
         console.log({
