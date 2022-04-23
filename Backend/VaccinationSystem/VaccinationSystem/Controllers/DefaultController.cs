@@ -34,7 +34,7 @@ namespace VaccinationSystem.Controllers
         private IActionResult AddNewUser(RegisterRequestDTO registerRequestDTO)
         {
             Patient patient = new Patient();
-            patient.PESEL = registerRequestDTO.PESEL;
+            patient.PESEL = registerRequestDTO.pesel;
             if(patient.PESEL == null || patient.PESEL.Length != 11 || !long.TryParse(patient.PESEL, out _))
             {
                 return BadRequest();
@@ -43,12 +43,12 @@ namespace VaccinationSystem.Controllers
             {
                 return BadRequest();
             }
-            patient.FirstName = registerRequestDTO.names;
+            patient.FirstName = registerRequestDTO.firstName;
             if(patient.FirstName == null || patient.FirstName.Length == 0 || ContainsSymbol(patient.FirstName))
             {
                 return BadRequest();
             }
-            patient.LastName = registerRequestDTO.surname;
+            patient.LastName = registerRequestDTO.lastName;
             if(patient.LastName == null || patient.LastName.Length == 0 || ContainsSymbol(patient.LastName))
             {
                 return BadRequest();
