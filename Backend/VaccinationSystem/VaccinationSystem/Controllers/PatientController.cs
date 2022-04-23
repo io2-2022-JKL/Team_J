@@ -104,8 +104,8 @@ namespace VaccinationSystem.Controllers
                 }
 
                 timeSlotFilterResponseDTO.TimeSlotId = timeSlot.Id.ToString();
-                timeSlotFilterResponseDTO.From = timeSlot.From.ToString();
-                timeSlotFilterResponseDTO.To = timeSlot.To.ToString();
+                timeSlotFilterResponseDTO.From = timeSlot.From.ToString(_dateTimeFormat);
+                timeSlotFilterResponseDTO.To = timeSlot.To.ToString(_dateTimeFormat);
                 timeSlotFilterResponseDTO.VaccinationCenterName = vaccinationCenter.Name;
                 timeSlotFilterResponseDTO.VaccinationCenterCity = vaccinationCenter.City;
                 timeSlotFilterResponseDTO.VaccinationCenterStreet = vaccinationCenter.Address;
@@ -213,8 +213,8 @@ namespace VaccinationSystem.Controllers
                 futureAppointmentDTO.VaccineVirus = appointment.Vaccine.Virus.ToString();
                 futureAppointmentDTO.WhichVaccineDose = appointment.WhichDose;
                 futureAppointmentDTO.AppointmentId = appointment.Id.ToString();
-                futureAppointmentDTO.WindowBegin = appointment.TimeSlot.From.ToString();
-                futureAppointmentDTO.WindowEnd = appointment.TimeSlot.To.ToString();
+                futureAppointmentDTO.WindowBegin = appointment.TimeSlot.From.ToString(_dateTimeFormat);
+                futureAppointmentDTO.WindowEnd = appointment.TimeSlot.To.ToString(_dateTimeFormat);
                 futureAppointmentDTO.VaccinationCenterName = vaccinationCenter.Name;
                 futureAppointmentDTO.VaccinationCenterCity = vaccinationCenter.City;
                 futureAppointmentDTO.VaccinationCenterStreet = vaccinationCenter.Address;
@@ -305,8 +305,8 @@ namespace VaccinationSystem.Controllers
                 formerAppointmentDTO.VaccineVirus = appointment.Vaccine.Virus.ToString();
                 formerAppointmentDTO.WhichVaccineDose = appointment.WhichDose;
                 formerAppointmentDTO.AppointmentId = appointment.Id.ToString();
-                formerAppointmentDTO.WindowBegin = appointment.TimeSlot.From.ToString();
-                formerAppointmentDTO.WindowEnd = appointment.TimeSlot.To.ToString();
+                formerAppointmentDTO.WindowBegin = appointment.TimeSlot.From.ToString(_dateTimeFormat);
+                formerAppointmentDTO.WindowEnd = appointment.TimeSlot.To.ToString(_dateTimeFormat);
                 formerAppointmentDTO.VaccinationCenterName = vaccinationCenter.Name;
                 formerAppointmentDTO.VaccinationCenterCity = vaccinationCenter.City;
                 formerAppointmentDTO.VaccinationCenterStreet = vaccinationCenter.Address;
