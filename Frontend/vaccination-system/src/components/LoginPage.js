@@ -18,6 +18,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { blue } from '@mui/material/colors';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
+import { SYSTEM_SZCZEPIEN_URL } from './Api';
 
 const theme = createTheme();
 
@@ -86,26 +87,36 @@ export default function LoginPage() {
         try {
             response = await axios({
                 method: 'post',
-                url: 'https://systemszczepien.azurewebsites.net/signin',
+                url: SYSTEM_SZCZEPIEN_URL + '/signin',
                 data: {
                     mail: mail,
                     password: password
                 }
-                
+
             });
             console.log({
                 response
             })
+
+
+
         } catch (error) {
             console.error(error.message);
+            setEmailError("Nieprawidłowy email lub hasło")
+            setEmailErrorState(true)
+            setLoading(false)
         }
+
+        localStorage.setItem('userID', response.data.userId)
+
+        //console.log("local sotrage", localStorage.getItem('userID'))
         setLoading(false);
-        localStorage.setItem('userID', response.data.userID)
+
 
         console.log({
             response,
             mail,
-            bool: mail.includes("admin"),
+            //bool: mail.includes("admin"),
             userType: response.data.userType,
 
         })
@@ -117,7 +128,8 @@ export default function LoginPage() {
                 navigate("/patient", { state: { name: "Jan", surname: "Kowalski" } });
                 break;
             case "doctor":
-                navigate("/doctor",);
+                navigate("/patient", { state: { name: "Jan", surname: "Kowalski" } });
+            //navigate("/doctor",);
         }
     }
 
@@ -175,20 +187,20 @@ export default function LoginPage() {
                             Zaloguj się
                         </Button>
                         {
-                        loading && 
-                        (
-                            <CircularProgress
-                                size={24}
-                                sx={{
-                                    color: blue,
-                                    position: 'absolute',
-                                    alignSelf: 'center',
-                                    bottom: '37%',
-                                    left: '50%'
-                                }}
-                            />
+                            loading &&
+                            (
+                                <CircularProgress
+                                    size={24}
+                                    sx={{
+                                        color: blue,
+                                        position: 'absolute',
+                                        alignSelf: 'center',
+                                        bottom: '37%',
+                                        left: '50%'
+                                    }}
+                                />
 
-                        )
+                            )
                         }
                         <Snackbar open={snackbar} autoHideDuration={6000} onClose={handleClose}>
                             <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
