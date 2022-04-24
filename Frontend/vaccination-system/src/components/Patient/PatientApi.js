@@ -1,6 +1,11 @@
 import axios from 'axios';
+import Moment from 'moment';
 
 export async function getFreeTimeSlots(city, dateFrom, dateTo, virus) {
+
+    //console.log("dateTo", Moment(dateTo).format('DD-MM-YYYY hh:mm'))
+    //console.log("dateFrom", Moment(dateFrom).format('DD-MM-YYYY hh:mm'))
+
     let response;
     try {
         response = await axios({
@@ -8,14 +13,14 @@ export async function getFreeTimeSlots(city, dateFrom, dateTo, virus) {
             url: 'https://systemszczepien.azurewebsites.net/patient/timeSlots/Filter',
 
             params: {
-                /*city: city,
-                dateFrom: dateFrom,
-                dateTo: dateTo,
-                virus: virus*/
-                city: "Warszawa",
+                city: city,
+                dateFrom: Moment(dateFrom).format('DD-MM-YYYY hh:mm'),
+                dateTo: Moment(dateTo).format('DD-MM-YYYY hh:mm'),
+                virus: virus
+                /*city: "Warszawa",
                 dateFrom: "01-01-2022 10:00",
                 dateTo: "01-10-2022 10:00",
-                virus: "Koronawirus"
+                virus: "Koronawirus"*/
             }
         });
         console.log(
@@ -23,6 +28,33 @@ export async function getFreeTimeSlots(city, dateFrom, dateTo, virus) {
         )
     } catch (error) {
         console.error(error.message);
+        return "fail"
     }
-    return response.data;
+
+    return response;
+}
+
+export async function bookTimeSlot(timeSlot, vaccine) {
+
+    let patientId = localStorage.getItem('userID')
+    let timeSlotId = timeSlot.timeSlotId
+    let vaccineId = vaccine.vaccineId
+
+    console.log(patientId, timeSlotId, vaccineId)
+
+
+    try {
+        let response = await axios({
+            method: 'post',
+            url: 'https://systemszczepien.azurewebsites.net/patient/timeSlots/Book/' + patientId + '/' + timeSlotId + '/' + vaccineId,
+        });
+        console.log(
+            "request succueeded"
+        )
+        return "success"
+
+    } catch (error) {
+        console.error(error.message);
+        return "fail"
+    }
 }

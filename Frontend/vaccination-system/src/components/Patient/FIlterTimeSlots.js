@@ -11,7 +11,7 @@ import Avatar from '@mui/material/Avatar';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import { getFreeTimeSlots } from './PatientApi';
+import { bookTimeSlot, getFreeTimeSlots } from './PatientApi';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import Divider from '@mui/material/Divider';
@@ -22,6 +22,15 @@ import CloseIcon from '@mui/icons-material/Close';
 import Slide from '@mui/material/Slide';
 import Dialog from '@mui/material/Dialog';
 import Moment from 'moment';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import Snackbar from '@mui/material/Snackbar';
 
 const theme = createTheme();
 
@@ -35,28 +44,77 @@ export default function FilterTimeSlots() {
     const [dateTo, setDateTo] = React.useState();
 
     const [daysInCenters, setDaysInCenters] = React.useState();
-    const [openDialog, setOpenDialog] = React.useState(false);
+    const [openTimeSlotsDialog, setOpenTimeSlotsDialog] = React.useState(false);
+    const [openVaccinesDialog, setOpenVaccinesDialog] = React.useState(false);
 
     const [dayTimeSlots, setDayTimeSlots] = React.useState();
 
+    const [possibleVaccines, setPossibleVaccines] = React.useState();
+    const [vaccine, setVaccine] = React.useState();
+
+    const [timeSlot, setTimeSlot] = React.useState()
+
+    const [openConfirmDialog, setOpenConfrimDialog] = React.useState(false)
+
+    const [openSnackBar, setOpenSnackBar] = React.useState()
+    const [snackBarMessage, setSnackBarMessage] = React.useState("Pomyślnie zapisano na szczepienie")
+
     const handleDayChoice = (dayInCenter) => {
-        setDayTimeSlots(dayInCenter[Object.keys(dayInCenter)[0]])
-        setOpenDialog(true);
+        setDayTimeSlots(dayInCenter[Object.keys(dayInCenter)[0]].sort(function (a, b) { // non-anonymous as you ordered...
+            return b.from < a.from ? 1 : -1
+        }))
+        setPossibleVaccines(dayInCenter[Object.keys(dayInCenter)[0]][0].availableVaccines);
+        setOpenTimeSlotsDialog(true);
     };
 
-    const handleClose = () => {
-        setOpenDialog(false);
+    const handleVaccineChange = (event) => {
+        setVaccine(possibleVaccines.filter(vaccine => {
+            return vaccine.name === 'Pfizer'
+        })[0])
+    }
+
+    const handleVaccinesClose = () => {
+        setOpenVaccinesDialog(false)
+    }
+
+    const handleVaccineChoice = async () => {
+        console.log('handle vaccine choice')
+
+        setOpenConfrimDialog(true)
+
+        setOpenVaccinesDialog(false)
+    }
+
+    const handleTimeSLotsClose = () => {
+        setOpenTimeSlotsDialog(false);
     };
 
+
+    const handleTimeSlotChoice = (dayTimeSlot) => {
+        setTimeSlot(dayTimeSlot)
+        setOpenVaccinesDialog(true)
+    }
 
     const handleSubmit = (event) => {
         const data = new FormData(event.currentTarget);
 
         setCity(data.get('cityFilter'))
         setVirus(data.get('virusFilter'))
-        setDateFrom(data.get('dateFrom'))
-        setDateTo(data.get('dateTo'))
     };
+
+    const handleConfrimClose = () => {
+        setOpenConfrimDialog(false)
+    }
+
+    const handleConfirmTrue = async () => {
+        console.log(vaccine, timeSlot)
+        let result = await bookTimeSlot(timeSlot, vaccine)
+        setOpenConfrimDialog(false)
+        if (result === "success") setSnackBarMessage("Pomyślnie zapisano na szczepienie")
+        else setSnackBarMessage("Zapisanie na szczepienie nie powiodło się")
+        setOpenSnackBar(true)
+    }
+
 
     function getDayFromDate(date) {
         //console.log(date.substring(0, 10))
@@ -64,7 +122,8 @@ export default function FilterTimeSlots() {
     }
 
     function divideCenterIntoDays(center) {
-        //console.log('divideCenterIntoDays')
+        console.log('divideCenter')
+        //console.log(center)
         const days = center.reduce((days, item) => {
             const day = getDayFromDate(item.from)
             const group = (days[day] || []);
@@ -72,17 +131,23 @@ export default function FilterTimeSlots() {
             days[day] = group;
             return days;
         }, {});
+        console.log(days)
         return days;
     }
 
+    function getHoursMinsFromDate(date) {
+        return date.substring(11, 16)
+    }
+
     const submitSearch = async () => {
-        const data = await getFreeTimeSlots(city, dateFrom, dateTo, virus)
+        const response = await getFreeTimeSlots(city, dateFrom, dateTo, virus)
 
-        //data.sort((a, b) => (a.vaccinationCenterName > b.vaccinationCenterName) ? 1 : -1)
+        if (response === "fail") {
+            setSnackBarMessage("Nie znaleziono wyników dla tych danych")
+            setOpenSnackBar(true)
+        }
 
-        //console.log(dateFrom)
-        Moment(dateFrom).format('YYYY-MM-DD')
-        console.log(Moment(dateFrom).format('YYYY-MM-DD'))
+        const data = response.data
 
         const centers = data.reduce((centers, item) => {
             const group = (centers[item.vaccinationCenterName] || []);
@@ -91,33 +156,26 @@ export default function FilterTimeSlots() {
             return centers;
         }, {});
 
-        //console.log(data);
-        //console.log("centers", centers);
-
         let centersDays = []
 
         for (let c in centers) {
-            //console.log("centrum", centers[c])
-            centersDays.push(divideCenterIntoDays(centers[c]))
+            console.log("centrum", centers[c])
+            let days = divideCenterIntoDays(centers[c]);
+            console.log("days", days)
+            for (let d in days) {
+                console.log("days[d]")
+                console.log(d)
+                console.log(days[d])
+                console.log({ d: days[d] })
+
+
+                centersDays.push({ d: days[d] })
+            }
         }
 
-        /*for (let i = 0; i < Object.keys(centers).length; i++) {
-            console.log(Object.keys(centers))
-            result.push(divideCenterIntoDays(Object.keys(centers)[i]))
-        }*/
+        console.log(centersDays)
 
         setDaysInCenters(centersDays)
-
-        //console.log("centers days", centersDays)
-
-        /*for (let r in centersDays) {
-            console.log(r)
-            console.log("dzień w centrum", centersDays[r])
-            console.log(Object.keys(centersDays[r])[0])
-            console.log(centersDays[r][Object.keys(centersDays[r])[0]])
-            console.log("key", Object.keys(r))
-            console.log(Object.keys(r))
-        }*/
 
         setShowDaysList(true);
 
@@ -126,8 +184,6 @@ export default function FilterTimeSlots() {
     function getWeekDayNumberForDate(date) {
         let day = getDayFromDate(date)
         const d = new Date(day.substring(6, 10), day.substring(3, 5) - 1, day.substring(0, 2));
-        //console.log(day.substring(6, 10), day.substring(3, 5) - 1, day.substring(0, 2))
-        //console.log(d)
         return (d.getDay() - 1) % 7;
     }
 
@@ -185,30 +241,40 @@ export default function FilterTimeSlots() {
 
                                     <LocalizationProvider dateAdapter={AdapterDateFns}>
                                         <DatePicker
-                                            id="dateFrom"
-                                            name="dateFrom"
-
-                                            label="Data Od"
+                                            label="Data od"
+                                            views={['year', 'month', 'day']}
+                                            inputFormat="dd-MM-yyyy"
+                                            mask="__-__-____"
                                             value={dateFrom}
                                             onChange={(newDate) => {
                                                 setDateFrom(newDate);
                                             }}
-                                            renderInput={(params) => <TextField {...params} />}
+                                            renderInput={(params) => <TextField
+                                                {...params}
+                                                fullWidth
+                                                id='dateFrom'
+                                                name='dateFrom'
+                                            />}
                                         />
                                     </LocalizationProvider>
                                 </Grid>
                                 <Grid item xs={3}>
                                     <LocalizationProvider dateAdapter={AdapterDateFns}>
                                         <DatePicker
-                                            id="dateTo"
-                                            name="dateTo"
-
-                                            label="Data Do"
+                                            label="Data do"
+                                            views={['year', 'month', 'day']}
+                                            inputFormat="dd-MM-yyyy"
+                                            mask="__-__-____"
                                             value={dateTo}
                                             onChange={(newDate) => {
                                                 setDateTo(newDate);
                                             }}
-                                            renderInput={(params) => <TextField {...params} />}
+                                            renderInput={(params) => <TextField
+                                                {...params}
+                                                fullWidth
+                                                id='dateTo'
+                                                name='dateTo'
+                                            />}
                                         />
                                     </LocalizationProvider>
                                 </Grid>
@@ -261,7 +327,7 @@ export default function FilterTimeSlots() {
                             sx={{ mt: 3, mb: 2 }}
                             onClick={async () => { setShowDaysList(false) }}
                         >
-                            Wyczyść wyszukiwanie
+                            Anuluj wyszukiwanie
                         </Button>}
                         <Button
                             type="submit"
@@ -276,8 +342,8 @@ export default function FilterTimeSlots() {
 
                     <Dialog
                         fullScreen
-                        open={openDialog}
-                        onClose={handleClose}
+                        open={openTimeSlotsDialog}
+                        onClose={handleTimeSLotsClose}
                         TransitionComponent={Transition}
                     >
                         <AppBar sx={{ position: 'relative' }}>
@@ -285,15 +351,15 @@ export default function FilterTimeSlots() {
                                 <IconButton
                                     edge="start"
                                     color="inherit"
-                                    onClick={handleClose}
+                                    onClick={handleTimeSLotsClose}
                                     aria-label="close"
                                 >
                                     <CloseIcon />
                                 </IconButton>
                                 <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
-                                    Wybierz termin szczepienia
+                                    {"Wybierz termin szczepienia"}
                                 </Typography>
-                                <Button autoFocus color="inherit" onClick={handleClose}>
+                                <Button autoFocus color="inherit" onClick={handleTimeSLotsClose}>
                                     Wróć
                                 </Button>
                             </Toolbar>
@@ -301,23 +367,88 @@ export default function FilterTimeSlots() {
                         <List>
                             {dayTimeSlots &&
                                 dayTimeSlots.map(dayTimeSlot =>
-                                    <ListItem button>
-                                        <ListItemText primary={dayTimeSlot.doctorFirstName} secondary="" />
-                                    </ListItem>
+                                    <ListItemButton
+                                        onClick={() => { handleTimeSlotChoice(dayTimeSlot) }}
+                                    >
+                                        <ListItemText
+                                            primary={"Lekarz " + dayTimeSlot.doctorFirstName + " " + dayTimeSlot.doctorLastName + ", " + getDayFromDate(dayTimeSlot.from) + ", " +
+                                                getHoursMinsFromDate(dayTimeSlot.from) + " - " + getHoursMinsFromDate(dayTimeSlot.to)}
+                                            secondary="" />
+                                    </ListItemButton>
                                 )}
 
                             <ListItem button>
                                 <ListItemText primary=" " secondary="" />
                             </ListItem>
                             <Divider />
-                            <ListItem button>
-                                <ListItemText
-                                    primary=""
-                                    secondary=""
-                                />
-                            </ListItem>
                         </List>
                     </Dialog>
+
+                    <Dialog
+                        fullWidth
+                        maxWidth
+                        open={openVaccinesDialog}
+                    >
+                        <DialogTitle>Wybierz szczepionkę</DialogTitle>
+                        <DialogContent>
+                            <Box
+                                noValidate
+                                component="form"
+                                sx={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    m: 'auto',
+                                    width: 'fit-content',
+                                }}
+                            >
+                                <FormControl sx={{ mt: 2, minWidth: 120 }}>
+                                    <InputLabel htmlFor="max-width">Wybierz</InputLabel>
+                                    <Select
+                                        autoFocus
+                                        onChange={handleVaccineChange}
+                                        label="maxWidth"
+                                    >
+                                        {possibleVaccines && possibleVaccines.map(possibleVaccine =>
+                                            <MenuItem value={possibleVaccine.name}>{possibleVaccine.name + ", firma: " + possibleVaccine.company}</MenuItem>)}
+                                    </Select>
+                                </FormControl>
+                            </Box>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={handleVaccinesClose}>Wróc</Button>
+                            <Button onClick={handleVaccineChoice}>Wybierz</Button>
+                        </DialogActions>
+                    </Dialog>
+
+                    {timeSlot && vaccine && <Dialog
+                        open={openConfirmDialog}
+                        onClose={handleConfrimClose}
+                        aria-labelledby="alert-dialog-title"
+                        aria-describedby="alert-dialog-description"
+                    >
+                        <DialogTitle id="alert-dialog-title">
+                            {"Potwierdź zapis"}
+                        </DialogTitle>
+                        <DialogContent>
+                            <DialogContentText id="alert-dialog-description">
+                                {"Czy na pewno chcesz zapisać się na szczepienie? Data: " + timeSlot.from + ', Szczepionka: ' + vaccine.name}
+                            </DialogContentText>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={handleConfrimClose}>Nie</Button>
+                            <Button onClick={handleConfirmTrue} autoFocus>
+                                Tak
+                            </Button>
+                        </DialogActions>
+                    </Dialog>}
+
+                    <Snackbar
+                        open={openSnackBar}
+                        autoHideDuration={6000}
+                        onClose={() => { setOpenSnackBar(false) }}
+                        message={snackBarMessage}
+                    />
+
                 </CssBaseline>
             </Container >
         </ThemeProvider >

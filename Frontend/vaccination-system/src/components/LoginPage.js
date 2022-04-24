@@ -79,16 +79,23 @@ export default function LoginPage() {
             console.log({
                 response
             })
+
+
+
         } catch (error) {
             console.error(error.message);
+            setEmailError("Nieprawidłowy email lub hasło")
+            setEmailErrorState(true)
         }
 
-        localStorage.setItem('userID', response.data.userID)
+        localStorage.setItem('userID', response.data.userId)
+
+        //console.log("local sotrage", localStorage.getItem('userID'))
 
         console.log({
             response,
             mail,
-            bool: mail.includes("admin"),
+            //bool: mail.includes("admin"),
             userType: response.data.userType,
 
         })
@@ -100,7 +107,8 @@ export default function LoginPage() {
                 navigate("/patient", { state: { name: "Jan", surname: "Kowalski" } });
                 break;
             case "doctor":
-                navigate("/doctor",);
+                navigate("/patient", { state: { name: "Jan", surname: "Kowalski" } });
+            //navigate("/doctor",);
         }
     }
 
