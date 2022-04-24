@@ -1,1 +1,1 @@
-export const SYSTEM_SZCZEPIEN_URL = 'https://systemszczepien.azurewebsites.net'
+export const SYSTEM_SZCZEPIEN_URL = 'http://localhost:5001'
