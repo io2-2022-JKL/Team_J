@@ -4,7 +4,7 @@ export async function getFreeTimeSlots(city, dateFrom, dateTo, virus) {
     let response;
     try {
         response = await axios({
-            method: 'post',
+            method: 'get',
             url: 'https://systemszczepien.azurewebsites.net/patient/timeSlots/Filter',
 
             params: {

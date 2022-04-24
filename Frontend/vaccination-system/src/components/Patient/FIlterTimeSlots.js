@@ -21,6 +21,7 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import Slide from '@mui/material/Slide';
 import Dialog from '@mui/material/Dialog';
+import Moment from 'moment';
 
 const theme = createTheme();
 
@@ -34,11 +35,12 @@ export default function FilterTimeSlots() {
     const [dateTo, setDateTo] = React.useState();
 
     const [daysInCenters, setDaysInCenters] = React.useState();
-    const [openDialog, setOpenDialog] = React.useState();
+    const [openDialog, setOpenDialog] = React.useState(false);
 
     const [dayTimeSlots, setDayTimeSlots] = React.useState();
 
     const handleDayChoice = (dayInCenter) => {
+        setDayTimeSlots(dayInCenter[Object.keys(dayInCenter)[0]])
         setOpenDialog(true);
     };
 
@@ -78,6 +80,10 @@ export default function FilterTimeSlots() {
 
         //data.sort((a, b) => (a.vaccinationCenterName > b.vaccinationCenterName) ? 1 : -1)
 
+        //console.log(dateFrom)
+        Moment(dateFrom).format('YYYY-MM-DD')
+        console.log(Moment(dateFrom).format('YYYY-MM-DD'))
+
         const centers = data.reduce((centers, item) => {
             const group = (centers[item.vaccinationCenterName] || []);
             group.push(item);
@@ -86,12 +92,12 @@ export default function FilterTimeSlots() {
         }, {});
 
         //console.log(data);
-        console.log("centers", centers);
+        //console.log("centers", centers);
 
         let centersDays = []
 
         for (let c in centers) {
-            console.log("centrum", centers[c])
+            //console.log("centrum", centers[c])
             centersDays.push(divideCenterIntoDays(centers[c]))
         }
 
@@ -102,16 +108,16 @@ export default function FilterTimeSlots() {
 
         setDaysInCenters(centersDays)
 
-        console.log("centers days", centersDays)
+        //console.log("centers days", centersDays)
 
-        for (let r in centersDays) {
+        /*for (let r in centersDays) {
             console.log(r)
             console.log("dzień w centrum", centersDays[r])
             console.log(Object.keys(centersDays[r])[0])
             console.log(centersDays[r][Object.keys(centersDays[r])[0]])
             console.log("key", Object.keys(r))
             console.log(Object.keys(r))
-        }
+        }*/
 
         setShowDaysList(true);
 
@@ -120,8 +126,8 @@ export default function FilterTimeSlots() {
     function getWeekDayNumberForDate(date) {
         let day = getDayFromDate(date)
         const d = new Date(day.substring(6, 10), day.substring(3, 5) - 1, day.substring(0, 2));
-        console.log(day.substring(6, 10), day.substring(3, 5) - 1, day.substring(0, 2))
-        console.log(d)
+        //console.log(day.substring(6, 10), day.substring(3, 5) - 1, day.substring(0, 2))
+        //console.log(d)
         return (d.getDay() - 1) % 7;
     }
 
@@ -134,7 +140,7 @@ export default function FilterTimeSlots() {
         <ThemeProvider theme={theme}>
             <Container component="main" maxWidth='lg'>
                 <CssBaseline>
-                    <Box
+                    <Container
                         sx={{
                             marginTop: 2,
                             display: 'flex',
@@ -212,26 +218,26 @@ export default function FilterTimeSlots() {
                         {showDaysList &&
                             <Box>
                                 <List
-                                    sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}
+                                    sx={{ width: '100%', bgcolor: 'background.paper' }}
                                     component="nav"
                                     aria-labelledby="nested-list-subheader"
                                 >
                                     {daysInCenters &&
                                         daysInCenters.map(dayInCenter =>
                                         (<ListItemButton
-                                        //onClick={handleDayChoice(dayInCenter)}
+                                            onClick={() => { handleDayChoice(dayInCenter) }}
                                         >
                                             <ListItemText
                                                 primary={dayInCenter[Object.keys(dayInCenter)[0]][0].vaccinationCenterName + ", " +
-                                                    dayInCenter[Object.keys(dayInCenter)[0]][0].vaccinationCenterStreet + "\n" +
+                                                    dayInCenter[Object.keys(dayInCenter)[0]][0].vaccinationCenterStreet + ", " +
                                                     getWeekDayName(getWeekDayNumberForDate(dayInCenter[Object.keys(dayInCenter)[0]][0].from)) + ", " +
                                                     getDayFromDate(dayInCenter[Object.keys(dayInCenter)[0]][0].from)
                                                 }
                                                 secondary={"Godziny otwarcia: " +
                                                     dayInCenter[Object.keys(dayInCenter)[0]][0].openingHours
-                                                    [getWeekDayNumberForDate(dayInCenter[Object.keys(dayInCenter)[0]][0].from)].form + " - " +
+                                                    [getWeekDayNumberForDate(dayInCenter[Object.keys(dayInCenter)[0]][0].from)].from + " - " +
                                                     dayInCenter[Object.keys(dayInCenter)[0]][0].openingHours
-                                                    [getWeekDayNumberForDate(dayInCenter[Object.keys(dayInCenter)[0]][0].form)].to
+                                                    [getWeekDayNumberForDate(dayInCenter[Object.keys(dayInCenter)[0]][0].from)].to
                                                 }
                                             />
                                         </ListItemButton>))
@@ -248,6 +254,15 @@ export default function FilterTimeSlots() {
                         >
                             Wybierz
                         </Button>}
+                        {showDaysList && <Button
+                            type="submit"
+                            fullWidth
+                            variant="contained"
+                            sx={{ mt: 3, mb: 2 }}
+                            onClick={async () => { setShowDaysList(false) }}
+                        >
+                            Wyczyść wyszukiwanie
+                        </Button>}
                         <Button
                             type="submit"
                             fullWidth
@@ -257,7 +272,8 @@ export default function FilterTimeSlots() {
                         >
                             Powrót
                         </Button>
-                    </Box>
+                    </Container>
+
                     <Dialog
                         fullScreen
                         open={openDialog}
@@ -275,14 +291,21 @@ export default function FilterTimeSlots() {
                                     <CloseIcon />
                                 </IconButton>
                                 <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
-                                    Sound
+                                    Wybierz termin szczepienia
                                 </Typography>
                                 <Button autoFocus color="inherit" onClick={handleClose}>
-                                    save
+                                    Wróć
                                 </Button>
                             </Toolbar>
                         </AppBar>
                         <List>
+                            {dayTimeSlots &&
+                                dayTimeSlots.map(dayTimeSlot =>
+                                    <ListItem button>
+                                        <ListItemText primary={dayTimeSlot.doctorFirstName} secondary="" />
+                                    </ListItem>
+                                )}
+
                             <ListItem button>
                                 <ListItemText primary=" " secondary="" />
                             </ListItem>
