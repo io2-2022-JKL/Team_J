@@ -1,31 +1,36 @@
 import * as React from 'react';
 import Button from '@mui/material/Button';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { Container, CssBaseline, TextField } from '@mui/material';
+import { Container, CssBaseline, ListItemButton, TextField } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import { useNavigate } from "react-router-dom";
 import Grid from "@material-ui/core/Grid";
-import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid';
-import { randomDate, randomEmail, randomId, randomPhoneNumber, randomTraderName, randomBoolean, randomInt } from '@mui/x-data-grid-generator';
-import dateFormat from 'dateformat';
-import DeleteIcon from '@mui/icons-material/Delete';
-import clsx from 'clsx';
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
 import Avatar from '@mui/material/Avatar';
-import { confirm } from "react-confirm-box";
-import { HomeOutlined, PlayCircleFilledWhiteRounded } from '@mui/icons-material';
-import axios from 'axios';
-import LinearProgress from '@mui/material/LinearProgress';
-import DataDisplayArray from '../DataDisplayArray';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemAvatar from '@mui/material/ListItemAvatar';
-import ImageIcon from '@mui/icons-material/Image';
-import WorkIcon from '@mui/icons-material/Work';
-import HomeIcon from '@mui/icons-material/Home';
-import BeachAccessIcon from '@mui/icons-material/BeachAccess';
+import { bookTimeSlot, getFreeTimeSlots } from './PatientApi';
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import Divider from '@mui/material/Divider';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
+import Slide from '@mui/material/Slide';
+import Dialog from '@mui/material/Dialog';
+import Moment from 'moment';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import Snackbar from '@mui/material/Snackbar';
 
 const theme = createTheme();
 
@@ -33,19 +38,165 @@ export default function FilterTimeSlots() {
 
     const navigate = useNavigate();
     const [showDaysList, setShowDaysList] = React.useState(false);
+    const [city, setCity] = React.useState();
+    const [virus, setVirus] = React.useState();
+    const [dateFrom, setDateFrom] = React.useState();
+    const [dateTo, setDateTo] = React.useState();
 
-    const handleSubmit = (event) => {
-        console.log(localStorage.getItem('userID'))
+    const [daysInCenters, setDaysInCenters] = React.useState();
+    const [openTimeSlotsDialog, setOpenTimeSlotsDialog] = React.useState(false);
+    const [openVaccinesDialog, setOpenVaccinesDialog] = React.useState(false);
 
+    const [dayTimeSlots, setDayTimeSlots] = React.useState();
+
+    const [possibleVaccines, setPossibleVaccines] = React.useState();
+    const [vaccine, setVaccine] = React.useState();
+
+    const [timeSlot, setTimeSlot] = React.useState()
+
+    const [openConfirmDialog, setOpenConfrimDialog] = React.useState(false)
+
+    const [openSnackBar, setOpenSnackBar] = React.useState()
+    const [snackBarMessage, setSnackBarMessage] = React.useState("Pomyślnie zapisano na szczepienie")
+
+    const handleDayChoice = (dayInCenter) => {
+        setDayTimeSlots(dayInCenter[Object.keys(dayInCenter)[0]].sort(function (a, b) { // non-anonymous as you ordered...
+            return b.from < a.from ? 1 : -1
+        }))
+        setPossibleVaccines(dayInCenter[Object.keys(dayInCenter)[0]][0].availableVaccines);
+        setOpenTimeSlotsDialog(true);
+    };
+
+    const handleVaccineChange = (event) => {
+        setVaccine(possibleVaccines.filter(vaccine => {
+            return vaccine.name === 'Pfizer'
+        })[0])
+    }
+
+    const handleVaccinesClose = () => {
+        setOpenVaccinesDialog(false)
+    }
+
+    const handleVaccineChoice = async () => {
+        console.log('handle vaccine choice')
+
+        setOpenConfrimDialog(true)
+
+        setOpenVaccinesDialog(false)
+    }
+
+    const handleTimeSLotsClose = () => {
+        setOpenTimeSlotsDialog(false);
     };
 
 
+    const handleTimeSlotChoice = (dayTimeSlot) => {
+        setTimeSlot(dayTimeSlot)
+        setOpenVaccinesDialog(true)
+    }
+
+    const handleSubmit = (event) => {
+        const data = new FormData(event.currentTarget);
+
+        setCity(data.get('cityFilter'))
+        setVirus(data.get('virusFilter'))
+    };
+
+    const handleConfrimClose = () => {
+        setOpenConfrimDialog(false)
+    }
+
+    const handleConfirmTrue = async () => {
+        console.log(vaccine, timeSlot)
+        let result = await bookTimeSlot(timeSlot, vaccine)
+        setOpenConfrimDialog(false)
+        if (result === "success") setSnackBarMessage("Pomyślnie zapisano na szczepienie")
+        else setSnackBarMessage("Zapisanie na szczepienie nie powiodło się")
+        setOpenSnackBar(true)
+    }
+
+
+    function getDayFromDate(date) {
+        //console.log(date.substring(0, 10))
+        return date.substring(0, 10)
+    }
+
+    function divideCenterIntoDays(center) {
+        console.log('divideCenter')
+        //console.log(center)
+        const days = center.reduce((days, item) => {
+            const day = getDayFromDate(item.from)
+            const group = (days[day] || []);
+            group.push(item);
+            days[day] = group;
+            return days;
+        }, {});
+        console.log(days)
+        return days;
+    }
+
+    function getHoursMinsFromDate(date) {
+        return date.substring(11, 16)
+    }
+
+    const submitSearch = async () => {
+        const response = await getFreeTimeSlots(city, dateFrom, dateTo, virus)
+
+        if (response === "fail") {
+            setSnackBarMessage("Nie znaleziono wyników dla tych danych")
+            setOpenSnackBar(true)
+        }
+
+        const data = response.data
+
+        const centers = data.reduce((centers, item) => {
+            const group = (centers[item.vaccinationCenterName] || []);
+            group.push(item);
+            centers[item.vaccinationCenterName] = group;
+            return centers;
+        }, {});
+
+        let centersDays = []
+
+        for (let c in centers) {
+            console.log("centrum", centers[c])
+            let days = divideCenterIntoDays(centers[c]);
+            console.log("days", days)
+            for (let d in days) {
+                console.log("days[d]")
+                console.log(d)
+                console.log(days[d])
+                console.log({ d: days[d] })
+
+
+                centersDays.push({ d: days[d] })
+            }
+        }
+
+        console.log(centersDays)
+
+        setDaysInCenters(centersDays)
+
+        setShowDaysList(true);
+
+    }
+
+    function getWeekDayNumberForDate(date) {
+        let day = getDayFromDate(date)
+        const d = new Date(day.substring(6, 10), day.substring(3, 5) - 1, day.substring(0, 2));
+        return (d.getDay() - 1) % 7;
+    }
+
+    function getWeekDayName(num) {
+        const weekdays = ["Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota", "Niedziela"];
+        return weekdays[num];
+    }
 
     return (
         <ThemeProvider theme={theme}>
             <Container component="main" maxWidth='lg'>
                 <CssBaseline>
-                    <Box
+                    <Container
                         sx={{
                             marginTop: 2,
                             display: 'flex',
@@ -63,13 +214,10 @@ export default function FilterTimeSlots() {
                             component='form'
                             noValidate
                             onChange={handleSubmit}
-                            //onSubmit={handleSubmit}
                             sx={{
                                 marginTop: 2,
                                 marginBottom: 2,
                                 display: 'flex',
-                                //flexDirection: 'row',
-                                //alignItems: 'center'
                             }}
                         >
                             <Grid container direction={"row"} spacing={1} >
@@ -90,43 +238,76 @@ export default function FilterTimeSlots() {
                                     />
                                 </Grid>
                                 <Grid item xs={3}>
-                                    <TextField
-                                        fullWidth
-                                        id="dateFrom"
-                                        label="Data Od"
-                                        name="dateFrom"
-                                    />
+
+                                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                                        <DatePicker
+                                            label="Data od"
+                                            views={['year', 'month', 'day']}
+                                            inputFormat="dd-MM-yyyy"
+                                            mask="__-__-____"
+                                            value={dateFrom}
+                                            onChange={(newDate) => {
+                                                setDateFrom(newDate);
+                                            }}
+                                            renderInput={(params) => <TextField
+                                                {...params}
+                                                fullWidth
+                                                id='dateFrom'
+                                                name='dateFrom'
+                                            />}
+                                        />
+                                    </LocalizationProvider>
                                 </Grid>
                                 <Grid item xs={3}>
-                                    <TextField
-                                        fullWidth
-                                        id="dateTo"
-                                        label="Data Do"
-                                        name="dateTo"
-                                    />
+                                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                                        <DatePicker
+                                            label="Data do"
+                                            views={['year', 'month', 'day']}
+                                            inputFormat="dd-MM-yyyy"
+                                            mask="__-__-____"
+                                            value={dateTo}
+                                            onChange={(newDate) => {
+                                                setDateTo(newDate);
+                                            }}
+                                            renderInput={(params) => <TextField
+                                                {...params}
+                                                fullWidth
+                                                id='dateTo'
+                                                name='dateTo'
+                                            />}
+                                        />
+                                    </LocalizationProvider>
                                 </Grid>
                             </Grid>
 
                         </Box>
                         {showDaysList &&
                             <Box>
-                                <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
-                                    <ListItem>
-                                        <ListItemAvatar>
-                                            <Avatar>
-                                                <HomeIcon />
-                                            </Avatar>
-                                        </ListItemAvatar>
-                                        <ListItemText primary="Centrum szczepień 1" secondary="Jan 9, 2014" />
-                                    </ListItem>
-                                    <ListItem>
-                                        <ListItemAvatar>
-                                            <Avatar>
-                                                <HomeIcon />
-                                            </Avatar>
-                                        </ListItemAvatar>
-                                        <ListItemText primary="Centrum szczepień 1" secondary="Jan 7, 2014" />
-                                    </ListItem>
+                                <List
+                                    sx={{ width: '100%', bgcolor: 'background.paper' }}
+                                    component="nav"
+                                    aria-labelledby="nested-list-subheader"
+                                >
+                                    {daysInCenters &&
+                                        daysInCenters.map(dayInCenter =>
+                                        (<ListItemButton
+                                            onClick={() => { handleDayChoice(dayInCenter) }}
+                                        >
+                                            <ListItemText
+                                                primary={dayInCenter[Object.keys(dayInCenter)[0]][0].vaccinationCenterName + ", " +
+                                                    dayInCenter[Object.keys(dayInCenter)[0]][0].vaccinationCenterStreet + ", " +
+                                                    getWeekDayName(getWeekDayNumberForDate(dayInCenter[Object.keys(dayInCenter)[0]][0].from)) + ", " +
+                                                    getDayFromDate(dayInCenter[Object.keys(dayInCenter)[0]][0].from)
+                                                }
+                                                secondary={"Godziny otwarcia: " +
+                                                    dayInCenter[Object.keys(dayInCenter)[0]][0].openingHours
+                                                    [getWeekDayNumberForDate(dayInCenter[Object.keys(dayInCenter)[0]][0].from)].from + " - " +
+                                                    dayInCenter[Object.keys(dayInCenter)[0]][0].openingHours
+                                                    [getWeekDayNumberForDate(dayInCenter[Object.keys(dayInCenter)[0]][0].from)].to
+                                                }
+                                            />
+                                        </ListItemButton>))
+                                    }
                                 </List>
                             </Box>
                         }
@@ -135,9 +316,18 @@ export default function FilterTimeSlots() {
                             fullWidth
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
-                            onClick={async () => { setShowDaysList(true) }}
+                            onClick={async () => { submitSearch() }}
                         >
                             Wybierz
+                        </Button>}
+                        {showDaysList && <Button
+                            type="submit"
+                            fullWidth
+                            variant="contained"
+                            sx={{ mt: 3, mb: 2 }}
+                            onClick={async () => { setShowDaysList(false) }}
+                        >
+                            Anuluj wyszukiwanie
                         </Button>}
                         <Button
                             type="submit"
@@ -148,9 +338,124 @@ export default function FilterTimeSlots() {
                         >
                             Powrót
                         </Button>
-                    </Box>
+                    </Container>
+
+                    <Dialog
+                        fullScreen
+                        open={openTimeSlotsDialog}
+                        onClose={handleTimeSLotsClose}
+                        TransitionComponent={Transition}
+                    >
+                        <AppBar sx={{ position: 'relative' }}>
+                            <Toolbar>
+                                <IconButton
+                                    edge="start"
+                                    color="inherit"
+                                    onClick={handleTimeSLotsClose}
+                                    aria-label="close"
+                                >
+                                    <CloseIcon />
+                                </IconButton>
+                                <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
+                                    {"Wybierz termin szczepienia"}
+                                </Typography>
+                                <Button autoFocus color="inherit" onClick={handleTimeSLotsClose}>
+                                    Wróć
+                                </Button>
+                            </Toolbar>
+                        </AppBar>
+                        <List>
+                            {dayTimeSlots &&
+                                dayTimeSlots.map(dayTimeSlot =>
+                                    <ListItemButton
+                                        onClick={() => { handleTimeSlotChoice(dayTimeSlot) }}
+                                    >
+                                        <ListItemText
+                                            primary={"Lekarz " + dayTimeSlot.doctorFirstName + " " + dayTimeSlot.doctorLastName + ", " + getDayFromDate(dayTimeSlot.from) + ", " +
+                                                getHoursMinsFromDate(dayTimeSlot.from) + " - " + getHoursMinsFromDate(dayTimeSlot.to)}
+                                            secondary="" />
+                                    </ListItemButton>
+                                )}
+
+                            <ListItem button>
+                                <ListItemText primary=" " secondary="" />
+                            </ListItem>
+                            <Divider />
+                        </List>
+                    </Dialog>
+
+                    <Dialog
+                        fullWidth
+                        maxWidth
+                        open={openVaccinesDialog}
+                    >
+                        <DialogTitle>Wybierz szczepionkę</DialogTitle>
+                        <DialogContent>
+                            <Box
+                                noValidate
+                                component="form"
+                                sx={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    m: 'auto',
+                                    width: 'fit-content',
+                                }}
+                            >
+                                <FormControl sx={{ mt: 2, minWidth: 120 }}>
+                                    <InputLabel htmlFor="max-width">Wybierz</InputLabel>
+                                    <Select
+                                        autoFocus
+                                        onChange={handleVaccineChange}
+                                        label="maxWidth"
+                                    >
+                                        {possibleVaccines && possibleVaccines.map(possibleVaccine =>
+                                            <MenuItem value={possibleVaccine.name}>{possibleVaccine.name + ", firma: " + possibleVaccine.company}</MenuItem>)}
+                                    </Select>
+                                </FormControl>
+                            </Box>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={handleVaccinesClose}>Wróc</Button>
+                            <Button onClick={handleVaccineChoice}>Wybierz</Button>
+                        </DialogActions>
+                    </Dialog>
+
+                    {timeSlot && vaccine && <Dialog
+                        open={openConfirmDialog}
+                        onClose={handleConfrimClose}
+                        aria-labelledby="alert-dialog-title"
+                        aria-describedby="alert-dialog-description"
+                    >
+                        <DialogTitle id="alert-dialog-title">
+                            {"Potwierdź zapis"}
+                        </DialogTitle>
+                        <DialogContent>
+                            <DialogContentText id="alert-dialog-description">
+                                {"Czy na pewno chcesz zapisać się na szczepienie? Data: " + timeSlot.from + ', Szczepionka: ' + vaccine.name}
+                            </DialogContentText>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={handleConfrimClose}>Nie</Button>
+                            <Button onClick={handleConfirmTrue} autoFocus>
+                                Tak
+                            </Button>
+                        </DialogActions>
+                    </Dialog>}
+
+                    <Snackbar
+                        open={openSnackBar}
+                        autoHideDuration={6000}
+                        onClose={() => { setOpenSnackBar(false) }}
+                        message={snackBarMessage}
+                    />
+
                 </CssBaseline>
             </Container >
         </ThemeProvider >
+
     );
 }
+
+const Transition = React.forwardRef(function Transition(props, ref) {
+    return <Slide direction="up" ref={ref} {...props} />;
+});

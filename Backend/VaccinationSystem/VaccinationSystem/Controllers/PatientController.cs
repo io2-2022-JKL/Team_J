@@ -225,7 +225,7 @@ namespace VaccinationSystem.Controllers
             return result;
         }
 
-        [HttpDelete("appointments/incomingAppointment/cancelAppointment/{patientId}/{appointmentId}")]
+        [HttpDelete("appointments/incomingAppointments/cancelAppointments/{patientId}/{appointmentId}")]
         public IActionResult CancelVisit(string appointmentId, string patientId)
         {
             // TODO: Token verification for 401 and 403 error codes

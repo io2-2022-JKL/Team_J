@@ -1,25 +1,62 @@
 import axios from 'axios';
+import Moment from 'moment';
+import { SYSTEM_SZCZEPIEN_URL } from '../Api';
 
-export async function getFreeTimeSlots(city, virus, dateFrom, dateTo) {
+export async function getFreeTimeSlots(city, dateFrom, dateTo, virus) {
+
+    //console.log("dateTo", Moment(dateTo).format('DD-MM-YYYY hh:mm'))
+    //console.log("dateFrom", Moment(dateFrom).format('DD-MM-YYYY hh:mm'))
 
     let response;
     try {
         response = await axios({
-            method: 'post',
-            url: 'https://systemszczepien.azurewebsites.net/patient/timeSlots/Filter',
+            method: 'get',
+            url: SYSTEM_SZCZEPIEN_URL + '/patient/timeSlots/Filter',
 
-            data: {
-                city: "Warszawa",
+            params: {
+                city: city,
+                dateFrom: Moment(dateFrom).format('DD-MM-YYYY hh:mm'),
+                dateTo: Moment(dateTo).format('DD-MM-YYYY hh:mm'),
+                virus: virus
+                /*city: "Warszawa",
                 dateFrom: "01-01-2022 10:00",
                 dateTo: "01-10-2022 10:00",
-                virus: "Koronawirus"
+                virus: "Koronawirus"*/
             }
         });
-        console.log({
-            response,
-        })
+        console.log(
+            "request succueeded"
+        )
     } catch (error) {
         console.error(error.message);
+        return "fail"
+    }
+
+    return response;
+}
+
+export async function bookTimeSlot(timeSlot, vaccine) {
+
+    let patientId = localStorage.getItem('userID')
+    let timeSlotId = timeSlot.timeSlotId
+    let vaccineId = vaccine.vaccineId
+
+    console.log(patientId, timeSlotId, vaccineId)
+
+
+    try {
+        let response = await axios({
+            method: 'post',
+            url: SYSTEM_SZCZEPIEN_URL + '/patient/timeSlots/Book/' + patientId + '/' + timeSlotId + '/' + vaccineId,
+        });
+        console.log(
+            "request succueeded"
+        )
+        return "success"
+
+    } catch (error) {
+        console.error(error.message);
+        return "fail"
     }
 }
 
@@ -29,7 +66,7 @@ export async function getFormerAppointments(patientId) {
     try {
         response = await axios({
             method: 'get',
-            url: 'https://systemszczepien.azurewebsites.net/patient/appointments/formerAppointments/'+patientId,
+            url: 'https://systemszczepien.azurewebsites.net/patient/appointments/formerAppointments/' + patientId,
         });
         /*
         console.log({
@@ -48,7 +85,7 @@ export async function getIncomingAppointments(patientId) {
     try {
         response = await axios({
             method: 'get',
-            url: 'https://systemszczepien.azurewebsites.net/patient/appointments/incomingAppointments/'+patientId,
+            url: 'https://systemszczepien.azurewebsites.net/patient/appointments/incomingAppointments/' + patientId,
         });
         /*
         console.log({
@@ -61,22 +98,22 @@ export async function getIncomingAppointments(patientId) {
     }
 }
 
-export async function cancelAppointment(patientId,appointmentId) {
+export async function cancelAppointment(patientId, appointmentId) {
     let response;
     try {
         response = await axios({
             method: 'delete',
-            url: 'https://systemszczepien.azurewebsites.net/patient/appointments/incomingAppointments/cancelAppointment/'+patientId+'/'+appointmentId,
+            url: 'https://systemszczepien.azurewebsites.net/patient/appointments/incomingAppointments/cancelAppointment/' + patientId + '/' + appointmentId,
         });
-        
+
         console.log({
             response,
         })
-        
+
     } catch (error) {
         console.error(error.message);
     }
-    
+
 }
 
 export async function getCertificates(patientId) {
@@ -85,7 +122,7 @@ export async function getCertificates(patientId) {
     try {
         response = await axios({
             method: 'get',
-            url: 'https://systemszczepien.azurewebsites.net/patient/certificates/'+patientId,
+            url: 'https://systemszczepien.azurewebsites.net/patient/certificates/' + patientId,
         });
         /*
         console.log({
