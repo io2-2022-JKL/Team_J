@@ -48,6 +48,10 @@ namespace VaccinationSystem
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.Build();
+            app.UseCors(builder => builder
+             .AllowAnyOrigin()
+             .AllowAnyMethod()
+             .AllowAnyHeader());
             app.UseSwagger();
             app.UseSwaggerUI();
             app.UseHttpsRedirection();

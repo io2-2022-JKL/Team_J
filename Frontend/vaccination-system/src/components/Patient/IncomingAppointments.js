@@ -11,7 +11,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Container, CssBaseline } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import dateFormat from 'dateformat';
-import { getFormerAppointments } from './PatientApi';
+import { cancelAppointment, getIncomingAppointments } from './PatientApi';
 import CircularProgress from '@mui/material/CircularProgress';
 import { blue } from '@mui/material/colors';
 
@@ -33,7 +33,6 @@ const createRandomRow = () => {
         vaccinationCenterStreet: randomAddress(),
         doctorFirstName: randomTraderName().split(' ')[0],
         doctorLastName: randomTraderName().split(' ')[1],
-        visitState: "Finished"
     }
 };
 
@@ -42,25 +41,39 @@ function renderRow(props) {
     const item = data[index];
     return (
         <ListItem style={style} key={index} component="div" disablePadding>
-            <Grid container direction={"row"} spacing={1}>
-                <Grid item xs={3}>
-                    <ListItemText primary={"Wirus: " + item.vaccineVirus} secondary={"Numer dawki: " + item.whichVaccineDose} />
+            <ListItemButton
+                onDoubleClick={async () => {
+                    let userID = localStorage.getItem('userID');
+                    let appointmentId = item.appointmentId;
+                    const result = window.confirm("Czy na pewno chcesz anulować wizytę?", confirmOptionsInPolish);
+                    if (result) {
+                        console.log("You click yes!");
+                        cancelAppointment(userID, appointmentId);
+                        //window.location.reload(false);
+                        return;
+                    }
+                    else
+                        console.log("You click No!");
+
+                }}
+            >
+                <Grid container direction={"row"} spacing={1}>
+                    <Grid item xs={4}>
+                        <ListItemText primary={"Wirus: " + item.vaccineVirus} secondary={"Numer dawki: " + item.whichVaccineDose} />
+                    </Grid>
+                    <Grid item xs={4}>
+                        <ListItemText primary={"Miasto: " + item.vaccinationCenterCity} secondary={"Ulica: " + item.vaccinationCenterStreet} />
+                    </Grid>
+                    <Grid item xs={4}>
+                        <ListItemText primary={"Lekarz: " + item.doctorFirstName + " " + item.doctorLastName} secondary={"Data szczepienia: " + item.windowEnd} />
+                    </Grid>
                 </Grid>
-                <Grid item xs={3}>
-                    <ListItemText primary={"Miasto: " + item.vaccinationCenterCity} secondary={"Ulica: " + item.vaccinationCenterStreet} />
-                </Grid>
-                <Grid item xs={3}>
-                    <ListItemText primary={"Lekarz: " + item.doctorFirstName + " " + item.doctorLastName} secondary={"Data szczepienia: " + item.windowEnd} />
-                </Grid>
-                <Grid item xs={3}>
-                    <ListItemText primary={"Status: " + item.visitState} />
-                </Grid>
-            </Grid>
+            </ListItemButton>
         </ListItem>
     );
 }
 
-export default function FormerAppointment() {
+export default function IncomingAppointment() {
     const navigate = useNavigate();
     /*
     const [data, setData] = React.useState(() => [
@@ -93,7 +106,7 @@ export default function FormerAppointment() {
                         }}
                     >
                         <Typography component="h1" variant='h5'>
-                            Historia szczepień
+                            Przyszłe szczepienia
                         </Typography>
                         <Button
                             type="submit"
@@ -102,8 +115,9 @@ export default function FormerAppointment() {
                             onClick={async () => {
                                 setLoading(true);
                                 let userID = localStorage.getItem('userID');
-                                let patientData = await getFormerAppointments(userID);
-                                setData(patientData);
+                                let patientData = await getIncomingAppointments(userID);
+                                if (patientData != null)
+                                    setData(patientData);
                                 setLoading(false);
                             }}
                         >
@@ -147,4 +161,11 @@ export default function FormerAppointment() {
             </Container>
         </ThemeProvider>
     );
+}
+
+const confirmOptionsInPolish = {
+    labels: {
+        confirmable: "Tak",
+        cancellable: "Nie"
+    }
 }

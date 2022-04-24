@@ -58,3 +58,79 @@ export async function bookTimeSlot(timeSlot, vaccine) {
         return "fail"
     }
 }
+
+export async function getFormerAppointments(patientId) {
+
+    let response;
+    try {
+        response = await axios({
+            method: 'get',
+            url: 'https://systemszczepien.azurewebsites.net/patient/appointments/formerAppointments/'+patientId,
+        });
+        /*
+        console.log({
+            data: response.data,
+        })
+        */
+        return response.data;
+    } catch (error) {
+        console.error(error.message);
+    }
+}
+
+export async function getIncomingAppointments(patientId) {
+
+    let response;
+    try {
+        response = await axios({
+            method: 'get',
+            url: 'https://systemszczepien.azurewebsites.net/patient/appointments/incomingAppointments/'+patientId,
+        });
+        /*
+        console.log({
+            data: response.data,
+        })
+        */
+        return response.data;
+    } catch (error) {
+        console.error(error.message);
+    }
+}
+
+export async function cancelAppointment(patientId,appointmentId) {
+    let response;
+    try {
+        response = await axios({
+            method: 'delete',
+            url: 'https://systemszczepien.azurewebsites.net/patient/appointments/incomingAppointments/cancelAppointment/'+patientId+'/'+appointmentId,
+        });
+        
+        console.log({
+            response,
+        })
+        
+    } catch (error) {
+        console.error(error.message);
+    }
+    
+}
+
+export async function getCertificates(patientId) {
+
+    let response;
+    try {
+        response = await axios({
+            method: 'get',
+            url: 'https://systemszczepien.azurewebsites.net/patient/certificates/'+patientId,
+        });
+        /*
+        console.log({
+            data: response.data,
+        })
+        */
+        return response.data;
+
+    } catch (error) {
+        console.error(error.message);
+    }
+}

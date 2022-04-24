@@ -11,7 +11,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Container, CssBaseline } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import dateFormat from 'dateformat';
-import { getFormerAppointments } from './PatientApi';
+import { getCertificates, getFormerAppointments } from './PatientApi';
 import CircularProgress from '@mui/material/CircularProgress';
 import { blue } from '@mui/material/colors';
 
@@ -44,23 +44,28 @@ function renderRow(props) {
         <ListItem style={style} key={index} component="div" disablePadding>
             <Grid container direction={"row"} spacing={1}>
                 <Grid item xs={3}>
-                    <ListItemText primary={"Wirus: " + item.vaccineVirus} secondary={"Numer dawki: " + item.whichVaccineDose} />
+                    <ListItemText primary={"Wirus: " + item.virus}/>
                 </Grid>
                 <Grid item xs={3}>
-                    <ListItemText primary={"Miasto: " + item.vaccinationCenterCity} secondary={"Ulica: " + item.vaccinationCenterStreet} />
+                    <ListItemText primary={"Nazwa szczepionki: " + item.vaccineName}/>
                 </Grid>
                 <Grid item xs={3}>
-                    <ListItemText primary={"Lekarz: " + item.doctorFirstName + " " + item.doctorLastName} secondary={"Data szczepienia: " + item.windowEnd} />
+                    <ListItemText primary={"Firma: " + item.vaccineCompany}/>
                 </Grid>
-                <Grid item xs={3}>
-                    <ListItemText primary={"Status: " + item.visitState} />
-                </Grid>
+                <Button
+                    onClick={()=>{
+                        var win = window.open(item.url, '_blank');
+                        win.focus();
+                    }}
+                >
+                    Pobierz certyfikat
+                </Button>
             </Grid>
         </ListItem>
     );
 }
 
-export default function FormerAppointment() {
+export default function Certificate() {
     const navigate = useNavigate();
     /*
     const [data, setData] = React.useState(() => [
@@ -93,7 +98,7 @@ export default function FormerAppointment() {
                         }}
                     >
                         <Typography component="h1" variant='h5'>
-                            Historia szczepień
+                            Certyfikaty
                         </Typography>
                         <Button
                             type="submit"
@@ -102,8 +107,9 @@ export default function FormerAppointment() {
                             onClick={async () => {
                                 setLoading(true);
                                 let userID = localStorage.getItem('userID');
-                                let patientData = await getFormerAppointments(userID);
-                                setData(patientData);
+                                let patientData = await getCertificates(userID);
+                                if(patientData!=null)
+                                    setData(patientData);
                                 setLoading(false);
                             }}
                         >
