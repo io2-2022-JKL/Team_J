@@ -36,43 +36,6 @@ const createRandomRow = () => {
     }
 };
 
-function renderRow(props) {
-    const { index, style, data } = props;
-    const item = data[index];
-    return (
-        <ListItem style={style} key={index} component="div" disablePadding>
-            <ListItemButton
-                onDoubleClick={async () => {
-                    let userID = localStorage.getItem('userID');
-                    let appointmentId = item.appointmentId;
-                    const result = window.confirm("Czy na pewno chcesz anulować wizytę?", confirmOptionsInPolish);
-                    if (result) {
-                        console.log("You click yes!");
-                        cancelAppointment(userID, appointmentId);
-                        //window.location.reload(false);
-                        return;
-                    }
-                    else
-                        console.log("You click No!");
-
-                }}
-            >
-                <Grid container direction={"row"} spacing={1}>
-                    <Grid item xs={4}>
-                        <ListItemText primary={"Wirus: " + item.vaccineVirus} secondary={"Numer dawki: " + item.whichVaccineDose} />
-                    </Grid>
-                    <Grid item xs={4}>
-                        <ListItemText primary={"Miasto: " + item.vaccinationCenterCity} secondary={"Ulica: " + item.vaccinationCenterStreet} />
-                    </Grid>
-                    <Grid item xs={4}>
-                        <ListItemText primary={"Lekarz: " + item.doctorFirstName + " " + item.doctorLastName} secondary={"Data szczepienia: " + item.windowEnd} />
-                    </Grid>
-                </Grid>
-            </ListItemButton>
-        </ListItem>
-    );
-}
-
 export default function IncomingAppointment() {
     const navigate = useNavigate();
     /*
@@ -92,6 +55,58 @@ export default function IncomingAppointment() {
     */
     const [data, setData] = React.useState([]);
     const [loading, setLoading] = React.useState(false);
+    
+    function renderRow(props) {
+        const { index, style, data } = props;
+        const item = data[index];
+        return (
+            <ListItem style={style} key={index} component="div" disablePadding>
+                <Grid container direction={"row"} spacing={1}>
+                    <Grid item xs={4}>
+                        <ListItemText primary={"Wirus: " + item.vaccineVirus} secondary={"Numer dawki: " + item.whichVaccineDose} />
+                    </Grid>
+                    <Grid item xs={4}>
+                        <ListItemText primary={"Miasto: " + item.vaccinationCenterCity} secondary={"Ulica: " + item.vaccinationCenterStreet} />
+                    </Grid>
+                    <Grid item xs={4}>
+                        <ListItemText primary={"Lekarz: " + item.doctorFirstName + " " + item.doctorLastName} secondary={"Data szczepienia: " + item.windowEnd} />
+                    </Grid>
+                </Grid>
+                <Button
+                    onClick={async () => {
+                        let userID = localStorage.getItem('userID');
+                        let appointmentId = item.appointmentId;
+                        const result = window.confirm("Czy na pewno chcesz anulować wizytę?", confirmOptionsInPolish);
+                        if (result) {
+                            console.log("You click yes!");
+                            cancelAppointment(userID, appointmentId);
+                            /*
+                            let pom = data.find((element)=>{
+                                return element.appointmentId === appointmentId;
+                            });
+                            var patientData = data;
+                            delete patientData[pom];
+                            setData(patientData);
+                            */
+                            
+                            setLoading(true);
+                            let patientData = await getIncomingAppointments(userID);
+                            if (patientData != null)
+                                setData(patientData);
+                            setLoading(false);
+                            
+                            return;
+                        }
+                        else
+                            console.log("You click No!");
+
+                    }}
+                >
+                    Anuluj wizytę
+                </Button>
+            </ListItem>
+        );
+    }
 
     return (
         <ThemeProvider theme={theme}>
