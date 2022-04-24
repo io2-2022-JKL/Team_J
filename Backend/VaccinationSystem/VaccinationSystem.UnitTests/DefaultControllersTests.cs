@@ -240,7 +240,7 @@ namespace VaccinationSystem.UnitTests
 
             var account = response.Value as SigninResponseDTO;
             Assert.NotNull(account);
-            Assert.Equal(expectedId, account.userID);
+            Assert.Equal(expectedId, account.userId);
             Assert.Equal(expectedAccountType, account.userType);
         }
 

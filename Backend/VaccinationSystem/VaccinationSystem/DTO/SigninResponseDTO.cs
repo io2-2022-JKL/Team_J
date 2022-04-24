@@ -2,7 +2,7 @@
 {
     public class SigninResponseDTO
     {
-        public string userID { get; set; }
+        public string userId { get; set; }
         public string userType { get; set; }
     }
 }
