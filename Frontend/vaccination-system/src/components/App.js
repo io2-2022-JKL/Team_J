@@ -16,6 +16,7 @@ import FormerAppointment from './Patient/FormerAppointments';
 import IncomingAppointment from './Patient/IncomingAppointments';
 import Certificate from './Patient/Certificates';
 
+
 function App() {
   return (
     <div className="App">

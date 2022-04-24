@@ -93,6 +93,7 @@ export async function getCertificates(patientId) {
         })
         */
         return response.data;
+
     } catch (error) {
         console.error(error.message);
     }
