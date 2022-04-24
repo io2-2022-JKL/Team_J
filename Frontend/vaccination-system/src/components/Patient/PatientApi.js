@@ -1,5 +1,6 @@
 import axios from 'axios';
 import Moment from 'moment';
+import { SYSTEM_SZCZEPIEN_URL } from '../Api';
 
 export async function getFreeTimeSlots(city, dateFrom, dateTo, virus) {
 
@@ -10,7 +11,7 @@ export async function getFreeTimeSlots(city, dateFrom, dateTo, virus) {
     try {
         response = await axios({
             method: 'get',
-            url: 'https://systemszczepien.azurewebsites.net/patient/timeSlots/Filter',
+            url: SYSTEM_SZCZEPIEN_URL + '/patient/timeSlots/Filter',
 
             params: {
                 city: city,
@@ -46,7 +47,7 @@ export async function bookTimeSlot(timeSlot, vaccine) {
     try {
         let response = await axios({
             method: 'post',
-            url: 'https://systemszczepien.azurewebsites.net/patient/timeSlots/Book/' + patientId + '/' + timeSlotId + '/' + vaccineId,
+            url: SYSTEM_SZCZEPIEN_URL + '/patient/timeSlots/Book/' + patientId + '/' + timeSlotId + '/' + vaccineId,
         });
         console.log(
             "request succueeded"
@@ -65,7 +66,7 @@ export async function getFormerAppointments(patientId) {
     try {
         response = await axios({
             method: 'get',
-            url: 'https://systemszczepien.azurewebsites.net/patient/appointments/formerAppointments/'+patientId,
+            url: 'https://systemszczepien.azurewebsites.net/patient/appointments/formerAppointments/' + patientId,
         });
         /*
         console.log({
@@ -84,7 +85,7 @@ export async function getIncomingAppointments(patientId) {
     try {
         response = await axios({
             method: 'get',
-            url: 'https://systemszczepien.azurewebsites.net/patient/appointments/incomingAppointments/'+patientId,
+            url: 'https://systemszczepien.azurewebsites.net/patient/appointments/incomingAppointments/' + patientId,
         });
         /*
         console.log({
@@ -97,22 +98,22 @@ export async function getIncomingAppointments(patientId) {
     }
 }
 
-export async function cancelAppointment(patientId,appointmentId) {
+export async function cancelAppointment(patientId, appointmentId) {
     let response;
     try {
         response = await axios({
             method: 'delete',
-            url: 'https://systemszczepien.azurewebsites.net/patient/appointments/incomingAppointments/cancelAppointment/'+patientId+'/'+appointmentId,
+            url: 'https://systemszczepien.azurewebsites.net/patient/appointments/incomingAppointments/cancelAppointment/' + patientId + '/' + appointmentId,
         });
-        
+
         console.log({
             response,
         })
-        
+
     } catch (error) {
         console.error(error.message);
     }
-    
+
 }
 
 export async function getCertificates(patientId) {
@@ -121,7 +122,7 @@ export async function getCertificates(patientId) {
     try {
         response = await axios({
             method: 'get',
-            url: 'https://systemszczepien.azurewebsites.net/patient/certificates/'+patientId,
+            url: 'https://systemszczepien.azurewebsites.net/patient/certificates/' + patientId,
         });
         /*
         console.log({

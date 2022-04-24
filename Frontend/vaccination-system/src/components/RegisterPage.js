@@ -12,7 +12,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { Link, useNavigate} from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from 'axios';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -21,6 +21,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { blue } from '@mui/material/colors';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
+import { SYSTEM_SZCZEPIEN_URL } from './Api';
 
 const theme = createTheme();
 
@@ -78,7 +79,7 @@ export default function SignUp() {
     try {
       const { data: response } = await axios({
         method: 'post',
-        url: 'https://systemszczepien.azurewebsites.net/register',
+        url: SYSTEM_SZCZEPIEN_URL + '/register',
         data: {
           PESEL: pesel,
           firstName: firstName,

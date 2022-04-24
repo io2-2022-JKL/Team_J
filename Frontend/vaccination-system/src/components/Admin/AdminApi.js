@@ -18,10 +18,11 @@ import { PlayCircleFilledWhiteRounded } from '@mui/icons-material';
 import axios from 'axios';
 import LinearProgress from '@mui/material/LinearProgress';
 import DataDisplayArray from '../DataDisplayArray';
+import { SYSTEM_SZCZEPIEN_URL } from '../Api';
 
 export async function getPatientsData() {
     try {
-        const { data: response } = await axios.get('https://systemszczepien.azurewebsites.net/admin/patients');
+        const { data: response } = await axios.get(SYSTEM_SZCZEPIEN_URL + '/admin/patients');
         return response;
     } catch (error) {
         console.error(error.message);
