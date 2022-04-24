@@ -21,6 +21,6 @@
 
 Jeśli dane podane w `Delete` nie pozwalają na znalezienie rekordu, który ma status `Active == true`, zwracany jest błąd. Wyjątkiem jest `admin/doctors/timeSlots/deleteTimeSlots`, które zwraca błąd tylko, jeśli nie został usunięty żaden z podanych terminów (więc mogą się pojawić złe identyfikatory).
 
-Postać danych zwracanych przez backend (jeśli coś nie zostało wymienione w poprzednim dziale lub zupełnie się różni):
+## Postać danych zwracanych przez backend (jeśli coś nie zostało wymienione w poprzednim dziale lub zupełnie się różni):
 - **UserType** - `string`, przyjmuje wartości `doctor`, `patient` i `admin`;
 - **PhoneNumber** - tak jak w postaci przyjmowanej przez backend, ale bez spacji;
