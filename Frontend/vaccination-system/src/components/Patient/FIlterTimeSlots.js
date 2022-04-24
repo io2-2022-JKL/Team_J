@@ -11,9 +11,16 @@ import Avatar from '@mui/material/Avatar';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemAvatar from '@mui/material/ListItemAvatar';
-import HomeIcon from '@mui/icons-material/Home';
 import { getFreeTimeSlots } from './PatientApi';
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import Divider from '@mui/material/Divider';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
+import Slide from '@mui/material/Slide';
+import Dialog from '@mui/material/Dialog';
 
 const theme = createTheme();
 
@@ -27,6 +34,18 @@ export default function FilterTimeSlots() {
     const [dateTo, setDateTo] = React.useState();
 
     const [daysInCenters, setDaysInCenters] = React.useState();
+    const [openDialog, setOpenDialog] = React.useState();
+
+    const [dayTimeSlots, setDayTimeSlots] = React.useState();
+
+    const handleDayChoice = (dayInCenter) => {
+        setOpenDialog(true);
+    };
+
+    const handleClose = () => {
+        setOpenDialog(false);
+    };
+
 
     const handleSubmit = (event) => {
         const data = new FormData(event.currentTarget);
@@ -157,20 +176,35 @@ export default function FilterTimeSlots() {
                                     />
                                 </Grid>
                                 <Grid item xs={3}>
-                                    <TextField
-                                        fullWidth
-                                        id="dateFrom"
-                                        label="Data Od"
-                                        name="dateFrom"
-                                    />
+
+                                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                                        <DatePicker
+                                            id="dateFrom"
+                                            name="dateFrom"
+
+                                            label="Data Od"
+                                            value={dateFrom}
+                                            onChange={(newDate) => {
+                                                setDateFrom(newDate);
+                                            }}
+                                            renderInput={(params) => <TextField {...params} />}
+                                        />
+                                    </LocalizationProvider>
                                 </Grid>
                                 <Grid item xs={3}>
-                                    <TextField
-                                        fullWidth
-                                        id="dateTo"
-                                        label="Data Do"
-                                        name="dateTo"
-                                    />
+                                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                                        <DatePicker
+                                            id="dateTo"
+                                            name="dateTo"
+
+                                            label="Data Do"
+                                            value={dateTo}
+                                            onChange={(newDate) => {
+                                                setDateTo(newDate);
+                                            }}
+                                            renderInput={(params) => <TextField {...params} />}
+                                        />
+                                    </LocalizationProvider>
                                 </Grid>
                             </Grid>
 
@@ -184,7 +218,9 @@ export default function FilterTimeSlots() {
                                 >
                                     {daysInCenters &&
                                         daysInCenters.map(dayInCenter =>
-                                        (<ListItemButton>
+                                        (<ListItemButton
+                                        //onClick={handleDayChoice(dayInCenter)}
+                                        >
                                             <ListItemText
                                                 primary={dayInCenter[Object.keys(dayInCenter)[0]][0].vaccinationCenterName + ", " +
                                                     dayInCenter[Object.keys(dayInCenter)[0]][0].vaccinationCenterStreet + "\n" +
@@ -222,8 +258,50 @@ export default function FilterTimeSlots() {
                             Powrót
                         </Button>
                     </Box>
+                    <Dialog
+                        fullScreen
+                        open={openDialog}
+                        onClose={handleClose}
+                        TransitionComponent={Transition}
+                    >
+                        <AppBar sx={{ position: 'relative' }}>
+                            <Toolbar>
+                                <IconButton
+                                    edge="start"
+                                    color="inherit"
+                                    onClick={handleClose}
+                                    aria-label="close"
+                                >
+                                    <CloseIcon />
+                                </IconButton>
+                                <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
+                                    Sound
+                                </Typography>
+                                <Button autoFocus color="inherit" onClick={handleClose}>
+                                    save
+                                </Button>
+                            </Toolbar>
+                        </AppBar>
+                        <List>
+                            <ListItem button>
+                                <ListItemText primary=" " secondary="" />
+                            </ListItem>
+                            <Divider />
+                            <ListItem button>
+                                <ListItemText
+                                    primary=""
+                                    secondary=""
+                                />
+                            </ListItem>
+                        </List>
+                    </Dialog>
                 </CssBaseline>
             </Container >
         </ThemeProvider >
+
     );
 }
+
+const Transition = React.forwardRef(function Transition(props, ref) {
+    return <Slide direction="up" ref={ref} {...props} />;
+});
