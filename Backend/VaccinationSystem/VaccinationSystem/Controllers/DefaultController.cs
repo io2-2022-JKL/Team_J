@@ -137,18 +137,18 @@ namespace VaccinationSystem.Controllers
                 var docAccount = _context.Doctors.Include("Patients").SingleOrDefault(doc => doc.Active == true && doc.PatientId == account.Id);
                 if (docAccount != null)
                 {
-                    result.userID = docAccount.Id.ToString();
+                    result.userId = docAccount.Id.ToString();
                     result.userType = "doctor";
                     return result;
                 }
-                result.userID = account.Id.ToString();
+                result.userId = account.Id.ToString();
                 result.userType = "patient";
                 return result;
             }
             account = _context.Admins.SingleOrDefault(admin => admin.Mail == signinRequestDTO.mail && admin.Password == signinRequestDTO.password);
             if (account != null)
             {
-                result.userID = account.Id.ToString();
+                result.userId = account.Id.ToString();
                 result.userType = "admin";
                 return result;
             }
