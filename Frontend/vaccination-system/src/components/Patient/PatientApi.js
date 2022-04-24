@@ -66,7 +66,7 @@ export async function getFormerAppointments(patientId) {
     try {
         response = await axios({
             method: 'get',
-            url: 'https://systemszczepien.azurewebsites.net/patient/appointments/formerAppointments/' + patientId,
+            url: SYSTEM_SZCZEPIEN_URL + '/patient/appointments/formerAppointments/' + patientId,
         });
         /*
         console.log({
@@ -85,7 +85,7 @@ export async function getIncomingAppointments(patientId) {
     try {
         response = await axios({
             method: 'get',
-            url: 'https://systemszczepien.azurewebsites.net/patient/appointments/incomingAppointments/' + patientId,
+            url: SYSTEM_SZCZEPIEN_URL + '/patient/appointments/incomingAppointments/' + patientId,
         });
         /*
         console.log({
@@ -103,7 +103,7 @@ export async function cancelAppointment(patientId, appointmentId) {
     try {
         response = await axios({
             method: 'delete',
-            url: 'https://systemszczepien.azurewebsites.net/patient/appointments/incomingAppointments/cancelAppointment/' + patientId + '/' + appointmentId,
+            url: SYSTEM_SZCZEPIEN_URL + '/patient/appointments/incomingAppointments/cancelAppointment/' + patientId + '/' + appointmentId,
         });
 
         console.log({
@@ -122,7 +122,7 @@ export async function getCertificates(patientId) {
     try {
         response = await axios({
             method: 'get',
-            url: 'https://systemszczepien.azurewebsites.net/patient/certificates/' + patientId,
+            url: SYSTEM_SZCZEPIEN_URL + '/patient/certificates/' + patientId,
         });
         /*
         console.log({
