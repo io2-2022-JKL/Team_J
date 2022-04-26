@@ -18,7 +18,7 @@ import { PlayCircleFilledWhiteRounded } from '@mui/icons-material';
 import axios from 'axios';
 import LinearProgress from '@mui/material/LinearProgress';
 import DataDisplayArray from '../DataDisplayArray';
-import { SYSTEM_SZCZEPIEN_URL } from '../Api';
+import { SYSTEM_SZCZEPIEN_URL } from '../../api/Api';
 
 export async function getPatientsData() {
     try {
