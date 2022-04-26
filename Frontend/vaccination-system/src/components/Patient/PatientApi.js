@@ -1,6 +1,6 @@
 import axios from 'axios';
 import Moment from 'moment';
-import { SYSTEM_SZCZEPIEN_URL } from '../Api';
+import { SYSTEM_SZCZEPIEN_URL } from '../../api/Api';
 
 export async function getFreeTimeSlots(city, dateFrom, dateTo, virus) {
 

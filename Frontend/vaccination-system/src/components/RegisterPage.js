@@ -21,7 +21,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { blue } from '@mui/material/colors';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
-import { SYSTEM_SZCZEPIEN_URL } from './Api';
+import { SYSTEM_SZCZEPIEN_URL } from '../api/Api';
 
 const theme = createTheme();
 

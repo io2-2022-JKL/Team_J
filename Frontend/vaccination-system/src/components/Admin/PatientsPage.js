@@ -14,7 +14,7 @@ import Avatar from '@mui/material/Avatar';
 import { confirm } from "react-confirm-box";
 import DataDisplayArray from '../DataDisplayArray';
 import { getPatientsData, getRandomPatientData } from './AdminApi';
-import { FilteringHelepers } from '../FilteringHelepers';
+import { FilteringHelepers } from '../../tools/FilteringHelepers';
 
 const theme = createTheme();
 
