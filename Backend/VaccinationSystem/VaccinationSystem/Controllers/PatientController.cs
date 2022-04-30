@@ -23,7 +23,7 @@ namespace VaccinationSystem.Controllers
             _context = context;
         }
 
-        [HttpGet("timeSlots/Filter")]
+        [HttpGet("timeSlots/filter")]
         public ActionResult<IEnumerable<TimeSlotFilterResponseDTO>> FilterTimeSlots(string city, string dateFrom, string dateTo, string virus)
         {
             // TODO: Token verification for 401 and 403 error codes
@@ -98,27 +98,27 @@ namespace VaccinationSystem.Controllers
                 {
                     openingHoursDTOs.Add(new OpeningHoursDayDTO()
                     {
-                        From = oh.From.ToString(),
-                        To = oh.To.ToString(),
+                        from = oh.From.ToString(),
+                        to = oh.To.ToString(),
                     });
                 }
 
-                timeSlotFilterResponseDTO.TimeSlotId = timeSlot.Id.ToString();
-                timeSlotFilterResponseDTO.From = timeSlot.From.ToString(_dateTimeFormat);
-                timeSlotFilterResponseDTO.To = timeSlot.To.ToString(_dateTimeFormat);
-                timeSlotFilterResponseDTO.VaccinationCenterName = vaccinationCenter.Name;
-                timeSlotFilterResponseDTO.VaccinationCenterCity = vaccinationCenter.City;
-                timeSlotFilterResponseDTO.VaccinationCenterStreet = vaccinationCenter.Address;
-                timeSlotFilterResponseDTO.AvailableVaccines = vaccines;
-                timeSlotFilterResponseDTO.OpeningHours = openingHoursDTOs;
-                timeSlotFilterResponseDTO.DoctorFirstName = patientAccount.FirstName;
-                timeSlotFilterResponseDTO.DoctorLastName = patientAccount.LastName;
+                timeSlotFilterResponseDTO.timeSlotId = timeSlot.Id.ToString();
+                timeSlotFilterResponseDTO.from = timeSlot.From.ToString(_dateTimeFormat);
+                timeSlotFilterResponseDTO.to = timeSlot.To.ToString(_dateTimeFormat);
+                timeSlotFilterResponseDTO.vaccinationCenterName = vaccinationCenter.Name;
+                timeSlotFilterResponseDTO.vaccinationCenterCity = vaccinationCenter.City;
+                timeSlotFilterResponseDTO.vaccinationCenterStreet = vaccinationCenter.Address;
+                timeSlotFilterResponseDTO.availableVaccines = vaccines;
+                timeSlotFilterResponseDTO.openingHours = openingHoursDTOs;
+                timeSlotFilterResponseDTO.doctorFirstName = patientAccount.FirstName;
+                timeSlotFilterResponseDTO.doctorLastName = patientAccount.LastName;
                 result.Add(timeSlotFilterResponseDTO);
             }
             return result;
         }
 
-        [HttpPost("timeSlots/Book/{patientId}/{timeSlotId}/{vaccineId}")]
+        [HttpPost("timeSlots/book/{patientId}/{timeSlotId}/{vaccineId}")]
         public IActionResult BookVisit(string patientId, string timeSlotId, string vaccineId)
         {
             // TODO: Token verification for 401 and 403 error codes
@@ -208,18 +208,18 @@ namespace VaccinationSystem.Controllers
                 VaccinationCenter vaccinationCenter = _context.VaccinationCenters.Where(vc => vc.Id == doctor.VaccinationCenterId && vc.Active == true).SingleOrDefault();
                 if (vaccinationCenter == null) continue;
 
-                futureAppointmentDTO.VaccineName = appointment.Vaccine.Name;
-                futureAppointmentDTO.VaccineCompany = appointment.Vaccine.Company;
-                futureAppointmentDTO.VaccineVirus = appointment.Vaccine.Virus.ToString();
-                futureAppointmentDTO.WhichVaccineDose = appointment.WhichDose;
-                futureAppointmentDTO.AppointmentId = appointment.Id.ToString();
-                futureAppointmentDTO.WindowBegin = appointment.TimeSlot.From.ToString(_dateTimeFormat);
-                futureAppointmentDTO.WindowEnd = appointment.TimeSlot.To.ToString(_dateTimeFormat);
-                futureAppointmentDTO.VaccinationCenterName = vaccinationCenter.Name;
-                futureAppointmentDTO.VaccinationCenterCity = vaccinationCenter.City;
-                futureAppointmentDTO.VaccinationCenterStreet = vaccinationCenter.Address;
-                futureAppointmentDTO.DoctorFirstName = doctorPatientAccount.FirstName;
-                futureAppointmentDTO.DoctorLastName = doctorPatientAccount.LastName;
+                futureAppointmentDTO.vaccineName = appointment.Vaccine.Name;
+                futureAppointmentDTO.vaccineCompany = appointment.Vaccine.Company;
+                futureAppointmentDTO.vaccineVirus = appointment.Vaccine.Virus.ToString();
+                futureAppointmentDTO.whichVaccineDose = appointment.WhichDose;
+                futureAppointmentDTO.appointmentId = appointment.Id.ToString();
+                futureAppointmentDTO.windowBegin = appointment.TimeSlot.From.ToString(_dateTimeFormat);
+                futureAppointmentDTO.windowEnd = appointment.TimeSlot.To.ToString(_dateTimeFormat);
+                futureAppointmentDTO.vaccinationCenterName = vaccinationCenter.Name;
+                futureAppointmentDTO.vaccinationCenterCity = vaccinationCenter.City;
+                futureAppointmentDTO.vaccinationCenterStreet = vaccinationCenter.Address;
+                futureAppointmentDTO.doctorFirstName = doctorPatientAccount.FirstName;
+                futureAppointmentDTO.doctorLastName = doctorPatientAccount.LastName;
                 result.Add(futureAppointmentDTO);
             }
             return result;
@@ -300,19 +300,19 @@ namespace VaccinationSystem.Controllers
                 VaccinationCenter vaccinationCenter = _context.VaccinationCenters.Where(vc => vc.Id == doctor.VaccinationCenterId).SingleOrDefault();
                 if (vaccinationCenter == null) continue;
 
-                formerAppointmentDTO.VaccineName = appointment.Vaccine.Name;
-                formerAppointmentDTO.VaccineCompany = appointment.Vaccine.Company;
-                formerAppointmentDTO.VaccineVirus = appointment.Vaccine.Virus.ToString();
-                formerAppointmentDTO.WhichVaccineDose = appointment.WhichDose;
-                formerAppointmentDTO.AppointmentId = appointment.Id.ToString();
-                formerAppointmentDTO.WindowBegin = appointment.TimeSlot.From.ToString(_dateTimeFormat);
-                formerAppointmentDTO.WindowEnd = appointment.TimeSlot.To.ToString(_dateTimeFormat);
-                formerAppointmentDTO.VaccinationCenterName = vaccinationCenter.Name;
-                formerAppointmentDTO.VaccinationCenterCity = vaccinationCenter.City;
-                formerAppointmentDTO.VaccinationCenterStreet = vaccinationCenter.Address;
-                formerAppointmentDTO.DoctorFirstName = doctorPatientAccount.FirstName;
-                formerAppointmentDTO.DoctorLastName = doctorPatientAccount.LastName;
-                formerAppointmentDTO.VisitState = appointment.State.ToString();
+                formerAppointmentDTO.vaccineName = appointment.Vaccine.Name;
+                formerAppointmentDTO.vaccineCompany = appointment.Vaccine.Company;
+                formerAppointmentDTO.vaccineVirus = appointment.Vaccine.Virus.ToString();
+                formerAppointmentDTO.whichVaccineDose = appointment.WhichDose;
+                formerAppointmentDTO.appointmentId = appointment.Id.ToString();
+                formerAppointmentDTO.windowBegin = appointment.TimeSlot.From.ToString(_dateTimeFormat);
+                formerAppointmentDTO.windowEnd = appointment.TimeSlot.To.ToString(_dateTimeFormat);
+                formerAppointmentDTO.vaccinationCenterName = vaccinationCenter.Name;
+                formerAppointmentDTO.vaccinationCenterCity = vaccinationCenter.City;
+                formerAppointmentDTO.vaccinationCenterStreet = vaccinationCenter.Address;
+                formerAppointmentDTO.doctorFirstName = doctorPatientAccount.FirstName;
+                formerAppointmentDTO.doctorLastName = doctorPatientAccount.LastName;
+                formerAppointmentDTO.visitState = appointment.State.ToString();
 
                 result.Add(formerAppointmentDTO);
             }
@@ -349,10 +349,10 @@ namespace VaccinationSystem.Controllers
             {
                 result.Add(new BasicCertificateInfoDTO()
                 {
-                    Url = certificate.Url,
-                    VaccineName = certificate.Vaccine.Name,
-                    VaccineCompany = certificate.Vaccine.Company,
-                    Virus = certificate.Vaccine.Virus.ToString(),
+                    url = certificate.Url,
+                    vaccineName = certificate.Vaccine.Name,
+                    vaccineCompany = certificate.Vaccine.Company,
+                    virus = certificate.Vaccine.Virus.ToString(),
                 });
             }
             return result;

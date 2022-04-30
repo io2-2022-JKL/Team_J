@@ -34,7 +34,7 @@ namespace VaccinationSystem.Controllers
         private IActionResult AddNewUser(RegisterRequestDTO registerRequestDTO)
         {
             Patient patient = new Patient();
-            patient.PESEL = registerRequestDTO.pesel;
+            patient.PESEL = registerRequestDTO.PESEL;
             if(patient.PESEL == null || patient.PESEL.Length != 11 || !long.TryParse(patient.PESEL, out _))
             {
                 return BadRequest();
@@ -155,12 +155,51 @@ namespace VaccinationSystem.Controllers
             return null;
         }
 
-        [HttpPost("user/logout/{userId}")]
-        public IActionResult LogOutUser(string userId)
+        [HttpGet("viruses")]
+        public ActionResult<IEnumerable<GetVirusDTO>> GetViruses()
         {
-            return NotFound();
+            var result = GetAllVirusesNames();
+            if (result.Count() == 0)
+                return NotFound();
+            return Ok(result);
         }
 
+        private IEnumerable<GetVirusDTO> GetAllVirusesNames()
+        {
+            List<GetVirusDTO> result = new List<GetVirusDTO>();
+            foreach(var virus in Enum.GetValues(typeof(Virus)).Cast<Virus>())
+            {
+                GetVirusDTO virusDTO = new GetVirusDTO()
+                {
+                    virus = virus.ToString()
+                };
+                result.Add(virusDTO);
+            }
+            return result;
+        }
+
+        [HttpGet("cities")]
+        public ActionResult<IEnumerable<GetCitiesDTO>> GetCities()
+        {
+            var result = GetAllCities();
+            if (result.Count() == 0)
+                return NotFound();
+            return Ok(result);
+        }
+
+        private IEnumerable<GetCitiesDTO> GetAllCities()
+        {
+            List<GetCitiesDTO> result = new List<GetCitiesDTO>();
+            foreach(var city in _context.VaccinationCenters.Select(vc => vc.City).Distinct())
+            {
+                GetCitiesDTO cityDTO = new GetCitiesDTO()
+                {
+                    city = city
+                };
+                result.Add(cityDTO);
+            }
+            return result;
+        }
 
     }
 }

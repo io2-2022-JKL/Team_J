@@ -7,14 +7,14 @@ namespace VaccinationSystem.DTO.DoctorDTOs
 {
     public class DoctorIncomingAppointmentDTO
     {
-        public string VaccineName { get; set; }
-        public string VaccineCompany { get; set; }
-        public string VaccineVirus { get; set; }
-        public int WhichVaccineDose { get; set; }
-        public string AppointmentId { get; set; }
-        public string PatientFirstName { get; set; }
-        public string PatientLastName { get; set; }
-        public string From { get; set; }
-        public string To { get; set; }
+        public string vaccineName { get; set; }
+        public string vaccineCompany { get; set; }
+        public string vaccineVirus { get; set; }
+        public int whichVaccineDose { get; set; }
+        public string appointmentId { get; set; }
+        public string patientFirstName { get; set; }
+        public string patientLastName { get; set; }
+        public string from { get; set; }
+        public string to { get; set; }
     }
 }

@@ -143,8 +143,8 @@ namespace VaccinationSystem.UnitTests
             var controller = new DoctorController(mockContext.Object);
             CreateNewVisitsRequestDTO requestBody = new CreateNewVisitsRequestDTO()
             {
-                from = from,
-                to = to,
+                windowBegin = from,
+                windowEnd = to,
                 timeSlotDurationInMinutes = timeSlotDurationInMinutes,
             };
 
@@ -188,8 +188,8 @@ namespace VaccinationSystem.UnitTests
             var controller = new DoctorController(mockContext.Object);
             CreateNewVisitsRequestDTO requestBody = new CreateNewVisitsRequestDTO()
             {
-                from = from,
-                to = to,
+                windowBegin = from,
+                windowEnd = to,
                 timeSlotDurationInMinutes = timeSlotDurationInMinutes,
             };
 

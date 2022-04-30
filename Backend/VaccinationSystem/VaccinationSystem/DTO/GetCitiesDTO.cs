@@ -5,9 +5,8 @@ using System.Threading.Tasks;
 
 namespace VaccinationSystem.DTO
 {
-    public class OpeningHoursDayDTO
+    public class GetCitiesDTO
     {
-        public string from { get; set; }
-        public string to { get; set; }
+        public string city { get; set; }
     }
 }
