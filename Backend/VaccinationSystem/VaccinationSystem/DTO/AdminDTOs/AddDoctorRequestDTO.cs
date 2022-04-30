@@ -2,7 +2,7 @@
 {
     public class AddDoctorRequestDTO
     {
-        public string doctorId { get; set; }
+        public string patientId { get; set; }
         public string vaccinationCenterId { get; set; }
     }
 }

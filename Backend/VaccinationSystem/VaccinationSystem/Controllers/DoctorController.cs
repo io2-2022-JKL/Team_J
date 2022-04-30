@@ -55,7 +55,7 @@ namespace VaccinationSystem.Controllers
             };
             return result;
         }
-        [HttpPost("timeSlots/{doctorId}")]
+        [HttpGet("timeSlots/{doctorId}")]
         public ActionResult<IEnumerable<ExistingTimeSlotDTO>> GetExistingTimeSlots(string doctorId)
         {
             // TODO: Token verification for 401 and 403 error codes
@@ -83,10 +83,10 @@ namespace VaccinationSystem.Controllers
             foreach(TimeSlot timeSlot in timeSlots)
             {
                 ExistingTimeSlotDTO existingTimeSlotDTO = new ExistingTimeSlotDTO();
-                existingTimeSlotDTO.Id = timeSlot.Id.ToString();
-                existingTimeSlotDTO.From = timeSlot.From.ToString(_dateTimeFormat);
-                existingTimeSlotDTO.To = timeSlot.To.ToString(_dateTimeFormat);
-                existingTimeSlotDTO.IsFree = timeSlot.IsFree;
+                existingTimeSlotDTO.id = timeSlot.Id.ToString();
+                existingTimeSlotDTO.from = timeSlot.From.ToString(_dateTimeFormat);
+                existingTimeSlotDTO.to = timeSlot.To.ToString(_dateTimeFormat);
+                existingTimeSlotDTO.isFree = timeSlot.IsFree;
                 result.Add(existingTimeSlotDTO);
             }
             return result;
@@ -109,10 +109,10 @@ namespace VaccinationSystem.Controllers
             {
                 docId = Guid.Parse(doctorId);
                 //currentFrom = DateTime.Parse(createNewVisitsRequestDTO.from);
-                currentFrom = DateTime.ParseExact(createNewVisitsRequestDTO.from, _dateTimeFormat, null);
+                currentFrom = DateTime.ParseExact(createNewVisitsRequestDTO.windowBegin, _dateTimeFormat, null);
                 increment = TimeSpan.FromMinutes(createNewVisitsRequestDTO.timeSlotDurationInMinutes);
                 //endTo = DateTime.Parse(createNewVisitsRequestDTO.to);
-                endTo = DateTime.ParseExact(createNewVisitsRequestDTO.to, _dateTimeFormat, null);
+                endTo = DateTime.ParseExact(createNewVisitsRequestDTO.windowEnd, _dateTimeFormat, null);
             }
             catch(FormatException)
             {
@@ -156,7 +156,7 @@ namespace VaccinationSystem.Controllers
             return false;
         }
 
-        [HttpDelete("timeSlots/Delete/{doctorId}")]
+        [HttpPost("timeSlots/delete/{doctorId}")]
         public IActionResult DeleteTimeSlot(string doctorId, IEnumerable<string> ids)
         {
             // TODO: Token verification for 401 and 403 error codes
@@ -257,18 +257,18 @@ namespace VaccinationSystem.Controllers
                 }
                 if (timeSlot.Active == false || timeSlot.DoctorId != docId) continue;
                 DoctorFormerAppointmentDTO doctorFormerAppointmentDTO = new DoctorFormerAppointmentDTO();
-                doctorFormerAppointmentDTO.VaccineName = vaccine.Name;
-                doctorFormerAppointmentDTO.VaccineCompany = vaccine.Company;
-                doctorFormerAppointmentDTO.VaccineVirus = vaccine.Virus.ToString();
-                doctorFormerAppointmentDTO.WhichVaccineDose = appointment.WhichDose;
-                doctorFormerAppointmentDTO.AppointmentId = appointment.Id.ToString();
-                doctorFormerAppointmentDTO.PatientFirstName = patient.FirstName;
-                doctorFormerAppointmentDTO.PatientLastName = patient.LastName;
+                doctorFormerAppointmentDTO.vaccineName = vaccine.Name;
+                doctorFormerAppointmentDTO.vaccineCompany = vaccine.Company;
+                doctorFormerAppointmentDTO.vaccineVirus = vaccine.Virus.ToString();
+                doctorFormerAppointmentDTO.whichVaccineDose = appointment.WhichDose;
+                doctorFormerAppointmentDTO.appointmentId = appointment.Id.ToString();
+                doctorFormerAppointmentDTO.patientFirstName = patient.FirstName;
+                doctorFormerAppointmentDTO.patientLastName = patient.LastName;
                 doctorFormerAppointmentDTO.PESEL = patient.PESEL;
-                doctorFormerAppointmentDTO.State = appointment.State.ToString();
-                doctorFormerAppointmentDTO.BatchNumber = appointment.VaccineBatchNumber;
-                doctorFormerAppointmentDTO.From = timeSlot.From.ToString(_dateTimeFormat);
-                doctorFormerAppointmentDTO.To = timeSlot.To.ToString(_dateTimeFormat);
+                doctorFormerAppointmentDTO.state = appointment.State.ToString();
+                doctorFormerAppointmentDTO.batchNumber = appointment.VaccineBatchNumber;
+                doctorFormerAppointmentDTO.from = timeSlot.From.ToString(_dateTimeFormat);
+                doctorFormerAppointmentDTO.to = timeSlot.To.ToString(_dateTimeFormat);
                 result.Add(doctorFormerAppointmentDTO);
             }
             return result;
@@ -322,15 +322,15 @@ namespace VaccinationSystem.Controllers
                 if (timeSlot.Active == false || timeSlot.DoctorId != docId ||
                     patient.Active == false || vaccine.Active == false) continue;
                 DoctorIncomingAppointmentDTO doctorFormerAppointmentDTO = new DoctorIncomingAppointmentDTO();
-                doctorFormerAppointmentDTO.VaccineName = vaccine.Name;
-                doctorFormerAppointmentDTO.VaccineCompany = vaccine.Company;
-                doctorFormerAppointmentDTO.VaccineVirus = vaccine.Virus.ToString();
-                doctorFormerAppointmentDTO.WhichVaccineDose = appointment.WhichDose;
-                doctorFormerAppointmentDTO.AppointmentId = appointment.Id.ToString();
-                doctorFormerAppointmentDTO.PatientFirstName = patient.FirstName;
-                doctorFormerAppointmentDTO.PatientLastName = patient.LastName;
-                doctorFormerAppointmentDTO.From = timeSlot.From.ToString(_dateTimeFormat);
-                doctorFormerAppointmentDTO.To = timeSlot.To.ToString(_dateTimeFormat);
+                doctorFormerAppointmentDTO.vaccineName = vaccine.Name;
+                doctorFormerAppointmentDTO.vaccineCompany = vaccine.Company;
+                doctorFormerAppointmentDTO.vaccineVirus = vaccine.Virus.ToString();
+                doctorFormerAppointmentDTO.whichVaccineDose = appointment.WhichDose;
+                doctorFormerAppointmentDTO.appointmentId = appointment.Id.ToString();
+                doctorFormerAppointmentDTO.patientFirstName = patient.FirstName;
+                doctorFormerAppointmentDTO.patientLastName = patient.LastName;
+                doctorFormerAppointmentDTO.from = timeSlot.From.ToString(_dateTimeFormat);
+                doctorFormerAppointmentDTO.to = timeSlot.To.ToString(_dateTimeFormat);
                 result.Add(doctorFormerAppointmentDTO);
             }
             return result.AsEnumerable();

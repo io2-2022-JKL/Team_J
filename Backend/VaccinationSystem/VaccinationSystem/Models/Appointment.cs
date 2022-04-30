@@ -26,6 +26,7 @@ namespace VaccinationSystem.Models
         public AppointmentState State { get; set; }
         [Column(TypeName = "varchar(100)")]
         public string VaccineBatchNumber { get; set; }
+        public CertifyState CertifyState { get; set; }
     
     }
 }

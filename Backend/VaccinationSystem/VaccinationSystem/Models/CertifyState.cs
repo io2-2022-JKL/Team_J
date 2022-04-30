@@ -5,11 +5,10 @@ using System.Threading.Tasks;
 
 namespace VaccinationSystem.Models
 {
-    public enum AppointmentState
+    public enum CertifyState
     {
-        Cancelled,
-        Planned,
-        Finished,
-        Expired
+        NotLast,
+        LastNotCertified,
+        Certified
     }
 }

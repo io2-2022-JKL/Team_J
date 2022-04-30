@@ -260,7 +260,7 @@ namespace VaccinationSystem.UnitTests
 
             var controller = new AdminController(mockContext.Object);
 
-            var request = new AddDoctorRequestDTO { doctorId = doctorId, vaccinationCenterId = vaccinationCenterId };
+            var request = new AddDoctorRequestDTO { patientId = doctorId, vaccinationCenterId = vaccinationCenterId };
 
             // Act
 
@@ -310,7 +310,7 @@ namespace VaccinationSystem.UnitTests
 
             var controller = new AdminController(mockContext.Object);
 
-            var request = new AddDoctorRequestDTO { doctorId = doctorId, vaccinationCenterId = vaccinationCenterId };
+            var request = new AddDoctorRequestDTO { patientId = doctorId, vaccinationCenterId = vaccinationCenterId };
 
             // Act
 
@@ -374,7 +374,7 @@ namespace VaccinationSystem.UnitTests
 
             var controller = new AdminController(mockContext.Object);
 
-            var request = new AddDoctorRequestDTO { doctorId = doctorId, vaccinationCenterId = vaccinationCenterId };
+            var request = new AddDoctorRequestDTO { patientId = doctorId, vaccinationCenterId = vaccinationCenterId };
 
             // Act
 
@@ -569,8 +569,8 @@ namespace VaccinationSystem.UnitTests
                 Assert.Equal(7, centers[i].openingHoursDays.Count());
                 for (int day = 0; day < 7; day++)
                 {
-                    Assert.Equal(openingHoursData.Single(oh => oh.VaccinationCenterId == Guid.Parse(centers[i].id) && (int)oh.WeekDay == day).From, TimeSpan.ParseExact(centers[i].openingHoursDays[day].From, "hh\\:mm", null));
-                    Assert.Equal(openingHoursData.Single(oh => oh.VaccinationCenterId == Guid.Parse(centers[i].id) && (int)oh.WeekDay == day).To, TimeSpan.ParseExact(centers[i].openingHoursDays[day].To, "hh\\:mm", null));
+                    Assert.Equal(openingHoursData.Single(oh => oh.VaccinationCenterId == Guid.Parse(centers[i].id) && (int)oh.WeekDay == day).From, TimeSpan.ParseExact(centers[i].openingHoursDays[day].from, "hh\\:mm", null));
+                    Assert.Equal(openingHoursData.Single(oh => oh.VaccinationCenterId == Guid.Parse(centers[i].id) && (int)oh.WeekDay == day).To, TimeSpan.ParseExact(centers[i].openingHoursDays[day].to, "hh\\:mm", null));
                 }
             }
         }
@@ -617,13 +617,13 @@ namespace VaccinationSystem.UnitTests
                 vaccineIds = new List<string> { vaccinesData.ToList()[0].Id.ToString(), vaccinesData.ToList()[2].Id.ToString() },
                 openingHoursDays = new List<OpeningHoursDayDTO>
                 {
-                    new OpeningHoursDayDTO { From = "07:00", To = "18:00" },
-                    new OpeningHoursDayDTO { From = "07:00", To = "18:00" },
-                    new OpeningHoursDayDTO { From = "06:00", To = "15:00" },
-                    new OpeningHoursDayDTO { From = "06:30", To = "13:45" },
-                    new OpeningHoursDayDTO { From = "00:00", To = "00:00" },
-                    new OpeningHoursDayDTO { From = "00:00", To = "00:00" },
-                    new OpeningHoursDayDTO { From = "00:00", To = "00:00" }
+                    new OpeningHoursDayDTO { from = "07:00", to = "18:00" },
+                    new OpeningHoursDayDTO { from = "07:00", to = "18:00" },
+                    new OpeningHoursDayDTO { from = "06:00", to = "15:00" },
+                    new OpeningHoursDayDTO { from = "06:30", to = "13:45" },
+                    new OpeningHoursDayDTO { from = "00:00", to = "00:00" },
+                    new OpeningHoursDayDTO { from = "00:00", to = "00:00" },
+                    new OpeningHoursDayDTO { from = "00:00", to = "00:00" }
                 },
                 active = active
             };
@@ -653,8 +653,8 @@ namespace VaccinationSystem.UnitTests
             Assert.Equal(7, openingHoursData.Where(oh => oh.VaccinationCenterId == vaccinationCenter.Id).Count());
             for (int day = 0; day < 7; day++)
             {
-                Assert.Equal(openingHoursData.Single(oh => oh.VaccinationCenterId == vaccinationCenter.Id && oh.WeekDay == (WeekDay)day).From, TimeSpan.ParseExact(request.openingHoursDays[day].From, "hh\\:mm", null));
-                Assert.Equal(openingHoursData.Single(oh => oh.VaccinationCenterId == vaccinationCenter.Id && oh.WeekDay == (WeekDay)day).To, TimeSpan.ParseExact(request.openingHoursDays[day].To, "hh\\:mm", null));
+                Assert.Equal(openingHoursData.Single(oh => oh.VaccinationCenterId == vaccinationCenter.Id && oh.WeekDay == (WeekDay)day).From, TimeSpan.ParseExact(request.openingHoursDays[day].from, "hh\\:mm", null));
+                Assert.Equal(openingHoursData.Single(oh => oh.VaccinationCenterId == vaccinationCenter.Id && oh.WeekDay == (WeekDay)day).To, TimeSpan.ParseExact(request.openingHoursDays[day].to, "hh\\:mm", null));
             }
         }
 
@@ -701,13 +701,13 @@ namespace VaccinationSystem.UnitTests
                 vaccineIds = new List<string> { vaccinesData.ToList()[0].Id.ToString(), vaccinesData.ToList()[2].Id.ToString() },
                 openingHoursDays = new List<OpeningHoursDayDTO>
                 {
-                    new OpeningHoursDayDTO { From = "7:00", To = "18:00" },
-                    new OpeningHoursDayDTO { From = "7:00", To = "18:00" },
-                    new OpeningHoursDayDTO { From = "6:00", To = "15:00" },
-                    new OpeningHoursDayDTO { From = "6:30", To = "13:45" },
-                    new OpeningHoursDayDTO { From = "test", To = "00:00" },
-                    new OpeningHoursDayDTO { From = "00:00", To = "1000" },
-                    new OpeningHoursDayDTO { From = "00:00", To = "00:00" }
+                    new OpeningHoursDayDTO { from = "7:00", to = "18:00" },
+                    new OpeningHoursDayDTO { from = "7:00", to = "18:00" },
+                    new OpeningHoursDayDTO { from = "6:00", to = "15:00" },
+                    new OpeningHoursDayDTO { from = "6:30", to = "13:45" },
+                    new OpeningHoursDayDTO { from = "test", to = "00:00" },
+                    new OpeningHoursDayDTO { from = "00:00", to = "1000" },
+                    new OpeningHoursDayDTO { from = "00:00", to = "00:00" }
                 },
                 active = active
             };
@@ -771,13 +771,13 @@ namespace VaccinationSystem.UnitTests
                 vaccineIds = new List<string> { id },
                 openingHoursDays = new List<OpeningHoursDayDTO>
                 {
-                    new OpeningHoursDayDTO { From = "07:00", To = "18:00" },
-                    new OpeningHoursDayDTO { From = "07:00", To = "18:00" },
-                    new OpeningHoursDayDTO { From = "06:00", To = "15:00" },
-                    new OpeningHoursDayDTO { From = "06:30", To = "13:45" },
-                    new OpeningHoursDayDTO { From = "00:00", To = "00:00" },
-                    new OpeningHoursDayDTO { From = "00:00", To = "00:00" },
-                    new OpeningHoursDayDTO { From = "00:00", To = "00:00" }
+                    new OpeningHoursDayDTO { from = "07:00", to = "18:00" },
+                    new OpeningHoursDayDTO { from = "07:00", to = "18:00" },
+                    new OpeningHoursDayDTO { from = "06:00", to = "15:00" },
+                    new OpeningHoursDayDTO { from = "06:30", to = "13:45" },
+                    new OpeningHoursDayDTO { from = "00:00", to = "00:00" },
+                    new OpeningHoursDayDTO { from = "00:00", to = "00:00" },
+                    new OpeningHoursDayDTO { from = "00:00", to = "00:00" }
                 },
                 active = active
             };
@@ -833,7 +833,7 @@ namespace VaccinationSystem.UnitTests
 
             var openingHoursDays = new List<OpeningHoursDayDTO>();
             for (int i = 0; i < count; i++)
-                openingHoursDays.Add(new OpeningHoursDayDTO() { From = "07:00", To = "18:00" });
+                openingHoursDays.Add(new OpeningHoursDayDTO() { from = "07:00", to = "18:00" });
 
 
             var request = new AddVaccinationCenterRequestDTO
@@ -1412,7 +1412,7 @@ namespace VaccinationSystem.UnitTests
 
         [Theory]
         [MemberData(nameof(TimeSlotIdList1))]
-        public void DeleteTimeSlots(List<string> ids)
+        public void DeleteTimeSlots(List<DeleteTimeSlotsDTO> ids)
         {
             // Arrange
 
@@ -1457,9 +1457,9 @@ namespace VaccinationSystem.UnitTests
 
             bool anyDeleted = false;
 
-            foreach (var id in ids)
+            foreach (var deleteDTO in ids)
             {
-                if (Guid.TryParse(id, out Guid guid))
+                if (Guid.TryParse(deleteDTO.id, out Guid guid))
                 {
                     var timeSlot = timeSlotsData.SingleOrDefault(ts => ts.Id == guid);
                     if(timeSlot != null)
@@ -1481,24 +1481,24 @@ namespace VaccinationSystem.UnitTests
 
         public static IEnumerable<object[]> TimeSlotIdList1()
         {
-            yield return new object[] { new List<string>() { "a0780125-a945-4e20-b2ab-02bcf0ce8f3b" } };
-            yield return new object[] { new List<string>() { "a0780125-a945-4e20-b2ab-02bcf0ce8f3b", "a1780125-a945-4e20-b2ab-02bcf0ce8f3b" } };
-            yield return new object[] { new List<string>() { "b0780125-a945-4e20-b2ab-02bcf0ce8f3b", "b1780125-a945-4e20-b2ab-02bcf0ce8f3b" } };
-            yield return new object[] { new List<string>() { "b0780125-a945-4e20-b2ab-02bcf0ce8f3b", "b1780125-a945-4e20-b2ab-02bcf0ce8f3b", "b2780125-a945-4e20-b2ab-02bcf0ce8f3b", "b3780125-a945-4e20-b2ab-02bcf0ce8f3b" } };
-            yield return new object[] { new List<string>() { "b2780125-a945-4e20-b2ab-02bcf0ce8f3b", "b3780125-a945-4e20-b2ab-02bcf0ce8f3b", "b0780125-a945-4e20-b2ab-02bcf0ce8f3b", "b1780125-a945-4e20-b2ab-02bcf0ce8f3b" } };
-            yield return new object[] { new List<string>() { "a0780125-a945-4e20-b2ab-02bcf0ce8f3b", "a0780125-a945-4e20-aaaa-02bcf0ce8f3b" } };
-            yield return new object[] { new List<string>() { "a0780125-a945-4e20-aaaa-02bcf0ce8f3b", "a0780125-a945-4e20-b2ab-02bcf0ce8f3b" } };
-            yield return new object[] { new List<string>() { "wrong_guid_format", "a0780125-a945-4e20-b2ab-02bcf0ce8f3b" } };
-            yield return new object[] { new List<string>() { "a0780125-a945-4e20-b2ab-02bcf0ce8f3b", "wrong_guid_format" } };
-            yield return new object[] { new List<string>() { "a0780125-a945-4e20-b2ab-02bcf0ce8f3b", "" } };
-            yield return new object[] { new List<string>() { "", "a0780125-a945-4e20-b2ab-02bcf0ce8f3b" } };
-            yield return new object[] { new List<string>() { null, "a0780125-a945-4e20-b2ab-02bcf0ce8f3b" } };
-            yield return new object[] { new List<string>() { "a0780125-a945-4e20-b2ab-02bcf0ce8f3b", null } };
+            yield return new object[] { new List<DeleteTimeSlotsDTO>() { new DeleteTimeSlotsDTO() { id = "a0780125-a945-4e20-b2ab-02bcf0ce8f3b" } } };
+            yield return new object[] { new List<DeleteTimeSlotsDTO>() { new DeleteTimeSlotsDTO() { id = "a0780125-a945-4e20-b2ab-02bcf0ce8f3b" }, new DeleteTimeSlotsDTO() { id = "a1780125-a945-4e20-b2ab-02bcf0ce8f3b" } } };
+            yield return new object[] { new List<DeleteTimeSlotsDTO>() { new DeleteTimeSlotsDTO() { id = "b0780125-a945-4e20-b2ab-02bcf0ce8f3b" }, new DeleteTimeSlotsDTO() { id = "b1780125-a945-4e20-b2ab-02bcf0ce8f3b" } } };
+            yield return new object[] { new List<DeleteTimeSlotsDTO>() { new DeleteTimeSlotsDTO() { id = "b0780125-a945-4e20-b2ab-02bcf0ce8f3b" }, new DeleteTimeSlotsDTO() { id = "b1780125-a945-4e20-b2ab-02bcf0ce8f3b" }, new DeleteTimeSlotsDTO() { id = "b2780125-a945-4e20-b2ab-02bcf0ce8f3b" }, new DeleteTimeSlotsDTO() { id = "b3780125-a945-4e20-b2ab-02bcf0ce8f3b" } } };
+            yield return new object[] { new List<DeleteTimeSlotsDTO>() { new DeleteTimeSlotsDTO() { id = "b2780125-a945-4e20-b2ab-02bcf0ce8f3b" }, new DeleteTimeSlotsDTO() { id = "b3780125-a945-4e20-b2ab-02bcf0ce8f3b" }, new DeleteTimeSlotsDTO() { id = "b0780125-a945-4e20-b2ab-02bcf0ce8f3b" }, new DeleteTimeSlotsDTO() { id = "b1780125-a945-4e20-b2ab-02bcf0ce8f3b" } } };
+            yield return new object[] { new List<DeleteTimeSlotsDTO>() { new DeleteTimeSlotsDTO() { id = "a0780125-a945-4e20-b2ab-02bcf0ce8f3b" }, new DeleteTimeSlotsDTO() { id = "a0780125-a945-4e20-aaaa-02bcf0ce8f3b" } } };
+            yield return new object[] { new List<DeleteTimeSlotsDTO>() { new DeleteTimeSlotsDTO() { id = "a0780125-a945-4e20-aaaa-02bcf0ce8f3b" }, new DeleteTimeSlotsDTO() { id = "a0780125-a945-4e20-b2ab-02bcf0ce8f3b" } } };
+            yield return new object[] { new List<DeleteTimeSlotsDTO>() { new DeleteTimeSlotsDTO() { id = "wrong_guid_format" }, new DeleteTimeSlotsDTO() { id = "a0780125-a945-4e20-b2ab-02bcf0ce8f3b" } } };
+            yield return new object[] { new List<DeleteTimeSlotsDTO>() { new DeleteTimeSlotsDTO() { id = "a0780125-a945-4e20-b2ab-02bcf0ce8f3b" }, new DeleteTimeSlotsDTO() { id = "wrong_guid_format" } } };
+            yield return new object[] { new List<DeleteTimeSlotsDTO>() { new DeleteTimeSlotsDTO() { id = "a0780125-a945-4e20-b2ab-02bcf0ce8f3b" }, new DeleteTimeSlotsDTO() { id = "" } } };
+            yield return new object[] { new List<DeleteTimeSlotsDTO>() { new DeleteTimeSlotsDTO() { id = "" }, new DeleteTimeSlotsDTO() { id = "a0780125-a945-4e20-b2ab-02bcf0ce8f3b" } } };
+            yield return new object[] { new List<DeleteTimeSlotsDTO>() { new DeleteTimeSlotsDTO() { id = null }, new DeleteTimeSlotsDTO() { id = "a0780125-a945-4e20-b2ab-02bcf0ce8f3b" } } };
+            yield return new object[] { new List<DeleteTimeSlotsDTO>() { new DeleteTimeSlotsDTO() { id = "a0780125-a945-4e20-b2ab-02bcf0ce8f3b" }, new DeleteTimeSlotsDTO() { id = null } } };
         }
 
         [Theory]
         [MemberData(nameof(TimeSlotIdList2))]
-        public void DeleteWrongTimeSlots(List<string> ids)
+        public void DeleteWrongTimeSlots(List<DeleteTimeSlotsDTO> ids)
         {
             // Arrange
 
@@ -1541,9 +1541,9 @@ namespace VaccinationSystem.UnitTests
 
             Assert.Equal(GetTimeSlotsData().ToList().Count(), timeSlotsData.Count());
 
-            foreach (var id in ids)
+            foreach (var deleteDTO in ids)
             {
-                if(Guid.TryParse(id, out Guid guid))
+                if(Guid.TryParse(deleteDTO.id, out Guid guid))
                 {
                     var timeSlot = timeSlotsData.SingleOrDefault(ts => ts.Id == guid);
                     if(timeSlot != null)
@@ -1562,13 +1562,13 @@ namespace VaccinationSystem.UnitTests
 
         public static IEnumerable<object[]> TimeSlotIdList2()
         {
-            yield return new object[] { new List<string>() { "a2780125-a945-4e20-b2ab-02bcf0ce8f3b" } };
-            yield return new object[] { new List<string>() { "a2780125-a945-4e20-b2ab-02bcf0ce8f3b", "a3780125-a945-4e20-b2ab-02bcf0ce8f3b" } };
-            yield return new object[] { new List<string>() { "b2780125-a945-4e20-b2ab-02bcf0ce8f3b", "b3780125-a945-4e20-b2ab-02bcf0ce8f3b", "b4781125-a945-4e20-b2ab-02bcf0ce8f3b" } };
-            yield return new object[] { new List<string>() { "b3780125-a945-4e20-aaaa-02bcf0ce8f3b" } };
-            yield return new object[] { new List<string>() { "wrong_guid_format" } };
-            yield return new object[] { new List<string>() { "" } };
-            yield return new object[] { new List<string>() { null } };
+            yield return new object[] { new List<DeleteTimeSlotsDTO>() { new DeleteTimeSlotsDTO() { id = "a2780125-a945-4e20-b2ab-02bcf0ce8f3b" } } };
+            yield return new object[] { new List<DeleteTimeSlotsDTO>() { new DeleteTimeSlotsDTO() { id = "a2780125-a945-4e20-b2ab-02bcf0ce8f3b" }, new DeleteTimeSlotsDTO() { id = "a3780125-a945-4e20-b2ab-02bcf0ce8f3b" } } };
+            yield return new object[] { new List<DeleteTimeSlotsDTO>() { new DeleteTimeSlotsDTO() { id = "b2780125-a945-4e20-b2ab-02bcf0ce8f3b" }, new DeleteTimeSlotsDTO() { id = "b3780125-a945-4e20-b2ab-02bcf0ce8f3b" }, new DeleteTimeSlotsDTO() { id = "b4781125-a945-4e20-b2ab-02bcf0ce8f3b" } } };
+            yield return new object[] { new List<DeleteTimeSlotsDTO>() { new DeleteTimeSlotsDTO() { id = "b3780125-a945-4e20-aaaa-02bcf0ce8f3b" } } };
+            yield return new object[] { new List<DeleteTimeSlotsDTO>() { new DeleteTimeSlotsDTO() { id = "wrong_guid_format" } } };
+            yield return new object[] { new List<DeleteTimeSlotsDTO>() { new DeleteTimeSlotsDTO() { id = "" } } };
+            yield return new object[] { new List<DeleteTimeSlotsDTO>() { new DeleteTimeSlotsDTO() { id = null } } };
         }
 
 

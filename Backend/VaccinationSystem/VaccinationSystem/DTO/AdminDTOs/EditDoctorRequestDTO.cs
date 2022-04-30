@@ -10,5 +10,6 @@
         public string dateOfBirth { get; set; }
         public string phoneNumber { get; set; }
         public string vaccinationCenterId { get; set; }
+        public bool active { get; set; }
     }
 }
