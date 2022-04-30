@@ -193,9 +193,8 @@ export default function LoginPage() {
                                     size={24}
                                     sx={{
                                         color: blue,
-                                        position: 'absolute',
+                                        position: 'relative',
                                         alignSelf: 'center',
-                                        bottom: '37%',
                                         left: '50%'
                                     }}
                                 />
