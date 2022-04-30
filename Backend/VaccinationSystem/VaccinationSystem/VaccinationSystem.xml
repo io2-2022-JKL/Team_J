@@ -1,0 +1,493 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>VaccinationSystem</name>
+    </assembly>
+    <members>
+        <member name="M:VaccinationSystem.Controllers.AdminController.GetPatients">
+            <remarks>Returns all patients</remarks>
+            <response code="200">OK, found matching patients</response>
+            <response code="401">Error, user unauthorized to search patients</response>
+            <response code="403">Error, user forbidden from searching patients</response>
+            <response code="404">Error, no patient found</response>
+        </member>
+        <member name="M:VaccinationSystem.Controllers.AdminController.EditPatient(VaccinationSystem.DTO.PatientDTOs.PatientDTO)">
+            <remarks>
+            Edits patient's data
+            </remarks>
+            <param name="patientDTO"></param>
+            <response code="200">Ok, edited patient</response>
+            <response code="400">Bad data</response>
+            <response code="401">Error, user unauthorized to edit patient</response>
+            <response code="403">Error, user forbidden from editing patient</response>
+            <response code="404">Error, no patient found to edit</response>
+        </member>
+        <member name="M:VaccinationSystem.Controllers.AdminController.DeletePatient(System.String)">
+            <remarks>Deletes a patient from system</remarks>
+            <param name="patientId" example="f969ffd0-6dbc-4900-8eb8-b4fe25906a74"></param>
+            <response code="200">Ok, deleted patient</response>
+            <response code="400">Bad data</response>
+            <response code="401">Error, user unauthorized to delete patient</response>
+            <response code="403">Error, user forbidden from deleting patient</response>
+            <response code="404">Error, no patient found to delete</response>
+        </member>
+        <member name="M:VaccinationSystem.Controllers.AdminController.GetDoctors">
+            <remarks>Returns all doctors</remarks>
+            <response code="200">Ok, found matching doctors</response>
+            <response code="401">Error, user unauthorized to search doctors</response>
+            <response code="403">Error, user forbidden from searching doctors</response>
+            <response code="404">Error, no doctor found</response>
+        </member>
+        <member name="M:VaccinationSystem.Controllers.AdminController.EditDoctor(VaccinationSystem.DTO.AdminDTOs.EditDoctorRequestDTO)">
+            <remarks>Edits doctor's data</remarks>
+            <param name="editDoctorRequestDTO"></param>
+            <response code="200">Ok, edited doctor</response>
+            <response code="400">Bad data</response>
+            <response code="401">Error, user unauthorized to edit doctor</response>
+            <response code="403">Error, user forbidden from editing doctor</response>
+            <response code="404">Error, no doctor found to edit</response>
+        </member>
+        <member name="M:VaccinationSystem.Controllers.AdminController.AddDoctor(VaccinationSystem.DTO.AdminDTOs.AddDoctorRequestDTO)">
+            <remarks>Adds a new doctor</remarks>
+            <param name="addDoctorRequestDTO"></param>
+            <response code="200">Ok, added a new doctor</response>
+            <response code="400">Bad data</response>
+            <response code="401">Error, user unauthorized to add doctors</response>
+            <response code="403">Error, user forbidden from adding doctors</response>
+        </member>
+        <member name="M:VaccinationSystem.Controllers.AdminController.DeleteDoctor(System.String)">
+            <remarks>Deletes a doctor from system</remarks>
+            <param name="doctorId" example="9d77b5e9-2823-4274-b326-d371e5582274"></param>
+            <response code="200">Ok, deleted doctor</response>
+            <response code="400">Bad data</response>
+            <response code="401">Error, user unauthorized to delete doctor</response>
+            <response code="403">Error, user forbidden from deleting doctor</response>
+            <response code="404">Error, no doctor found to delete</response>
+        </member>
+        <member name="M:VaccinationSystem.Controllers.AdminController.GetTimeSlots(System.String)">
+            <remarks>Returns all time slots matching given criteria</remarks>
+            <param name="doctorId" example="89a11879-4edf-4a67-a6f7-23c76763a418"></param>
+            <response code="200">Ok, found mathing time slots</response>
+            <response code="400">Bad data</response>
+            <response code="401">Error, user unauthorized to search time slots</response>
+            <response code="403">Error, user forbidden from searching time slots</response>
+            <response code="404">Error, no matching time slots or doctor found</response>
+        </member>
+        <member name="M:VaccinationSystem.Controllers.AdminController.DeleteTimeSlots(System.Collections.Generic.IEnumerable{VaccinationSystem.DTO.AdminDTOs.DeleteTimeSlotsDTO})">
+            <remarks>Deletes time slots from system</remarks>
+            <param name="ids"></param>
+            <response code="200">Ok, deleted time slots</response>
+            <response code="401">Error, user unauthorized to delete time slots</response>
+            <response code="403">Error, user forbidden from deleting time slots</response>
+            <response code="404">Error, no time slots found to delete</response>
+        </member>
+        <member name="M:VaccinationSystem.Controllers.AdminController.GetVaccinationCenters">
+            <remarks>Returns all vaccination centers matching given criteria</remarks>
+            <response code="200">Ok, found vaccination centers</response>
+            <response code="401">Error, user unauthorized to search vaccination centers</response>
+            <response code="403">Error, user forbidden from searching vaccination centers</response>
+            <response code="404">Error, no matching vaccination center found</response>
+        </member>
+        <member name="M:VaccinationSystem.Controllers.AdminController.AddVaccinationCenter(VaccinationSystem.DTO.AdminDTOs.AddVaccinationCenterRequestDTO)">
+            <remarks>Adds a vaccination center</remarks>
+            <param name="addVaccinationCenterRequestDTO"></param>
+            <response code="200">Ok, added vaccination center</response>
+            <response code="400">Bad data</response>
+            <response code="401">Error, user unauthorized to add vaccination center</response>
+            <response code="403">Error, user forbidden from adding vaccination center</response>
+            <response code="404">Error, no vaccine found to add vaccination center</response>
+        </member>
+        <member name="M:VaccinationSystem.Controllers.AdminController.EditVaccinationCenter(VaccinationSystem.DTO.AdminDTOs.EditVaccinationCenterRequestDTO)">
+            <remarks>Edit vaccination center's data</remarks>
+            <param name="editVaccinationCenterRequestDTO"></param>
+            <response code="200">Ok, edited vaccination center</response>
+            <response code="400">Bad data</response>
+            <response code="401">Error, user unauthorized to edit vaccination center</response>
+            <response code="403">Error, user forbidden from editing vaccination center</response>
+            <response code="404">Error, no vaccine found to edit vaccination center</response>
+        </member>
+        <member name="M:VaccinationSystem.Controllers.AdminController.DeleteVaccinationCenter(System.String)">
+            <remarks>Deletes a vaccination center from system</remarks>
+            <param name="vaccinationCenterId" example="250b86b0-28bf-4ca2-9322-0ff57953be8f"></param>
+            <response code="200">Ok, deleted vaccination center</response>
+            <response code="400">Bad data</response>
+            <response code="401">Error, user unauthorized to delete vaccination center</response>
+            <response code="403">Error, user forbidden from deleting vaccination center</response>
+            <response code="404">Error, no vaccination center found to delete</response>
+        </member>
+        <member name="M:VaccinationSystem.Controllers.AdminController.GetVaccines">
+            <remarks>Returns all vaccines</remarks>
+            <response code="200">Ok, found vaccines</response>
+            <response code="401">Error, user unauthorized to search vaccines</response>
+            <response code="403">Error, user forbidden from searchig vaccines</response>
+            <response code="404">Error, no matching vaccine found</response>
+        </member>
+        <member name="M:VaccinationSystem.Controllers.AdminController.AddVaccine(VaccinationSystem.DTO.AdminDTOs.AddVaccineRequestDTO)">
+            <remarks>Adds a vaccine</remarks>
+            <param name="addVaccineRequestDTO"></param>
+            <response code="200">Ok, added vaccine</response>
+            <response code="400">Bad request</response>
+            <response code="401">Error, user unauthorized to add vaccine</response>
+            <response code="403">Error, user forbidden from editing vaccine</response>
+            <response code="404">Error, virus not found</response>
+        </member>
+        <member name="M:VaccinationSystem.Controllers.AdminController.EditVaccine(VaccinationSystem.DTO.AdminDTOs.EditVaccineRequestDTO)">
+            <remarks>Edits vaccine's data</remarks>
+            <param name="editVaccineRequestDTO"></param>
+            <response code="200">Ok, edited vaccine</response>
+            <response code="400">Bad request</response>
+            <response code="401">Error, user unauthorized to edit vaccines</response>
+            <response code="403">Error, user forbidden from editing vaccines</response>
+            <response code="404">Error, virus or vaccine not found</response>
+        </member>
+        <member name="M:VaccinationSystem.Controllers.AdminController.DeleteVaccine(System.String)">
+            <remarks>Deletes a vaccine from system</remarks>
+            <param name="vaccineId" example="31d9b4bf-5c1c-4f2d-b997-f6096758eac9"></param>
+            <response code="200">Ok, deleted vaccine</response>
+            <response code="400">Bad data</response>
+            <response code="401">Error, user unauthorized to delete vaccine</response>
+            <response code="403">Error, user forbidden from deleting vaccine</response>
+            <response code="404">Error, no vaccine found to delete</response>
+        </member>
+        <member name="M:VaccinationSystem.Controllers.DefaultController.RegisterUser(VaccinationSystem.DTO.RegisterRequestDTO)">
+            <remarks>
+            Registers a patient
+            </remarks>
+            <param name="registerRequestDTO"></param>
+            <response code="200">OK, successfully registered</response>
+            <response code="400">Error, user sent incomplete data</response>
+        </member>
+        <member name="M:VaccinationSystem.Controllers.DefaultController.SignInUser(VaccinationSystem.DTO.SigninRequestDTO)">
+            <remarks>Logs in user</remarks>
+            <param name="signinRequestDTO"></param>
+            <response code="200">OK, successfully signed up</response>
+            <response code="400">Error, user doesn't exists</response>
+        </member>
+        <member name="M:VaccinationSystem.Controllers.DefaultController.GetViruses">
+            <remarks>Returns list of all viruses</remarks>
+            <response code="200">OK</response>
+            <response code="404">Not found</response>
+        </member>
+        <member name="M:VaccinationSystem.Controllers.DefaultController.GetCities">
+            <remarks>Returns list of all cities</remarks>
+            <response code="200">OK</response>
+            <response code="404">Not found</response>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.AddDoctorRequestDTO.patientId">
+            <example>f982aaa8-4be7-4115-a4f9-6cbab37ae726</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.AddDoctorRequestDTO.vaccinationCenterId">
+            <example>837c1d09-8664-4480-beff-45fbd914c87e</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.AddVaccinationCenterRequestDTO.name">
+            <example>Uniwersytecki Szpital Kliniczny</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.AddVaccinationCenterRequestDTO.city">
+            <example>Wrocław</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.AddVaccinationCenterRequestDTO.street">
+            <example>Curie-Skłodowskiej 58</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.AddVaccinationCenterRequestDTO.vaccineIds">
+            <example>["2dba46e3-a040-4dab-9ec4-600e44dbaf8e", "1fe2941e-f2f3-4edf-9ae3-712460e88ec7"]</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.AddVaccinationCenterRequestDTO.openingHoursDays">
+            <example>[{"from": "07:00","to": "19:00"}, {"from": "07:00","to": "19:00"}, {"from": "07:00","to": "19:00"},{"from": "07:00","to": "19:00"},{"from": "07:00","to": "19:00"},{"from": "00:00","to": "00:00"},{"from": "00:00","to": "00:00"}]</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.AddVaccinationCenterRequestDTO.active">
+            <example>true</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.AddVaccineRequestDTO.company">
+            <example>WUM</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.AddVaccineRequestDTO.name">
+            <example>WUMvaccine</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.AddVaccineRequestDTO.numberOfDoses">
+            <example>1</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.AddVaccineRequestDTO.minDaysBetweenDoses">
+            <example>-1</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.AddVaccineRequestDTO.maxDaysBetweenDoses">
+            <example>-1</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.AddVaccineRequestDTO.virus">
+            <example>Koronawirus</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.AddVaccineRequestDTO.minPatientAge">
+            <example>-1</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.AddVaccineRequestDTO.maxPatientAge">
+            <example>-1</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.AddVaccineRequestDTO.active">
+            <example>true</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.DeleteTimeSlotsDTO.id">
+            <example>02f2b999-d0ba-4f33-9a9a-69e1cae2952b</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.EditDoctorRequestDTO.doctorId">
+            <example>89a11879-4edf-4a67-a6f7-23c76763a418</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.EditDoctorRequestDTO.PESEL">
+            <example>70013131688</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.EditDoctorRequestDTO.firstName">
+            <example>Aaeesh'a</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.EditDoctorRequestDTO.lastName">
+            <example>Abd Al-Rashid</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.EditDoctorRequestDTO.mail">
+            <example>aaeeshaAAR@doktor.org.pl</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.EditDoctorRequestDTO.dateOfBirth">
+            <example>31-01-1970</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.EditDoctorRequestDTO.phoneNumber">
+            <example>+48 923 219 001</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.EditDoctorRequestDTO.vaccinationCenterId">
+            <example>837c1d09-8664-4480-beff-45fbd914c87e</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.EditDoctorRequestDTO.active">
+            <example>true</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.EditVaccinationCenterRequestDTO.id">
+            <example>31ea1617-1bf9-48c1-8b40-0e2939bb6302</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.EditVaccinationCenterRequestDTO.name">
+            <example>Szpital Uniwersytecki w Krakowie</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.EditVaccinationCenterRequestDTO.city">
+            <example>Kraków</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.EditVaccinationCenterRequestDTO.street">
+            <example>Macieja Jakubowskiego 2</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.EditVaccinationCenterRequestDTO.vaccineIds">
+            <example>["2dba46e3-a040-4dab-9ec4-600e44dbaf8e", "1fe2941e-f2f3-4edf-9ae3-712460e88ec7"]</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.EditVaccinationCenterRequestDTO.openingHoursDays">
+            <example>[{"from": "07:00","to": "19:00"}, {"from": "07:00","to": "19:00"}, {"from": "07:00","to": "19:00"},{"from": "07:00","to": "19:00"},{"from": "07:00","to": "19:00"},{"from": "00:00","to": "00:00"},{"from": "00:00","to": "00:00"}]</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.EditVaccinationCenterRequestDTO.active">
+            <example>true</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.EditVaccineRequestDTO.vaccineId">
+            <example>2dba46e3-a040-4dab-9ec4-600e44dbaf8e</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.EditVaccineRequestDTO.company">
+            <example>BioNTech</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.EditVaccineRequestDTO.name">
+            <example>Pfizer</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.EditVaccineRequestDTO.numberOfDoses">
+            <example>3</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.EditVaccineRequestDTO.minDaysBetweenDoses">
+            <example>14</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.EditVaccineRequestDTO.maxDaysBetweenDoses">
+            <example>30</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.EditVaccineRequestDTO.virus">
+            <example>Koronawirus</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.EditVaccineRequestDTO.minPatientAge">
+            <example>18</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.EditVaccineRequestDTO.maxPatientAge">
+            <example>150</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.EditVaccineRequestDTO.active">
+            <example>true</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.GetDoctorsResponseDTO.id">
+            <example>89a11879-4edf-4a67-a6f7-23c76763a418</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.GetDoctorsResponseDTO.PESEL">
+            <example>70013131688</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.GetDoctorsResponseDTO.firstName">
+            <example>Aaeesh'a</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.GetDoctorsResponseDTO.lastName">
+            <example>Abd Al-Rashid</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.GetDoctorsResponseDTO.mail">
+            <example>aaeeshaAAR@doktor.org.pl</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.GetDoctorsResponseDTO.dateOfBirth">
+            <example>31-01-1970</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.GetDoctorsResponseDTO.phoneNumber">
+            <example>863928017</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.GetDoctorsResponseDTO.active">
+            <example>true</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.GetDoctorsResponseDTO.vaccinationCenterId">
+            <example>837c1d09-8664-4480-beff-45fbd914c87e</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.GetDoctorsResponseDTO.name">
+            <example>Szpital przy Banacha</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.GetDoctorsResponseDTO.city">
+            <example>Warszawa</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.AdminDTOs.GetDoctorsResponseDTO.street">
+            <example>Stefana Banacha 1a</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.GetCitiesDTO.city">
+            <example>Warszawa</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.GetVirusDTO.virus">
+            <example>Koronawirus</example>
+            <example>Grypa</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.OpeningHoursDayDTO.from">
+            <example>07:00</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.OpeningHoursDayDTO.to">
+            <example>19:00</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.PatientDTOs.PatientDTO.id">
+            <example>acd9fa16-404e-4305-b57f-93659054be7e</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.PatientDTOs.PatientDTO.PESEL">
+            <example>68041377873</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.PatientDTOs.PatientDTO.firstName">
+            <example>James</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.PatientDTOs.PatientDTO.lastName">
+            <example>Bond</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.PatientDTOs.PatientDTO.mail">
+            <example>james.bond@mi6.gov.uk</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.PatientDTOs.PatientDTO.dateOfBirth">
+            <example>13-04-1968</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.PatientDTOs.PatientDTO.phoneNumber">
+            <example>+44007</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.PatientDTOs.PatientDTO.active">
+            <example>true</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.RegisterRequestDTO.PESEL">
+            <example>89042456235</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.RegisterRequestDTO.firstName">
+            <example>Jan</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.RegisterRequestDTO.lastName">
+            <example>Kowalski</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.RegisterRequestDTO.mail">
+            <example>kowalskij@gmail.com</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.RegisterRequestDTO.dateOfBirth">
+            <example>24-04-1989</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.RegisterRequestDTO.password">
+            <example>1234</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.RegisterRequestDTO.phoneNumber">
+            <example>+48 123 456 789</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.SigninRequestDTO.mail">
+            <example>james.bond@mi6.gov.uk</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.SigninRequestDTO.password">
+            <example>AllH4ilTheQu33n</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.SigninResponseDTO.userId">
+            <example>acd9fa16-404e-4305-b57f-93659054be7e</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.SigninResponseDTO.userType">
+            <example>patient</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.TimeSlotDTO.id">
+            <example>5843d71b-574d-451e-be40-093fdb13983a</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.TimeSlotDTO.from">
+            <example>02-05-2022 13:00</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.TimeSlotDTO.to">
+            <example>02-05-2022 14:00</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.TimeSlotDTO.isFree">
+            <example>true</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.TimeSlotDTO.active">
+            <example>true</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.VaccinationCenterDTO.id">
+            <example>837c1d09-8664-4480-beff-45fbd914c87e</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.VaccinationCenterDTO.name">
+            <example>Szpital przy Banacha</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.VaccinationCenterDTO.city">
+            <example>Warszawa</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.VaccinationCenterDTO.street">
+            <example>Stefana Banacha 1a</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.VaccinationCenterDTO.vaccines">
+            <example>[{"id": "2dba46e3-a040-4dab-9ec4-600e44dbaf8e","name": "Pfizer","companyName": "BioNTech","virus": "Koronawirus"},{"id": "1fe2941e-f2f3-4edf-9ae3-712460e88ec7","name": "AstraZeneca","companyName": "Oxford","virus": "Koronawirus"}]</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.VaccinationCenterDTO.openingHoursDays">
+            <example>[{"from": "07:00","to": "19:00"},{"from": "07:00","to": "19:00"},{"from": "07:00","to": "19:00"},{"from": "07:00","to": "19:00"},{"from": "07:00","to": "21:00"},{"from": "09:00","to": "16:00"},{"from": "00:00","to": "00:00"}]</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.VaccinationCenterDTO.active">
+            <example>true</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.VaccineDTO.vaccineId">
+            <example>2dba46e3-a040-4dab-9ec4-600e44dbaf8e</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.VaccineDTO.company">
+            <example>BioNTech</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.VaccineDTO.name">
+            <example>Pfizer</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.VaccineDTO.numberOfDoses">
+            <example>2</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.VaccineDTO.minDaysBetweenDoses">
+            <example>14</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.VaccineDTO.maxDaysBetweenDoses">
+            <example>30</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.VaccineDTO.virus">
+            <example>Koronawirus</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.VaccineDTO.minPatientAge">
+            <example>18</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.VaccineDTO.maxPatientAge">
+            <example>150</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.VaccineDTO.active">
+            <example>true</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.VaccineInVaccinationCenterDTO.id">
+            <example>2dba46e3-a040-4dab-9ec4-600e44dbaf8e</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.VaccineInVaccinationCenterDTO.name">
+            <example>Pfizer</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.VaccineInVaccinationCenterDTO.companyName">
+            <example>BioNTech</example>
+        </member>
+        <member name="P:VaccinationSystem.DTO.VaccineInVaccinationCenterDTO.virus">
+            <example>Koronawirus</example>
+        </member>
+    </members>
+</doc>

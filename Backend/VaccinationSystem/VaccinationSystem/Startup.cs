@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using VaccinationSystem.Config;
 using VaccinationSystem.Models;
+using System.IO;
 
 namespace VaccinationSystem
 {
@@ -29,9 +30,22 @@ namespace VaccinationSystem
                 .AddJsonOptions(options =>
                 {
                     options.JsonSerializerOptions.PropertyNamingPolicy = null;
+                }).ConfigureApiBehaviorOptions(options =>
+                {
+                    options.SuppressMapClientErrors = true;
                 });
             //services.AddControllersWithViews();
-            services.AddSwaggerGen();
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("3.0.0",
+                    new Microsoft.OpenApi.Models.OpenApiInfo
+                    {
+                        Title = "VaccinationSystem",
+                        Version = "3.0.0"
+                    });
+                var filePath = Path.Combine(System.AppContext.BaseDirectory, "VaccinationSystem.xml");
+                c.IncludeXmlComments(filePath);
+            });
 
             services.AddHttpClient();
 
@@ -57,7 +71,10 @@ namespace VaccinationSystem
              .AllowAnyMethod()
              .AllowAnyHeader());
             app.UseSwagger();
-            app.UseSwaggerUI();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("3.0.0/swagger.json", "VaccinationSystem 3.0.0");
+            });
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
