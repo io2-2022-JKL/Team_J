@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -24,8 +25,16 @@ namespace VaccinationSystem.Controllers
             _context = context;
         }
 
+        /// <remarks>
+        /// Registers a patient
+        /// </remarks>
+        /// <param name="registerRequestDTO"></param>
+        /// <response code="200">OK, successfully registered</response>
+        /// <response code="400">Error, user sent incomplete data</response>
         [HttpPost("register")]
-        public IActionResult RegisterUser(RegisterRequestDTO registerRequestDTO)
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        public IActionResult RegisterUser([FromBody, Required]RegisterRequestDTO registerRequestDTO)
         {
             var result = AddNewUser(registerRequestDTO);
             return result;
@@ -35,7 +44,7 @@ namespace VaccinationSystem.Controllers
         {
             Patient patient = new Patient();
             patient.PESEL = registerRequestDTO.PESEL;
-            if(patient.PESEL == null || patient.PESEL.Length != 11 || !long.TryParse(patient.PESEL, out _))
+            if(patient.PESEL == null || patient.PESEL.Length != 11 || !ulong.TryParse(patient.PESEL, out _))
             {
                 return BadRequest();
             }
@@ -107,19 +116,25 @@ namespace VaccinationSystem.Controllers
                 return false;
             if (s[0] == '+')
             {
-                if (!long.TryParse(s.Substring(1), out _))
+                if (!ulong.TryParse(s.Substring(1), out _))
                     return false;
             }
             else
             {
-                if (!long.TryParse(s, out _))
+                if (!ulong.TryParse(s, out _))
                     return false;
             }
             return true;
         }
 
+        /// <remarks>Logs in user</remarks>
+        /// <param name="signinRequestDTO"></param>
+        /// <response code="200">OK, successfully signed up</response>
+        /// <response code="400">Error, user doesn't exists</response>
         [HttpPost("signin")]
-        public ActionResult<SigninResponseDTO> SignInUser(SigninRequestDTO signinRequestDTO)
+        [ProducesResponseType(typeof(SigninResponseDTO), 200)]
+        [ProducesResponseType(400)]
+        public ActionResult<SigninResponseDTO> SignInUser([FromBody, Required]SigninRequestDTO signinRequestDTO)
         {
             var result = FindUser(signinRequestDTO);
             if (result != null)
@@ -155,7 +170,12 @@ namespace VaccinationSystem.Controllers
             return null;
         }
 
+        /// <remarks>Returns list of all viruses</remarks>
+        /// <response code="200">OK</response>
+        /// <response code="404">Not found</response>
         [HttpGet("viruses")]
+        [ProducesResponseType(typeof(IEnumerable<GetVirusDTO>), 200)]
+        [ProducesResponseType(404)]
         public ActionResult<IEnumerable<GetVirusDTO>> GetViruses()
         {
             var result = GetAllVirusesNames();
@@ -178,7 +198,12 @@ namespace VaccinationSystem.Controllers
             return result;
         }
 
+        /// <remarks>Returns list of all cities</remarks>
+        /// <response code="200">OK</response>
+        /// <response code="404">Not found</response>
         [HttpGet("cities")]
+        [ProducesResponseType(typeof(IEnumerable<GetCitiesDTO>), 200)]
+        [ProducesResponseType(404)]
         public ActionResult<IEnumerable<GetCitiesDTO>> GetCities()
         {
             var result = GetAllCities();

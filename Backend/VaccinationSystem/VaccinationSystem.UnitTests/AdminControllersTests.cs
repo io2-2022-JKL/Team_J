@@ -126,11 +126,35 @@ namespace VaccinationSystem.UnitTests
         }
 
         [Theory]
-        [InlineData("81a130d2-502f-4cf1-a376-63edeb000e9f")]
         [InlineData("wrong_guid")]
-        [InlineData("81a130d2-502f-4cf1-aaaa-63edeb000e9b")]
         [InlineData("")]
         [InlineData(null)]
+        public void DeleteWrongGuidPatientTest(string patientId)
+        {
+            // Arrange
+
+            var patientMockSet = GetMock(GetPatientsData());
+            var doctorMockSet = GetMock(GetDoctorsData());
+            var timeSlotMockSet = GetMock(new List<TimeSlot>().AsQueryable());
+            var mockContext = new Mock<VaccinationSystemDbContext>();
+            mockContext.Setup(c => c.Patients).Returns(patientMockSet.Object);
+            mockContext.Setup(c => c.Doctors).Returns(doctorMockSet.Object);
+            mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
+
+            var controller = new AdminController(mockContext.Object);
+
+            // Act
+
+            var result = controller.DeletePatient(patientId);
+
+            // Assert
+            Assert.IsType<BadRequestResult>(result);
+
+        }
+
+        [Theory]
+        [InlineData("81a130d2-502f-4cf1-a376-63edeb000e9f")]
+        [InlineData("81a130d2-502f-4cf1-aaaa-63edeb000e9b")]
         public void DeleteWrongPatientTest(string patientId)
         {
             // Arrange
@@ -203,6 +227,7 @@ namespace VaccinationSystem.UnitTests
             }
 
         }
+
 
         [Fact]
         public void GetDoctorsEmptyTest()
@@ -347,14 +372,8 @@ namespace VaccinationSystem.UnitTests
         [InlineData("00000000-0000-0000-0000-000000000000", "e1d50915-5548-4993-9204-edddab4e1dff")]
         [InlineData("81a130d2-502f-4cf1-a376-63edeb000e9f", "e0d50915-5548-4993-9204-edddab4e1dff")]
         [InlineData("00000000-0000-0000-0000-000000000001", "e0d50915-5548-4993-9204-edddab4e1dff")]
-        [InlineData("wrong_doctor_guid", "e0d50915-5548-4993-9204-edddab4e1dff")]
-        [InlineData("", "e0d50915-5548-4993-9204-edddab4e1dff")]
-        [InlineData(null, "e0d50915-5548-4993-9204-edddab4e1dff")]
         [InlineData("81a130d2-502f-4cf1-a376-63edeb000e9b", "00000000-0000-0000-0000-000000000000")]
         [InlineData("81a130d2-502f-4cf1-a376-63edeb000e9b", "e2d50915-5548-4993-9204-edddab4e1dff")]
-        [InlineData("81a130d2-502f-4cf1-a376-63edeb000e9b", "wrong_vaccination_center_guid")]
-        [InlineData("81a130d2-502f-4cf1-a376-63edeb000e9b", "")]
-        [InlineData("81a130d2-502f-4cf1-a376-63edeb000e9b", null)]
         public void AddWrongDoctorTest(string doctorId, string vaccinationCenterId)
         {
             // Arrange
@@ -382,7 +401,81 @@ namespace VaccinationSystem.UnitTests
 
             // Assert
 
-            Assert.IsType<NotFoundResult>(result);
+            Assert.IsType<BadRequestResult>(result);
+
+            Assert.Equal(GetDoctorsData().Count(), doctorData.Count());
+
+        }
+
+        [Theory]
+        [InlineData("81a130d2-502f-4cf1-a376-63edeb000e9b", "wrong_vaccination_center_guid")]
+        [InlineData("81a130d2-502f-4cf1-a376-63edeb000e9b", "")]
+        [InlineData("81a130d2-502f-4cf1-a376-63edeb000e9b", null)]
+        public void AddWrongVaccinationCenterGuidDoctorTest(string doctorId, string vaccinationCenterId)
+        {
+            // Arrange
+            var patientData = GetPatientsData().ToList();
+            var patientMockSet = GetMock(GetPatientsData());
+            var vaccinationCenterMockSet = GetMock(GetVaccinationCentersData());
+            var doctorData = GetDoctorsData().ToList();
+            var doctorMockSet = GetMock(GetDoctorsData());
+            doctorMockSet.Setup(c => c.Add(It.IsAny<Doctor>())).Callback(delegate (Doctor doc) {
+                doctorData.Add(doc);
+            });
+
+            var mockContext = new Mock<VaccinationSystemDbContext>();
+            mockContext.Setup(c => c.Patients).Returns(patientMockSet.Object);
+            mockContext.Setup(c => c.VaccinationCenters).Returns(vaccinationCenterMockSet.Object);
+            mockContext.Setup(c => c.Doctors).Returns(doctorMockSet.Object);
+
+            var controller = new AdminController(mockContext.Object);
+
+            var request = new AddDoctorRequestDTO { patientId = doctorId, vaccinationCenterId = vaccinationCenterId };
+
+            // Act
+
+            var result = controller.AddDoctor(request);
+
+            // Assert
+
+            Assert.IsType<BadRequestResult>(result);
+
+            Assert.Equal(GetDoctorsData().Count(), doctorData.Count());
+
+        }
+
+        [Theory]
+        [InlineData("wrong_doctor_guid", "e0d50915-5548-4993-9204-edddab4e1dff")]
+        [InlineData("", "e0d50915-5548-4993-9204-edddab4e1dff")]
+        [InlineData(null, "e0d50915-5548-4993-9204-edddab4e1dff")]
+        public void AddWrongDoctorGuidDoctorTest(string doctorId, string vaccinationCenterId)
+        {
+            // Arrange
+            var patientData = GetPatientsData().ToList();
+            var patientMockSet = GetMock(GetPatientsData());
+            var vaccinationCenterMockSet = GetMock(GetVaccinationCentersData());
+            var doctorData = GetDoctorsData().ToList();
+            var doctorMockSet = GetMock(GetDoctorsData());
+            doctorMockSet.Setup(c => c.Add(It.IsAny<Doctor>())).Callback(delegate (Doctor doc) {
+                doctorData.Add(doc);
+            });
+
+            var mockContext = new Mock<VaccinationSystemDbContext>();
+            mockContext.Setup(c => c.Patients).Returns(patientMockSet.Object);
+            mockContext.Setup(c => c.VaccinationCenters).Returns(vaccinationCenterMockSet.Object);
+            mockContext.Setup(c => c.Doctors).Returns(doctorMockSet.Object);
+
+            var controller = new AdminController(mockContext.Object);
+
+            var request = new AddDoctorRequestDTO { patientId = doctorId, vaccinationCenterId = vaccinationCenterId };
+
+            // Act
+
+            var result = controller.AddDoctor(request);
+
+            // Assert
+
+            Assert.IsType<BadRequestResult>(result);
 
             Assert.Equal(GetDoctorsData().Count(), doctorData.Count());
 
@@ -427,12 +520,60 @@ namespace VaccinationSystem.UnitTests
         }
 
         [Theory]
-        [InlineData("e0d50915-5548-4993-dddd-edddab4e1df2")]
-        [InlineData("e0d50915-5548-4993-dddd-edddab4e1df4")]
-        [InlineData("e0d50915-5548-4993-aaaa-edddab4e1df4")]
         [InlineData("wrong_doctor_guid")]
         [InlineData("")]
         [InlineData(null)]
+        public void DeleteWrongGuidDoctorTest(string doctorId)
+        {
+            // Arrange
+
+            var patientMockSet = GetMock(GetPatientsData());
+            var appintmentsData = GetAppointmentsData();
+            var appointmentMockSet = GetMock(appintmentsData);
+            var doctorsData = GetDoctorsData();
+            var doctorMockSet = GetMock(doctorsData);
+            var timeSlotsData = GetTimeSlotsData();
+            var timeSlotMockSet = GetMock(timeSlotsData);
+
+            var mockContext = new Mock<VaccinationSystemDbContext>();
+            mockContext.Setup(c => c.Patients).Returns(patientMockSet.Object);
+            mockContext.Setup(c => c.Doctors).Returns(doctorMockSet.Object);
+            mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
+            mockContext.Setup(c => c.Appointments).Returns(appointmentMockSet.Object);
+
+            var controller = new AdminController(mockContext.Object);
+
+            // Act
+
+            var result = controller.DeleteDoctor(doctorId);
+
+            // Assert
+
+            Assert.IsType<BadRequestResult>(result);
+            Assert.Equal(GetDoctorsData().Count(), doctorsData.ToList().Count);
+            if (Guid.TryParse(doctorId, out Guid doctorGuid))
+            {
+                foreach (var appointment in appintmentsData.Where(a => a.TimeSlot.DoctorId == doctorGuid).ToList())
+                {
+                    var originalAppointment = GetAppointmentsData().SingleOrDefault(a => a.Id == appointment.Id);
+                    Assert.NotNull(originalAppointment);
+                    Assert.Equal(originalAppointment.State, appointment.State);
+                    Assert.Equal(originalAppointment.TimeSlot.Active, appointment.TimeSlot.Active);
+                }
+                foreach (var timeSlot in timeSlotsData.Where(ts => ts.DoctorId == doctorGuid).ToList())
+                {
+                    var originalTimeSlot = GetTimeSlotsData().SingleOrDefault(ts => ts.Id == timeSlot.Id);
+                    Assert.NotNull(originalTimeSlot);
+                    Assert.Equal(originalTimeSlot.Active, timeSlot.Active);
+                }
+            }
+
+        }
+
+        [Theory]
+        [InlineData("e0d50915-5548-4993-dddd-edddab4e1df2")]
+        [InlineData("e0d50915-5548-4993-dddd-edddab4e1df4")]
+        [InlineData("e0d50915-5548-4993-aaaa-edddab4e1df4")]
         public void DeleteWrongDoctorTest(string doctorId)
         {
             // Arrange
@@ -718,7 +859,7 @@ namespace VaccinationSystem.UnitTests
 
             // Assert
 
-            Assert.IsType<NotFoundResult>(result);
+            Assert.IsType<BadRequestResult>(result);
 
             Assert.Equal(GetVaccinationCentersData().Count(), vaccinationCentersData.Count());
             Assert.Equal(GetVaccinesInVaccinationCentersData().Count(), vaccinesInVaccinationCentersData.Count());
@@ -727,10 +868,75 @@ namespace VaccinationSystem.UnitTests
         }
 
         [Theory]
-        [InlineData("Centrum4", "Warszawa", "Al. Jerozolimskie 251", true, "e0d50915-5548-4993-dddd-edddab4e1df1")]
         [InlineData("Centrum5", "Poznañ", "ul. B. Prusa 10", false, "wrong_vaccine_guid")]
         [InlineData("Centrum5", "Poznañ", "ul. B. Prusa 10", false, "")]
         [InlineData("Centrum5", "Poznañ", "ul. B. Prusa 10", false, null)]
+        public void AddWrongVaccineGuidVaccinationCenterTest(string name, string city, string street, bool active, string id)
+        {
+            // Arrange
+            var vaccinationCentersData = GetVaccinationCentersData().ToList();
+            var vaccinationCenterMockSet = GetMock(vaccinationCentersData.AsQueryable());
+            vaccinationCenterMockSet.Setup(c => c.Add(It.IsAny<VaccinationCenter>())).Callback(delegate (VaccinationCenter vc) {
+                vaccinationCentersData.Add(vc);
+            });
+
+            var vaccinesInVaccinationCentersData = GetVaccinesInVaccinationCentersData().ToList();
+            var vaccinesInVaccinationCenterMockSet = GetMock(vaccinesInVaccinationCentersData.AsQueryable());
+            vaccinesInVaccinationCenterMockSet.Setup(c => c.Add(It.IsAny<VaccinesInVaccinationCenter>())).Callback(delegate (VaccinesInVaccinationCenter vaccine) {
+                vaccinesInVaccinationCentersData.Add(vaccine);
+            });
+
+            var vaccinesData = GetVaccinesData().ToList();
+            var vaccineMockSet = GetMock(vaccinesData.AsQueryable());
+
+            var openingHoursData = GetOpeningHoursData().ToList();
+            var openingHoursMockSet = GetMock(openingHoursData.AsQueryable());
+            openingHoursMockSet.Setup(c => c.Add(It.IsAny<OpeningHours>())).Callback(delegate (OpeningHours oh) {
+                openingHoursData.Add(oh);
+            });
+
+            var mockContext = new Mock<VaccinationSystemDbContext>();
+            mockContext.Setup(c => c.VaccinationCenters).Returns(vaccinationCenterMockSet.Object);
+            mockContext.Setup(c => c.VaccinesInVaccinationCenter).Returns(vaccinesInVaccinationCenterMockSet.Object);
+            mockContext.Setup(c => c.OpeningHours).Returns(openingHoursMockSet.Object);
+            mockContext.Setup(c => c.Vaccines).Returns(vaccineMockSet.Object);
+
+            var controller = new AdminController(mockContext.Object);
+
+            var request = new AddVaccinationCenterRequestDTO
+            {
+                name = name,
+                city = city,
+                street = street,
+                vaccineIds = new List<string> { id },
+                openingHoursDays = new List<OpeningHoursDayDTO>
+                {
+                    new OpeningHoursDayDTO { from = "07:00", to = "18:00" },
+                    new OpeningHoursDayDTO { from = "07:00", to = "18:00" },
+                    new OpeningHoursDayDTO { from = "06:00", to = "15:00" },
+                    new OpeningHoursDayDTO { from = "06:30", to = "13:45" },
+                    new OpeningHoursDayDTO { from = "00:00", to = "00:00" },
+                    new OpeningHoursDayDTO { from = "00:00", to = "00:00" },
+                    new OpeningHoursDayDTO { from = "00:00", to = "00:00" }
+                },
+                active = active
+            };
+
+            // Act
+
+            var result = controller.AddVaccinationCenter(request);
+
+            // Assert
+
+            Assert.IsType<BadRequestResult>(result);
+
+            Assert.Equal(GetVaccinationCentersData().Count(), vaccinationCentersData.Count());
+            Assert.Equal(GetVaccinesInVaccinationCentersData().Count(), vaccinesInVaccinationCentersData.Count());
+            Assert.Equal(GetOpeningHoursData().Count(), openingHoursData.Count());
+        }
+
+        [Theory]
+        [InlineData("Centrum4", "Warszawa", "Al. Jerozolimskie 251", true, "e0d50915-5548-4993-dddd-edddab4e1df1")]
         public void AddWrongVaccineIdVaccinationCenterTest(string name, string city, string street, bool active, string id)
         {
             // Arrange
@@ -852,7 +1058,7 @@ namespace VaccinationSystem.UnitTests
 
             // Assert
 
-            Assert.IsType<NotFoundResult>(result);
+            Assert.IsType<BadRequestResult>(result);
 
             Assert.Equal(GetVaccinationCentersData().Count(), vaccinationCentersData.Count());
             Assert.Equal(GetVaccinesInVaccinationCentersData().Count(), vaccinesInVaccinationCentersData.Count());
@@ -918,11 +1124,81 @@ namespace VaccinationSystem.UnitTests
         }
 
         [Theory]
-        [InlineData("e2d50915-5548-4993-9204-edddab4e1dff")]
-        [InlineData("e2d50915-5548-aaaa-9204-edddab4e1dff")]
         [InlineData("wrong_guid_format")]
         [InlineData("")]
         [InlineData(null)]
+        public void DeleteWrongGuidVaccinationCenterTest(string id)
+        {
+            // Arrange
+            var vaccinationCentersData = GetVaccinationCentersData().ToList();
+            var vaccinationCenterMockSet = GetMock(vaccinationCentersData.AsQueryable());
+
+            var vaccinesInVaccinationCentersData = GetVaccinesInVaccinationCentersData().ToList();
+            var vaccinesInVaccinationCenterMockSet = GetMock(vaccinesInVaccinationCentersData.AsQueryable());
+
+            var vaccinesData = GetVaccinesData().ToList();
+            var vaccineMockSet = GetMock(vaccinesData.AsQueryable());
+
+            var openingHoursData = GetOpeningHoursData().ToList();
+            var openingHoursMockSet = GetMock(openingHoursData.AsQueryable());
+
+            var doctorsData = GetDoctorsData().ToList();
+            var doctorMockSet = GetMock(doctorsData.AsQueryable());
+
+            var timeSlotsData = GetTimeSlotsData().ToList();
+            var timeSlotsMockSet = GetMock(timeSlotsData.AsQueryable());
+
+            var appointmentsData = GetAppointmentsData().ToList();
+            var appointmentsMockSet = GetMock(appointmentsData.AsQueryable());
+
+            var mockContext = new Mock<VaccinationSystemDbContext>();
+            mockContext.Setup(c => c.VaccinationCenters).Returns(vaccinationCenterMockSet.Object);
+            mockContext.Setup(c => c.VaccinesInVaccinationCenter).Returns(vaccinesInVaccinationCenterMockSet.Object);
+            mockContext.Setup(c => c.OpeningHours).Returns(openingHoursMockSet.Object);
+            mockContext.Setup(c => c.Vaccines).Returns(vaccineMockSet.Object);
+            mockContext.Setup(c => c.Doctors).Returns(doctorMockSet.Object);
+            mockContext.Setup(c => c.TimeSlots).Returns(timeSlotsMockSet.Object);
+            mockContext.Setup(c => c.Appointments).Returns(appointmentsMockSet.Object);
+
+            var controller = new AdminController(mockContext.Object);
+
+            // Act
+
+            var result = controller.DeleteVaccinationCenter(id);
+
+            // Assert
+
+            Assert.IsType<BadRequestResult>(result);
+
+            Assert.Equal(GetVaccinationCentersData().Count(), vaccinationCentersData.Count());
+            Assert.Equal(GetVaccinesInVaccinationCentersData().Count(), vaccinesInVaccinationCentersData.Count());
+            Assert.Equal(GetOpeningHoursData().Count(), openingHoursData.Count());
+
+            if (Guid.TryParse(id, out Guid guid))
+            {
+                foreach (var doctor in doctorsData.Where(doc => doc.VaccinationCenterId == guid && doc.Active == true))
+                {
+                    foreach (var appointment in appointmentsData.Where(a => a.TimeSlot.DoctorId == doctor.Id).ToList())
+                    {
+                        var originalAppointment = GetAppointmentsData().SingleOrDefault(a => a.Id == appointment.Id);
+                        Assert.NotNull(originalAppointment);
+                        Assert.Equal(originalAppointment.State, appointment.State);
+                        Assert.Equal(originalAppointment.TimeSlot.Active, appointment.TimeSlot.Active);
+                    }
+                    foreach (var timeSlot in timeSlotsData.Where(ts => ts.DoctorId == doctor.Id).ToList())
+                    {
+                        var originalTimeSlot = GetTimeSlotsData().SingleOrDefault(ts => ts.Id == timeSlot.Id);
+                        Assert.NotNull(originalTimeSlot);
+                        Assert.Equal(originalTimeSlot.Active, timeSlot.Active);
+                    }
+                }
+            }
+
+        }
+
+        [Theory]
+        [InlineData("e2d50915-5548-4993-9204-edddab4e1dff")]
+        [InlineData("e2d50915-5548-aaaa-9204-edddab4e1dff")]
         public void DeleteWrongVaccinationCenterTest(string id)
         {
             // Arrange
@@ -1128,14 +1404,70 @@ namespace VaccinationSystem.UnitTests
         }
 
         [Theory]
-        [InlineData(1, 1, 10, "Œwirus", 1, 10)]
-        [InlineData(1, 1, 10, "", 1, 10)]
-        [InlineData(1, 1, 10, null, 1, 10)]
         [InlineData(0, 1, 10, "Koronawirus", 1, 10)]
         [InlineData(-1, 1, 10, "Koronawirus", 1, 10)]
         [InlineData(1, 1, 10, "Koronawirus", 10, 1)]
         [InlineData(1, 10, 1, "Koronawirus", 1, 10)]
-        public void AddWrongVaccineTest(int numberOfDoses, int minDaysBetweenDoses, int maxDaysBetweenDoses, string virus, int minPatientAge, int maxPatientAge)
+        [InlineData(1, 1, 10, null, 1, 10)]
+        public void AddWrongDataVaccineTest(int numberOfDoses, int minDaysBetweenDoses, int maxDaysBetweenDoses, string virus, int minPatientAge, int maxPatientAge)
+        {
+            // Arrange
+
+            var vaccinesData = GetVaccinesData().ToList();
+            var vaccineMockSet = GetMock(vaccinesData.AsQueryable());
+            vaccineMockSet.Setup(c => c.Add(It.IsAny<Vaccine>())).Callback(delegate (Vaccine v) {
+                vaccinesData.Add(v);
+            });
+            var mockContext = new Mock<VaccinationSystemDbContext>();
+            mockContext.Setup(c => c.Vaccines).Returns(vaccineMockSet.Object);
+
+            var controller = new AdminController(mockContext.Object);
+
+            var vaccineDTO = new AddVaccineRequestDTO()
+            {
+                company = "CompanyX",
+                name = "Xvaccine",
+                numberOfDoses = numberOfDoses,
+                minDaysBetweenDoses = minDaysBetweenDoses,
+                maxDaysBetweenDoses = maxDaysBetweenDoses,
+                minPatientAge = minPatientAge,
+                maxPatientAge = maxPatientAge,
+                virus = virus,
+                active = true
+            };
+
+            // Act
+
+            var result = controller.AddVaccine(vaccineDTO);
+
+            // Assert
+
+            Assert.IsType<BadRequestResult>(result);
+
+            Assert.Equal(GetVaccinesData().ToList().Count(), vaccinesData.Count());
+
+            foreach (var vaccine in vaccinesData)
+            {
+                var originalVaccine = GetVaccinesData().SingleOrDefault(v => v.Id == vaccine.Id);
+                Assert.NotNull(originalVaccine);
+
+                Assert.Equal(originalVaccine.Company, vaccine.Company);
+                Assert.Equal(originalVaccine.Name, vaccine.Name);
+                Assert.Equal(originalVaccine.NumberOfDoses, vaccine.NumberOfDoses);
+                Assert.Equal(originalVaccine.MinDaysBetweenDoses, vaccine.MinDaysBetweenDoses);
+                Assert.Equal(originalVaccine.MaxDaysBetweenDoses, vaccine.MaxDaysBetweenDoses);
+                Assert.Equal(originalVaccine.MinPatientAge, vaccine.MinPatientAge);
+                Assert.Equal(originalVaccine.MaxPatientAge, vaccine.MaxPatientAge);
+                Assert.Equal(originalVaccine.Virus, vaccine.Virus);
+                Assert.Equal(originalVaccine.Active, vaccine.Active);
+            }
+
+        }
+
+        [Theory]
+        [InlineData(1, 1, 10, "Œwirus", 1, 10)]
+        [InlineData(1, 1, 10, "", 1, 10)]
+        public void AddWrongVirusVaccineTest(int numberOfDoses, int minDaysBetweenDoses, int maxDaysBetweenDoses, string virus, int minPatientAge, int maxPatientAge)
         {
             // Arrange
 
@@ -1239,11 +1571,64 @@ namespace VaccinationSystem.UnitTests
         }
 
         [Theory]
-        [InlineData("e0d50915-5548-4993-aaaa-edddab4e1df4")]
-        [InlineData("e0d50915-5548-4993-1111-edddab4e1df4")]
         [InlineData("wrong_guid_format")]
         [InlineData("")]
         [InlineData(null)]
+        public void DeleteWrongGuidVaccineTest(string vaccineId)
+        {
+            // Arrange
+
+            var vaccinesData = GetVaccinesData().ToList();
+            var vaccineMockSet = GetMock(vaccinesData.AsQueryable());
+            vaccineMockSet.Setup(c => c.Add(It.IsAny<Vaccine>())).Callback(delegate (Vaccine v) {
+                vaccinesData.Add(v);
+            });
+            var appointmentsData = GetAppointmentsData().ToList();
+            var appointmentMockSet = GetMock(appointmentsData.AsQueryable());
+            appointmentMockSet.Setup(c => c.Add(It.IsAny<Appointment>())).Callback(delegate (Appointment a)
+            {
+                appointmentsData.Add(a);
+            });
+            var timeSlotsData = GetTimeSlotsData().ToList();
+            var timeSlotMockSet = GetMock(timeSlotsData.AsQueryable());
+            timeSlotMockSet.Setup(c => c.Add(It.IsAny<TimeSlot>())).Callback(delegate (TimeSlot timeSlot)
+            {
+                timeSlotsData.Add(timeSlot);
+            });
+
+            var mockContext = new Mock<VaccinationSystemDbContext>();
+            mockContext.Setup(c => c.Vaccines).Returns(vaccineMockSet.Object);
+            mockContext.Setup(c => c.Appointments).Returns(appointmentMockSet.Object);
+            mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
+
+            var controller = new AdminController(mockContext.Object);
+
+            // Act
+
+            var result = controller.DeleteVaccine(vaccineId);
+
+            // Assert
+
+            Assert.IsType<BadRequestResult>(result);
+
+            Assert.Equal(GetVaccinesData().ToList().Count(), vaccinesData.Count());
+
+            if (Guid.TryParse(vaccineId, out Guid guid))
+            {
+                foreach (var appointment in appointmentsData.Where(a => a.VaccineId == guid).ToList())
+                {
+                    var originalAppointment = GetAppointmentsData().SingleOrDefault(a => a.Id == appointment.Id);
+                    Assert.NotNull(originalAppointment);
+                    Assert.Equal(originalAppointment.State, appointment.State);
+                    Assert.Equal(originalAppointment.TimeSlot.Active, appointment.TimeSlot.Active);
+                }
+            }
+
+        }
+
+        [Theory]
+        [InlineData("e0d50915-5548-4993-aaaa-edddab4e1df4")]
+        [InlineData("e0d50915-5548-4993-1111-edddab4e1df4")]
         public void DeleteWrongVaccineTest(string vaccineId)
         {
             // Arrange
@@ -1298,9 +1683,7 @@ namespace VaccinationSystem.UnitTests
 
         [Theory]
         [InlineData("e0d50915-5548-4993-dddd-edddab4e1df1")]
-        [InlineData("e0d50915-5548-4993-dddd-edddab4e1df2")]
         [InlineData("e0d50915-5548-4993-dddd-edddab4e1df3")]
-        [InlineData("e0d50915-5548-4993-dddd-edddab4e1df4")]
         public void GetTimeSlotsTest(string doctorId)
         {
             // Arrange
@@ -1362,10 +1745,57 @@ namespace VaccinationSystem.UnitTests
         }
 
         [Theory]
-        [InlineData("e0d50915-5548-4993-0000-edddab4e1df1")]
         [InlineData("wrong_guid_format")]
         [InlineData("")]
         [InlineData(null)]
+        public void GetWrongGuidDoctorTimeSlotsTest(string doctorId)
+        {
+            // Arrange
+
+            var doctorsData = GetDoctorsData().ToList();
+            var doctorMockSet = GetMock(doctorsData.AsQueryable());
+
+            var vaccinesData = GetVaccinesData().ToList();
+            var vaccineMockSet = GetMock(vaccinesData.AsQueryable());
+            vaccineMockSet.Setup(c => c.Add(It.IsAny<Vaccine>())).Callback(delegate (Vaccine v) {
+                vaccinesData.Add(v);
+            });
+            var appointmentsData = GetAppointmentsData().ToList();
+            var appointmentMockSet = GetMock(appointmentsData.AsQueryable());
+            appointmentMockSet.Setup(c => c.Add(It.IsAny<Appointment>())).Callback(delegate (Appointment a)
+            {
+                appointmentsData.Add(a);
+            });
+            var timeSlotsData = GetTimeSlotsData().ToList();
+            var timeSlotMockSet = GetMock(timeSlotsData.AsQueryable());
+            timeSlotMockSet.Setup(c => c.Add(It.IsAny<TimeSlot>())).Callback(delegate (TimeSlot timeSlot)
+            {
+                timeSlotsData.Add(timeSlot);
+            });
+
+            var mockContext = new Mock<VaccinationSystemDbContext>();
+            mockContext.Setup(c => c.Doctors).Returns(doctorMockSet.Object);
+            mockContext.Setup(c => c.Vaccines).Returns(vaccineMockSet.Object);
+            mockContext.Setup(c => c.Appointments).Returns(appointmentMockSet.Object);
+            mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
+
+            var controller = new AdminController(mockContext.Object);
+
+            //string format = "dd-MM-yyyy HH\\:mm";
+
+            // Act
+
+            var result = controller.GetTimeSlots(doctorId);
+
+            // Assert
+
+            Assert.IsType<BadRequestResult>(result.Result);
+        }
+
+        [Theory]
+        [InlineData("e0d50915-5548-4993-0000-edddab4e1df1")]
+        [InlineData("e0d50915-5548-4993-dddd-edddab4e1df2")]
+        [InlineData("e0d50915-5548-4993-dddd-edddab4e1df4")]
         public void GetWrongDoctorTimeSlotsTest(string doctorId)
         {
             // Arrange

@@ -11,6 +11,7 @@ using VaccinationSystem.DTO.AdminDTOs;
 using VaccinationSystem.Config;
 using VaccinationSystem.Models;
 using System.Diagnostics;
+using System.ComponentModel.DataAnnotations;
 
 namespace VaccinationSystem.Controllers
 {
@@ -28,7 +29,16 @@ namespace VaccinationSystem.Controllers
             _context = context;
         }
 
+        /// <remarks>Returns all patients</remarks>
+        /// <response code="200">OK, found matching patients</response>
+        /// <response code="401">Error, user unauthorized to search patients</response>
+        /// <response code="403">Error, user forbidden from searching patients</response>
+        /// <response code="404">Error, no patient found</response>
         [HttpGet("patients")]
+        [ProducesResponseType(typeof(IEnumerable<PatientDTO>), 200)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
         public ActionResult<IEnumerable<PatientDTO>> GetPatients()
         {
             var result = GetAllPatients();
@@ -63,14 +73,40 @@ namespace VaccinationSystem.Controllers
             return result;
         }
 
+        /// <remarks>
+        /// Edits patient's data
+        /// </remarks>
+        /// <param name="patientDTO"></param>
+        /// <response code="200">Ok, edited patient</response>
+        /// <response code="400">Bad data</response>
+        /// <response code="401">Error, user unauthorized to edit patient</response>
+        /// <response code="403">Error, user forbidden from editing patient</response>
+        /// <response code="404">Error, no patient found to edit</response>
         [HttpPost("patients/editPatient")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
         public IActionResult EditPatient(PatientDTO patientDTO)
         {
             return NotFound();
         }
 
+        /// <remarks>Deletes a patient from system</remarks>
+        /// <param name="patientId" example="f969ffd0-6dbc-4900-8eb8-b4fe25906a74"></param>
+        /// <response code="200">Ok, deleted patient</response>
+        /// <response code="400">Bad data</response>
+        /// <response code="401">Error, user unauthorized to delete patient</response>
+        /// <response code="403">Error, user forbidden from deleting patient</response>
+        /// <response code="404">Error, no patient found to delete</response>
         [HttpDelete("patients/deletePatient/{patientId}")]
-        public IActionResult DeletePatient(string patientId)
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
+        public IActionResult DeletePatient([FromRoute]string patientId)
         {
             var result = FindAndDeletePatient(patientId);
             return result;
@@ -85,11 +121,11 @@ namespace VaccinationSystem.Controllers
             }
             catch(FormatException)
             {
-                return NotFound();
+                return BadRequest();
             }
             catch(ArgumentNullException)
             {
-                return NotFound();
+                return BadRequest();
             }
             Patient patient = _context.Patients.Where(patient => patient.Active == true && patient.Id == id).FirstOrDefault();
             if(patient != null)
@@ -104,7 +140,7 @@ namespace VaccinationSystem.Controllers
                         appointment.State = AppointmentState.Cancelled; // powiadomić pacjentów
                         var timeSlot = _context.TimeSlots.SingleOrDefault(ts => ts.Id == appointment.TimeSlotId);
                         if (timeSlot == null)
-                            return NotFound();
+                            return BadRequest();
                         appointment.TimeSlot = timeSlot;
                         appointment.TimeSlot.Active = false;
                     }
@@ -119,7 +155,16 @@ namespace VaccinationSystem.Controllers
             
         }
 
+        /// <remarks>Returns all doctors</remarks>
+        /// <response code="200">Ok, found matching doctors</response>
+        /// <response code="401">Error, user unauthorized to search doctors</response>
+        /// <response code="403">Error, user forbidden from searching doctors</response>
+        /// <response code="404">Error, no doctor found</response>
         [HttpGet("doctors")]
+        [ProducesResponseType(typeof(IEnumerable<GetDoctorsResponseDTO>), 200)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
         public ActionResult<IEnumerable<GetDoctorsResponseDTO>> GetDoctors()
         {
             var result = GetAllDoctors();
@@ -170,14 +215,36 @@ namespace VaccinationSystem.Controllers
             return result;
         }
 
+        /// <remarks>Edits doctor's data</remarks>
+        /// <param name="editDoctorRequestDTO"></param>
+        /// <response code="200">Ok, edited doctor</response>
+        /// <response code="400">Bad data</response>
+        /// <response code="401">Error, user unauthorized to edit doctor</response>
+        /// <response code="403">Error, user forbidden from editing doctor</response>
+        /// <response code="404">Error, no doctor found to edit</response>
         [HttpPost("doctors/editDoctor")]
-        public IActionResult EditDoctor(EditDoctorRequestDTO editDoctorRequestDTO)
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
+        public IActionResult EditDoctor([FromBody, Required] EditDoctorRequestDTO editDoctorRequestDTO)
         {
             return NotFound();
         }
 
+        /// <remarks>Adds a new doctor</remarks>
+        /// <param name="addDoctorRequestDTO"></param>
+        /// <response code="200">Ok, added a new doctor</response>
+        /// <response code="400">Bad data</response>
+        /// <response code="401">Error, user unauthorized to add doctors</response>
+        /// <response code="403">Error, user forbidden from adding doctors</response>
         [HttpPost("doctors/addDoctor")]
-        public IActionResult AddDoctor(AddDoctorRequestDTO addDoctorRequestDTO)
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        public IActionResult AddDoctor([FromBody, Required] AddDoctorRequestDTO addDoctorRequestDTO)
         {
             var result = AddNewDoctor(addDoctorRequestDTO);
             return result;
@@ -192,11 +259,11 @@ namespace VaccinationSystem.Controllers
             }
             catch (FormatException)
             {
-                return NotFound();
+                return BadRequest();
             }
             catch (ArgumentNullException)
             {
-                return NotFound();
+                return BadRequest();
             }
             Doctor doctor = new Doctor();
             doctor.Id = Guid.NewGuid();
@@ -204,11 +271,11 @@ namespace VaccinationSystem.Controllers
             doctor.PatientAccount = _context.Patients.Where(patient => patient.Active == true && patient.Id == id).FirstOrDefault();
             if(doctor.PatientAccount == null)
             {
-                return NotFound();
+                return BadRequest();
             }
             if(_context.Doctors.Where(doc => doc.PatientId == id && doc.Active == true).Any())
             {
-                return NotFound();
+                return BadRequest();
             }
             Guid vcId;
             try
@@ -217,17 +284,17 @@ namespace VaccinationSystem.Controllers
             }
             catch (FormatException)
             {
-                return NotFound();
+                return BadRequest();
             }
             catch (ArgumentNullException)
             {
-                return NotFound();
+                return BadRequest();
             }
             doctor.VaccinationCenterId = vcId;
             doctor.VaccinationCenter = _context.VaccinationCenters.Where(vc => vc.Active == true && vc.Id == vcId).FirstOrDefault();
             if(doctor.VaccinationCenter == null)
             {
-                return NotFound();
+                return BadRequest();
             }
 
             doctor.Active = true;
@@ -238,8 +305,20 @@ namespace VaccinationSystem.Controllers
 
         }
 
+        /// <remarks>Deletes a doctor from system</remarks>
+        /// <param name="doctorId" example="9d77b5e9-2823-4274-b326-d371e5582274"></param>
+        /// <response code="200">Ok, deleted doctor</response>
+        /// <response code="400">Bad data</response>
+        /// <response code="401">Error, user unauthorized to delete doctor</response>
+        /// <response code="403">Error, user forbidden from deleting doctor</response>
+        /// <response code="404">Error, no doctor found to delete</response>
         [HttpDelete("doctors/deleteDoctor/{doctorId}")]
-        public IActionResult DeleteDoctor(string doctorId)
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
+        public IActionResult DeleteDoctor([FromRoute]string doctorId)
         {
             var result = FindAndDeleteDoctor(doctorId);
             return result;
@@ -254,11 +333,11 @@ namespace VaccinationSystem.Controllers
             }
             catch (FormatException)
             {
-                return NotFound();
+                return BadRequest();
             }
             catch (ArgumentNullException)
             {
-                return NotFound();
+                return BadRequest();
             }
 
             Doctor doctor = _context.Doctors.Where(doc => doc.Active == true && doc.Id == id).SingleOrDefault();
@@ -271,7 +350,7 @@ namespace VaccinationSystem.Controllers
                     var timeSlot = _context.TimeSlots.SingleOrDefault(ts => ts.Id == appointment.TimeSlotId);
                     if(timeSlot == null)
                     {
-                        return NotFound();
+                        return BadRequest();
                     }
                     appointment.TimeSlot = timeSlot;
                     appointment.TimeSlot.Active = false;
@@ -287,16 +366,26 @@ namespace VaccinationSystem.Controllers
 
         }
 
+        /// <remarks>Returns all time slots matching given criteria</remarks>
+        /// <param name="doctorId" example="89a11879-4edf-4a67-a6f7-23c76763a418"></param>
+        /// <response code="200">Ok, found mathing time slots</response>
+        /// <response code="400">Bad data</response>
+        /// <response code="401">Error, user unauthorized to search time slots</response>
+        /// <response code="403">Error, user forbidden from searching time slots</response>
+        /// <response code="404">Error, no matching time slots or doctor found</response>
         [HttpGet("doctors/timeSlots/{doctorId}")]
-        public ActionResult<IEnumerable<TimeSlotDTO>> GetTimeSlots(string doctorId)
+        [ProducesResponseType(typeof(IEnumerable<TimeSlotDTO>), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
+        public ActionResult<IEnumerable<TimeSlotDTO>> GetTimeSlots([FromRoute]string doctorId)
         {
             var result = GetAllDoctorTimeSlots(doctorId);
-            if (result != null)
-                return Ok(result);
-            return NotFound();
+            return result;
         }
 
-        private IEnumerable<TimeSlotDTO> GetAllDoctorTimeSlots(string doctorId)
+        private ActionResult<IEnumerable<TimeSlotDTO>> GetAllDoctorTimeSlots(string doctorId)
         {
             List<TimeSlotDTO> timeSlots = new List<TimeSlotDTO>();
             Guid id;
@@ -306,15 +395,15 @@ namespace VaccinationSystem.Controllers
             }
             catch (FormatException)
             {
-                return null;
+                return BadRequest();
             }
             catch (ArgumentNullException)
             {
-                return null;
+                return BadRequest();
             }
             if (_context.Doctors.SingleOrDefault(doc => doc.Id == id) == null)
             {
-                return null;
+                return NotFound();
             }
             foreach (TimeSlot timeSlot in _context.TimeSlots.Where(ts => ts.DoctorId == id).ToList())
             {
@@ -327,17 +416,29 @@ namespace VaccinationSystem.Controllers
                 }
                 catch (FormatException)
                 {
-                    return null;
+                    return BadRequest();
                 }
                 timeSlotDTO.isFree = timeSlot.IsFree;
                 timeSlotDTO.active = timeSlot.Active;
                 timeSlots.Add(timeSlotDTO);
             }
-            return timeSlots;
+            if (timeSlots.Count == 0)
+                return NotFound();
+            return Ok(timeSlots);
         }
 
+        /// <remarks>Deletes time slots from system</remarks>
+        /// <param name="ids"></param>
+        /// <response code="200">Ok, deleted time slots</response>
+        /// <response code="401">Error, user unauthorized to delete time slots</response>
+        /// <response code="403">Error, user forbidden from deleting time slots</response>
+        /// <response code="404">Error, no time slots found to delete</response>
         [HttpPost("doctors/timeSlots/deleteTimeSlots")]
-        public IActionResult DeleteTimeSlots(IEnumerable<DeleteTimeSlotsDTO> ids)
+        [ProducesResponseType(200)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
+        public IActionResult DeleteTimeSlots([FromBody, Required] IEnumerable<DeleteTimeSlotsDTO> ids)
         {
             var result = FindAndDeleteDoctorTimeSlots(ids);
             return result;
@@ -390,7 +491,16 @@ namespace VaccinationSystem.Controllers
             return false;
         }
 
+        /// <remarks>Returns all vaccination centers matching given criteria</remarks>
+        /// <response code="200">Ok, found vaccination centers</response>
+        /// <response code="401">Error, user unauthorized to search vaccination centers</response>
+        /// <response code="403">Error, user forbidden from searching vaccination centers</response>
+        /// <response code="404">Error, no matching vaccination center found</response>
         [HttpGet("vaccinationCenters")]
+        [ProducesResponseType(typeof(IEnumerable<VaccinationCenterDTO>), 200)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
         public ActionResult<IEnumerable<VaccinationCenterDTO>> GetVaccinationCenters()
         {
             var result = GetAllVaccinationCenters();
@@ -468,8 +578,20 @@ namespace VaccinationSystem.Controllers
             return result;
         }
 
+        /// <remarks>Adds a vaccination center</remarks>
+        /// <param name="addVaccinationCenterRequestDTO"></param>
+        /// <response code="200">Ok, added vaccination center</response>
+        /// <response code="400">Bad data</response>
+        /// <response code="401">Error, user unauthorized to add vaccination center</response>
+        /// <response code="403">Error, user forbidden from adding vaccination center</response>
+        /// <response code="404">Error, no vaccine found to add vaccination center</response>
         [HttpPost("vaccinationCenters/addVaccinationCenter")]
-        public IActionResult AddVaccinationCenter(AddVaccinationCenterRequestDTO addVaccinationCenterRequestDTO)
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
+        public IActionResult AddVaccinationCenter([FromBody, Required] AddVaccinationCenterRequestDTO addVaccinationCenterRequestDTO)
         {
             var result = AddNewVaccinationCenter(addVaccinationCenterRequestDTO);
             return result;
@@ -495,11 +617,11 @@ namespace VaccinationSystem.Controllers
                 }
                 catch(FormatException)
                 {
-                    return NotFound();
+                    return BadRequest();
                 }
                 catch(ArgumentNullException)
                 {
-                    return NotFound();
+                    return BadRequest();
                 }
                 Vaccine vaccine;
                 if((vaccine = _context.Vaccines.Where(vac => vac.Active == true && vac.Id == id).FirstOrDefault()) != null)
@@ -519,7 +641,7 @@ namespace VaccinationSystem.Controllers
             }
 
             if (addVaccinationCenterRequestDTO.openingHoursDays.Count != 7)
-                return NotFound();
+                return BadRequest();
 
             for(int i = 0;i < addVaccinationCenterRequestDTO.openingHoursDays.Count();i++)
             {
@@ -533,7 +655,7 @@ namespace VaccinationSystem.Controllers
                 }
                 catch(FormatException)
                 {
-                    return NotFound();
+                    return BadRequest();
                 }
 
                 oh.WeekDay = (WeekDay)i;
@@ -551,14 +673,38 @@ namespace VaccinationSystem.Controllers
             return Ok();
         }
 
+        /// <remarks>Edit vaccination center's data</remarks>
+        /// <param name="editVaccinationCenterRequestDTO"></param>
+        /// <response code="200">Ok, edited vaccination center</response>
+        /// <response code="400">Bad data</response>
+        /// <response code="401">Error, user unauthorized to edit vaccination center</response>
+        /// <response code="403">Error, user forbidden from editing vaccination center</response>
+        /// <response code="404">Error, no vaccine found to edit vaccination center</response>
         [HttpPost("vaccinationCenters/editVaccinationCenter")]
-        public IActionResult EditVaccinationCenter(EditVaccinationCenterRequestDTO editVaccinationCenterRequestDTO)
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
+        public IActionResult EditVaccinationCenter([FromBody, Required] EditVaccinationCenterRequestDTO editVaccinationCenterRequestDTO)
         {
             return NotFound();
         }
 
+        /// <remarks>Deletes a vaccination center from system</remarks>
+        /// <param name="vaccinationCenterId" example="250b86b0-28bf-4ca2-9322-0ff57953be8f"></param>
+        /// <response code="200">Ok, deleted vaccination center</response>
+        /// <response code="400">Bad data</response>
+        /// <response code="401">Error, user unauthorized to delete vaccination center</response>
+        /// <response code="403">Error, user forbidden from deleting vaccination center</response>
+        /// <response code="404">Error, no vaccination center found to delete</response>
         [HttpDelete("vaccinationCenters/deleteVaccinationCenter/{vaccinationCenterId}")]
-        public IActionResult DeleteVaccinationCenter(string vaccinationCenterId)
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
+        public IActionResult DeleteVaccinationCenter([FromRoute]string vaccinationCenterId)
         {
             var result = FindAndDeleteVaccinationCenter(vaccinationCenterId);
             return result;
@@ -573,11 +719,11 @@ namespace VaccinationSystem.Controllers
             }
             catch(FormatException)
             {
-                return NotFound();
+                return BadRequest();
             }
             catch(ArgumentNullException)
             {
-                return NotFound();
+                return BadRequest();
             }
             VaccinationCenter vaccinationCenter;
             if((vaccinationCenter = _context.VaccinationCenters.Where(vc => vc.Active == true && vc.Id == id).SingleOrDefault())!=null)
@@ -590,7 +736,7 @@ namespace VaccinationSystem.Controllers
                         var timeSlot = _context.TimeSlots.SingleOrDefault(ts => ts.Id == appointment.TimeSlotId);
                         if(timeSlot == null)
                         {
-                            return NotFound();
+                            return BadRequest();
                         }
                         appointment.TimeSlot = timeSlot;
                         appointment.TimeSlot.Active = false;
@@ -605,7 +751,16 @@ namespace VaccinationSystem.Controllers
             return NotFound();
         }
 
+        /// <remarks>Returns all vaccines</remarks>
+        /// <response code="200">Ok, found vaccines</response>
+        /// <response code="401">Error, user unauthorized to search vaccines</response>
+        /// <response code="403">Error, user forbidden from searchig vaccines</response>
+        /// <response code="404">Error, no matching vaccine found</response>
         [HttpGet("vaccines")]
+        [ProducesResponseType(typeof(IEnumerable<VaccineDTO>), 200)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
         public ActionResult<IEnumerable<VaccineDTO>> GetVaccines() 
         {
             var result = GetAllVaccines();
@@ -635,8 +790,20 @@ namespace VaccinationSystem.Controllers
             return vaccines;
         }
 
+        /// <remarks>Adds a vaccine</remarks>
+        /// <param name="addVaccineRequestDTO"></param>
+        /// <response code="200">Ok, added vaccine</response>
+        /// <response code="400">Bad request</response>
+        /// <response code="401">Error, user unauthorized to add vaccine</response>
+        /// <response code="403">Error, user forbidden from editing vaccine</response>
+        /// <response code="404">Error, virus not found</response>
         [HttpPost("vaccines/addVaccine")]
-        public IActionResult AddVaccine(AddVaccineRequestDTO addVaccineRequestDTO)
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
+        public IActionResult AddVaccine([FromBody, Required] AddVaccineRequestDTO addVaccineRequestDTO)
         {
             var result = AddNewVaccine(addVaccineRequestDTO);
             return result;
@@ -649,12 +816,12 @@ namespace VaccinationSystem.Controllers
             vaccine.Name = addVaccineRequestDTO.name;
             vaccine.NumberOfDoses = addVaccineRequestDTO.numberOfDoses;
             if (vaccine.NumberOfDoses < 1)
-                return NotFound();
+                return BadRequest();
             vaccine.MinDaysBetweenDoses = addVaccineRequestDTO.minDaysBetweenDoses;
             vaccine.MaxDaysBetweenDoses = addVaccineRequestDTO.maxDaysBetweenDoses;
             if (vaccine.MinDaysBetweenDoses >= 0 && vaccine.MaxDaysBetweenDoses >= 0 && vaccine.MaxDaysBetweenDoses < vaccine.MinDaysBetweenDoses)
             {
-                return NotFound();
+                return BadRequest();
             }
             try
             {
@@ -662,7 +829,7 @@ namespace VaccinationSystem.Controllers
             }
             catch (ArgumentNullException)
             {
-                return NotFound();
+                return BadRequest();
             }
             catch (ArgumentException)
             {
@@ -670,13 +837,13 @@ namespace VaccinationSystem.Controllers
             }
             catch (OverflowException)
             {
-                return NotFound();
+                return BadRequest();
             }
             vaccine.MinPatientAge = addVaccineRequestDTO.minPatientAge;
             vaccine.MaxPatientAge = addVaccineRequestDTO.maxPatientAge;
             if (vaccine.MinPatientAge >= 0 && vaccine.MaxPatientAge >= 0 && vaccine.MaxPatientAge < vaccine.MinPatientAge)
             {
-                return NotFound();
+                return BadRequest();
             }
             vaccine.Active = addVaccineRequestDTO.active;
             _context.Vaccines.Add(vaccine);
@@ -684,14 +851,38 @@ namespace VaccinationSystem.Controllers
             return Ok();
         }
 
+        /// <remarks>Edits vaccine's data</remarks>
+        /// <param name="editVaccineRequestDTO"></param>
+        /// <response code="200">Ok, edited vaccine</response>
+        /// <response code="400">Bad request</response>
+        /// <response code="401">Error, user unauthorized to edit vaccines</response>
+        /// <response code="403">Error, user forbidden from editing vaccines</response>
+        /// <response code="404">Error, virus or vaccine not found</response>
         [HttpPost("vaccines/editVaccine")]
-        public IActionResult EditVaccine(EditVaccineRequestDTO editVaccineRequestDTO)
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
+        public IActionResult EditVaccine([FromBody, Required] EditVaccineRequestDTO editVaccineRequestDTO)
         {
             return NotFound();
         }
 
+        /// <remarks>Deletes a vaccine from system</remarks>
+        /// <param name="vaccineId" example="31d9b4bf-5c1c-4f2d-b997-f6096758eac9"></param>
+        /// <response code="200">Ok, deleted vaccine</response>
+        /// <response code="400">Bad data</response>
+        /// <response code="401">Error, user unauthorized to delete vaccine</response>
+        /// <response code="403">Error, user forbidden from deleting vaccine</response>
+        /// <response code="404">Error, no vaccine found to delete</response>
         [HttpDelete("vaccines/deleteVaccine/{vaccineId}")]
-        public IActionResult DeleteVaccine(string vaccineId)
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
+        public IActionResult DeleteVaccine([FromRoute]string vaccineId)
         {
             var result = FindAndDeleteVaccine(vaccineId);
             return result;
@@ -706,11 +897,11 @@ namespace VaccinationSystem.Controllers
             }
             catch(FormatException)
             {
-                return NotFound();
+                return BadRequest();
             }
             catch(ArgumentNullException)
             {
-                return NotFound();
+                return BadRequest();
             }
             Vaccine vaccine;
             if ((vaccine = _context.Vaccines.Where(vac => vac.Active == true && vac.Id == id).SingleOrDefault()) != null)
