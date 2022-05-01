@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { Fragment } from 'react';
 import { useState } from 'react';
 import validator from 'validator';
 import Avatar from '@mui/material/Avatar';
@@ -48,7 +47,7 @@ export default function SignUp() {
   const [firstNameErrorState,setFirstNameErrorState] = useState(false);
   const [lastNameError,setLastNameError] = useState('');
   const [lastNameErrorState,setLastNameErrorState] = useState(false);
-  const [dateError,setDateError] = useState(false);
+  //const [dateError,setDateError] = useState(false);
   const [phoneNumberError,setPhoneNumberError] = useState('');
   const [phoneNumberErrorState,setPhoneNumberErrorState] = useState('');
 
@@ -156,7 +155,7 @@ export default function SignUp() {
     if (peselErrorState) return;
     if(firstNameErrorState) return;
     if(lastNameErrorState) return;
-    if(dateError) return;
+    //if(dateError) return;
 
     setLoading(true);
     try {
@@ -324,14 +323,14 @@ export default function SignUp() {
                     onChange={(newDate) => {
                       setDate(newDate);
                     }}
-                    onError={()=>{setDateError(true)}}
+                    //onError={()=>{setDateError(true)}}
                     renderInput={(params) => <TextField
                       {...params}
                       fullWidth
                       id='dateOfBirth'
                       name='dateOfBirth'
-                      onBlur={() => {setDateError(false)}}
-                      helperText = {dateError?"Błędna data":""}    
+                      //onBlur={() => {setDateError(false)}}
+                      //helperText = {dateError?"Błędna data":""}    
                     />}
                   />
                 </LocalizationProvider>

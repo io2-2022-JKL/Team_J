@@ -14,9 +14,17 @@ import dateFormat from 'dateformat';
 import { getFormerAppointments } from './PatientApi';
 import CircularProgress from '@mui/material/CircularProgress';
 import { blue } from '@mui/material/colors';
+import SummarizeIcon from '@mui/icons-material/Summarize';
+import Avatar from '@mui/material/Avatar';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
 
 const theme = createTheme();
 
+const Alert = React.forwardRef(function Alert(props, ref) {
+    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
+/*
 let id = randomId();
 const createRandomRow = () => {
     id = randomId();
@@ -36,12 +44,12 @@ const createRandomRow = () => {
         visitState: "Finished"
     }
 };
-
+*/
 function renderRow(props) {
     const { index, style, data } = props;
     const item = data[index];
     return (
-        <ListItem style={style} key={index} component="div" disablePadding>
+        <ListItem style={style} key={index} component="div" disablePadding divider>
             <Grid container direction={"row"} spacing={1}>
                 <Grid item xs={3}>
                     <ListItemText primary={"Wirus: " + item.vaccineVirus} secondary={"Numer dawki: " + item.whichVaccineDose} />
@@ -58,6 +66,21 @@ function renderRow(props) {
             </Grid>
         </ListItem>
     );
+}
+
+function renderError(param) {
+    switch (param) {
+        case '400':
+            return 'Złe dane';
+        case '401':
+            return 'Użytkownik nieuprawniony do uzyskania historii szczepień'
+        case '403':
+            return 'Użytkownikowi zabroniono uzyskiwania historii szczepień'
+        case '404':
+            return 'Nie znaleziono historii szczepień'
+        default:
+            return 'Wystąpił błąd!';
+    }
 }
 
 export default function FormerAppointment() {
@@ -79,6 +102,35 @@ export default function FormerAppointment() {
     */
     const [data, setData] = React.useState([]);
     const [loading, setLoading] = React.useState(false);
+    const [error, setError] = React.useState('');
+    const [errorState, setErrorState] = React.useState(false);
+
+    React.useEffect(() => {
+
+        const fetchData = async () => {
+            setLoading(true);
+            let userID = localStorage.getItem('userID');
+            let [patientData, err] = await getFormerAppointments(userID);
+            if (patientData != null) {
+                setData(patientData);
+                //console.log(patientData)
+            }
+            else {
+                setError(err);
+                setErrorState(true);
+            }
+            setLoading(false);
+        }
+        fetchData();
+        console.log("run useEffect")
+    }, []);
+
+    const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setErrorState(false);
+    };
 
     return (
         <ThemeProvider theme={theme}>
@@ -86,47 +138,24 @@ export default function FormerAppointment() {
                 <CssBaseline>
                     <Box
                         sx={{
-                            marginTop: 8,
+                            marginTop: 2,
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
                         }}
                     >
+                        <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+                            <SummarizeIcon />
+                        </Avatar>
                         <Typography component="h1" variant='h5'>
                             Historia szczepień
                         </Typography>
-                        <Button
-                            type="submit"
-                            variant="contained"
-                            sx={{ mt: 3, mb: 2 }}
-                            onClick={async () => {
-                                setLoading(true);
-                                let userID = localStorage.getItem('userID');
-                                let patientData = await getFormerAppointments(userID);
-                                setData(patientData);
-                                setLoading(false);
-                            }}
-                        >
-                            Pobierz dane
-                        </Button>
-                        {
-                            loading &&
-                            (
-                                <CircularProgress
-                                    size={24}
-                                    sx={{
-                                        color: blue,
-                                        position: 'absolute',
-                                        alignSelf: 'center',
-                                        bottom: '37%',
-                                        left: '50%'
-                                    }}
-                                />
-                            )
-                        }
+
+                        <Box sx={{ marginTop: 2, }} />
+
                         <FixedSizeList
-                            height={600}
-                            width="60%"
+                            height={Math.min(window.innerHeight - 200, data.length * 100)}
+                            width="70%"
                             itemSize={100}
                             itemCount={data.length}
                             overscanCount={5}
@@ -142,7 +171,28 @@ export default function FormerAppointment() {
                         >
                             Powrót
                         </Button>
+                        {
+                            loading &&
+                            (
+                                <CircularProgress
+                                    size={24}
+                                    sx={{
+                                        color: blue,
+                                        position: 'relative',
+                                        alignSelf: 'center',
+                                        left: '50%'
+                                    }}
+                                />
+                            )
+                        }
                     </Box>
+                    <Snackbar open={errorState} autoHideDuration={6000} onClose={handleClose}>
+                        <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
+                            {
+                                renderError(error)
+                            }
+                        </Alert>
+                    </Snackbar>
                 </CssBaseline>
             </Container>
         </ThemeProvider>
