@@ -20,5 +20,6 @@ namespace VaccinationSystem.DTO
         public string doctorFirstName { get; set; }
         public string doctorLastName { get; set; }
         public string visitState { get; set; }
+        public string certifyState { get; set; }
     }
 }
