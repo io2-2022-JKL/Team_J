@@ -2,21 +2,28 @@ import * as React from 'react';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import { Box, Grid } from '@mui/material';
-import { randomAddress, randomCity, randomCommodity, randomCompanyName, randomDate, randomInt, randomId, randomTraderName } from '@mui/x-data-grid-generator';
+//import { randomAddress, randomCity, randomCommodity, randomCompanyName, randomDate, randomInt, randomId, randomTraderName } from '@mui/x-data-grid-generator';
 import { useNavigate } from 'react-router-dom';
 import { FixedSizeList } from 'react-window';
-import ListItemButton from '@mui/material/ListItemButton';
 import Button from '@mui/material/Button';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Container, CssBaseline } from '@mui/material';
 import Typography from '@mui/material/Typography';
-import dateFormat from 'dateformat';
 import { cancelAppointment, getIncomingAppointments } from './PatientApi';
 import CircularProgress from '@mui/material/CircularProgress';
 import { blue } from '@mui/material/colors';
+import SummarizeIcon from '@mui/icons-material/Summarize';
+import Avatar from '@mui/material/Avatar';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
 
 const theme = createTheme();
 
+const Alert = React.forwardRef(function Alert(props, ref) {
+    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
+
+/*
 let id = randomId();
 const createRandomRow = () => {
     id = randomId();
@@ -35,6 +42,38 @@ const createRandomRow = () => {
         doctorLastName: randomTraderName().split(' ')[1],
     }
 };
+*/ 
+
+function renderError(param) {
+        switch (param) {
+            case '400':
+                return 'Złe dane';
+            case '401':
+                return 'Użytkownik nieuprawniony do uzyskania przyszłych szczepień'
+            case '403':
+                return 'Użytkownikowi zabroniono uzyskiwania przyszłych szczepień'
+            case '404':
+                return 'Nie znaleziono przyszłych szczepień'
+            default:
+                return 'Wystąpił błąd!';
+        }
+    }
+function renderCancelStatus(param) {
+        switch (param) {
+            case '200':
+                return 'Anulowano wizytę'
+            case '400':
+                return 'Złe dane';
+            case '401':
+                return 'Użytkownik nieuprawniony do anulowania wizyty'
+            case '403':
+                return 'Użytkownikowi zabroniono anulować wizytę'
+            case '404':
+                return 'Nie znaleziono przyszłego szczepienia'
+            default:
+                return 'Wystąpił błąd!';
+        }
+    }
 
 export default function IncomingAppointment() {
     const navigate = useNavigate();
@@ -55,12 +94,38 @@ export default function IncomingAppointment() {
     */
     const [data, setData] = React.useState([]);
     const [loading, setLoading] = React.useState(false);
-    
+    const [error,setError] = React.useState('');
+    const [errorState, setErrorState] = React.useState(false);
+    const [errorCancel,setErrorCancel] = React.useState('');
+    const [errorCancelState, setErrorCancelState] = React.useState(false);
+
+    React.useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            let userID = localStorage.getItem('userID');
+            let [patientData,err] = await getIncomingAppointments(userID);
+            if (patientData != null)
+            {
+                setData(patientData);
+                console.log(patientData)
+            }
+            else
+            {
+                setData([]);
+                setError(err);
+                setErrorState(true);
+            }
+            setLoading(false);
+        }
+        fetchData();
+        console.log("run useEffect")
+    }, [errorCancel]);
+
     function renderRow(props) {
         const { index, style, data } = props;
         const item = data[index];
         return (
-            <ListItem style={style} key={index} component="div" disablePadding>
+            <ListItem style={style} key={index} component="div" disablePadding divider>
                 <Grid container direction={"row"} spacing={1}>
                     <Grid item xs={4}>
                         <ListItemText primary={"Wirus: " + item.vaccineVirus} secondary={"Numer dawki: " + item.whichVaccineDose} />
@@ -79,27 +144,13 @@ export default function IncomingAppointment() {
                         const result = window.confirm("Czy na pewno chcesz anulować wizytę?", confirmOptionsInPolish);
                         if (result) {
                             console.log("You click yes!");
-                            cancelAppointment(userID, appointmentId);
-                            /*
-                            let pom = data.find((element)=>{
-                                return element.appointmentId === appointmentId;
-                            });
-                            var patientData = data;
-                            delete patientData[pom];
-                            setData(patientData);
-                            */
-                            
-                            setLoading(true);
-                            let patientData = await getIncomingAppointments(userID);
-                            if (patientData != null)
-                                setData(patientData);
-                            setLoading(false);
-                            
+                            let err = await cancelAppointment(userID, appointmentId);
+                            setErrorCancel(err);
+                            setErrorCancelState(true);
                             return;
                         }
                         else
                             console.log("You click No!");
-
                     }}
                 >
                     Anuluj wizytę
@@ -107,55 +158,43 @@ export default function IncomingAppointment() {
             </ListItem>
         );
     }
-
+    
+    const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setErrorState(false);
+    };
+    const handleClose2 = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setErrorCancelState(false);
+    };
     return (
         <ThemeProvider theme={theme}>
             <Container component="main" maxWidth="lg">
                 <CssBaseline>
                     <Box
                         sx={{
-                            marginTop: 8,
+                            marginTop: 2,
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
                         }}
                     >
+                         <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+                            <SummarizeIcon />
+                        </Avatar>
                         <Typography component="h1" variant='h5'>
                             Przyszłe szczepienia
                         </Typography>
-                        <Button
-                            type="submit"
-                            variant="contained"
-                            sx={{ mt: 3, mb: 2 }}
-                            onClick={async () => {
-                                setLoading(true);
-                                let userID = localStorage.getItem('userID');
-                                let patientData = await getIncomingAppointments(userID);
-                                if (patientData != null)
-                                    setData(patientData);
-                                setLoading(false);
-                            }}
-                        >
-                            Pobierz dane
-                        </Button>
-                        {
-                            loading &&
-                            (
-                                <CircularProgress
-                                    size={24}
-                                    sx={{
-                                        color: blue,
-                                        position: 'absolute',
-                                        alignSelf: 'center',
-                                        bottom: '37%',
-                                        left: '50%'
-                                    }}
-                                />
-                            )
-                        }
+
+                        <Box sx={{marginTop: 2,}}/>
+                        
                         <FixedSizeList
-                            height={600}
-                            width="60%"
+                            height={Math.min(window.innerHeight-200, data.length * 100)}
+                            width="70%"
                             itemSize={100}
                             itemCount={data.length}
                             overscanCount={5}
@@ -163,6 +202,7 @@ export default function IncomingAppointment() {
                         >
                             {renderRow}
                         </FixedSizeList>
+                        
                         <Button
                             type="submit"
                             variant="contained"
@@ -171,6 +211,34 @@ export default function IncomingAppointment() {
                         >
                             Powrót
                         </Button>
+                        {
+                            loading &&
+                            (
+                                <CircularProgress
+                                    size={24}
+                                    sx={{
+                                        color: blue,
+                                        position: 'relative',
+                                        alignSelf: 'center',
+                                        left: '50%'
+                                    }}
+                                />
+                            )
+                        }
+                        <Snackbar open={errorState} autoHideDuration={6000} onClose={handleClose}>
+                            <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
+                                {
+                                    renderError(error)
+                                }
+                            </Alert>
+                        </Snackbar>
+                        <Snackbar open={errorCancelState} autoHideDuration={6000} onClose={handleClose2}>
+                            <Alert onClose={handleClose2} severity={errorCancel==='200'?"success":"error"} sx={{ width: '100%' }}>
+                                {
+                                    renderCancelStatus(errorCancel)
+                                }
+                            </Alert>
+                        </Snackbar>
                     </Box>
                 </CssBaseline>
             </Container>
