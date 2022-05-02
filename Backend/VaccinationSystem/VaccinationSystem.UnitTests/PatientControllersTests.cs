@@ -442,9 +442,13 @@ namespace VaccinationSystem.UnitTests
             var timeSlotData = GetTimeSlotsData().ToList();
             var timeSlotMockSet = GetMock(timeSlotData.AsQueryable());
 
+            var patientData = GetPatientsData().ToList();
+            var patientMockSet = GetMock(patientData.AsQueryable());
+
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.Appointments).Returns(appointmentMockSet.Object);
             mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
+            mockContext.Setup(c => c.Patients).Returns(patientMockSet.Object);
 
             var controller = new PatientController(mockContext.Object);
 
@@ -471,9 +475,13 @@ namespace VaccinationSystem.UnitTests
             var timeSlotData = GetTimeSlotsData().ToList();
             var timeSlotMockSet = GetMock(timeSlotData.AsQueryable());
 
+            var patientData = GetPatientsData().ToList();
+            var patientMockSet = GetMock(patientData.AsQueryable());
+
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.Appointments).Returns(appointmentMockSet.Object);
             mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
+            mockContext.Setup(c => c.Patients).Returns(patientMockSet.Object);
 
             Appointment appointmentBefore = mockContext.Object.Appointments.Where(app => app.Id.ToString() == appointmentId).FirstOrDefault();
 
@@ -501,9 +509,13 @@ namespace VaccinationSystem.UnitTests
             var timeSlotData = GetTimeSlotsData().ToList();
             var timeSlotMockSet = GetMock(timeSlotData.AsQueryable());
 
+            var patientData = GetPatientsData().ToList();
+            var patientMockSet = GetMock(patientData.AsQueryable());
+
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.Appointments).Returns(appointmentMockSet.Object);
             mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
+            mockContext.Setup(c => c.Patients).Returns(patientMockSet.Object);
 
             Appointment appointmentBefore = mockContext.Object.Appointments.Where(app => app.Id.ToString() == appointmentId).FirstOrDefault();
 
@@ -517,7 +529,6 @@ namespace VaccinationSystem.UnitTests
         }
         [Theory]
         [InlineData("81a130d2-502f-4cf1-a376-63edeb000e9c", 1)]
-        [InlineData("81a130d2-502f-4cf1-a376-63edeb000e9f", 2)]
         public void GetFormerVisitsTest(string patientId, int expectedVisitCount)
         {
             // Arrange
@@ -642,7 +653,6 @@ namespace VaccinationSystem.UnitTests
             Assert.IsType<BadRequestResult>(result.Result);
         }
         [Theory]
-        [InlineData("81a130d2-502f-4cf1-a376-63edeb000e9f")]
         [InlineData("81a130d2-502f-4cf1-a376-63edeb000e9b")]
         public void GetCertificatesTest(string patientId)
         {
@@ -653,9 +663,13 @@ namespace VaccinationSystem.UnitTests
             var vaccinesData = GetVaccinesData().ToList();
             var vaccineMockSet = GetMock(vaccinesData.AsQueryable());
 
+            var patientsData = GetPatientsData().ToList();
+            var patientsMockSet = GetMock(patientsData.AsQueryable());
+
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.Certificates).Returns(certificateMockSet.Object);
             mockContext.Setup(c => c.Vaccines).Returns(vaccineMockSet.Object);
+            mockContext.Setup(c => c.Patients).Returns(patientsMockSet.Object);
 
             var controller = new PatientController(mockContext.Object);
 
@@ -683,9 +697,13 @@ namespace VaccinationSystem.UnitTests
             var vaccinesData = GetVaccinesData().ToList();
             var vaccineMockSet = GetMock(vaccinesData.AsQueryable());
 
+            var patientsData = GetPatientsData().ToList();
+            var patientsMockSet = GetMock(patientsData.AsQueryable());
+
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.Certificates).Returns(certificateMockSet.Object);
             mockContext.Setup(c => c.Vaccines).Returns(vaccineMockSet.Object);
+            mockContext.Setup(c => c.Patients).Returns(patientsMockSet.Object);
 
             var controller = new PatientController(mockContext.Object);
 
@@ -707,9 +725,13 @@ namespace VaccinationSystem.UnitTests
             var vaccinesData = GetVaccinesData().ToList();
             var vaccineMockSet = GetMock(vaccinesData.AsQueryable());
 
+            var patientsData = GetPatientsData().ToList();
+            var patientsMockSet = GetMock(patientsData.AsQueryable());
+
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.Certificates).Returns(certificateMockSet.Object);
             mockContext.Setup(c => c.Vaccines).Returns(vaccineMockSet.Object);
+            mockContext.Setup(c => c.Patients).Returns(patientsMockSet.Object);
 
             var controller = new PatientController(mockContext.Object);
 

@@ -17,7 +17,6 @@ namespace VaccinationSystem.UnitTests
     {
         [Theory]
         [InlineData("e0d50915-5548-4993-dddd-edddab4e1df1", "00000000-0000-0000-0000-000000000000")]
-        [InlineData("e0d50915-5548-4993-dddd-edddab4e1df2", "81a130d2-502f-4cf1-a376-63edeb000e9f")]
         [InlineData("e0d50915-5548-4993-dddd-edddab4e1df3", "81a130d2-502f-4cf1-a376-63edeb000e9a")]
         public void GetDoctorPatientIdTest(string doctorId, string expectedPatientId)
         {
@@ -35,21 +34,19 @@ namespace VaccinationSystem.UnitTests
             var controller = new DoctorController(mockContext.Object);
 
             // Act
-            var result = controller.GetDoctorPatientId(doctorId);
+            var result = controller.GetDoctorInfo(doctorId);
 
             // Assert
             Assert.IsType<OkObjectResult>(result.Result);
 
             var patientId = result.Result as OkObjectResult;
-            Assert.IsType<GetDoctorPatientIdResponse>(patientId.Value);
+            Assert.IsType<GetDoctorInfoResponse>(patientId.Value);
 
-            var acquiredPatientId = patientId.Value as GetDoctorPatientIdResponse;
+            var acquiredPatientId = patientId.Value as GetDoctorInfoResponse;
             Assert.True(acquiredPatientId.patientId == expectedPatientId);
         }
         [Theory]
         [InlineData("e0d50915-fa3e-fa3e-fa3e-edddab4e1df2")]
-        [InlineData("null")]
-        [InlineData(null)]
         public void GetDoctorPatientIdEmptyTest(string doctorId)
         {
             // Arrange
@@ -66,10 +63,34 @@ namespace VaccinationSystem.UnitTests
             var controller = new DoctorController(mockContext.Object);
 
             // Act
-            var result = controller.GetDoctorPatientId(doctorId);
+            var result = controller.GetDoctorInfo(doctorId);
 
             // Assert
             Assert.IsType<NotFoundResult>(result.Result);
+        }
+        [Theory]
+        [InlineData("null")]
+        [InlineData(null)]
+        public void GetDoctorPatientIdBadFormatTest(string doctorId)
+        {
+            // Arrange
+            var doctorData = GetDoctorsData().ToList();
+            var doctorMockSet = GetMock(doctorData.AsQueryable());
+
+            var patientData = GetPatientsData().ToList();
+            var patientMockSet = GetMock(patientData.AsQueryable());
+
+            var mockContext = new Mock<VaccinationSystemDbContext>();
+            mockContext.Setup(c => c.Doctors).Returns(doctorMockSet.Object);
+            mockContext.Setup(c => c.Patients).Returns(patientMockSet.Object);
+
+            var controller = new DoctorController(mockContext.Object);
+
+            // Act
+            var result = controller.GetDoctorInfo(doctorId);
+
+            // Assert
+            Assert.IsType<BadRequestResult>(result.Result);
         }
         [Theory]
         [InlineData("e0d50915-5548-4993-dddd-edddab4e1df1")]
@@ -80,8 +101,12 @@ namespace VaccinationSystem.UnitTests
             var timeSlotData = GetTimeSlotsData().ToList();
             var timeSlotMockSet = GetMock(timeSlotData.AsQueryable());
 
+            var doctorData = GetDoctorsData().ToList();
+            var doctorMockSet = GetMock(doctorData.AsQueryable());
+
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
+            mockContext.Setup(c => c.Doctors).Returns(doctorMockSet.Object);
 
             var controller = new DoctorController(mockContext.Object);
 
@@ -101,15 +126,18 @@ namespace VaccinationSystem.UnitTests
         [Theory]
         [InlineData("e0d50915-5548-4993-dddd-edddab4e1df2")]
         [InlineData("e0d50915-5548-4993-dddd-edddab4e1df4")]
-        [InlineData("e0dhf715-5548-4993-dddd-edifub4e1394")]
         public void GetExistingTimeSlotsEmptyTest(string doctorId)
         {
             // Arrange
             var timeSlotData = GetTimeSlotsData().ToList();
             var timeSlotMockSet = GetMock(timeSlotData.AsQueryable());
 
+            var doctorData = GetDoctorsData().ToList();
+            var doctorMockSet = GetMock(doctorData.AsQueryable());
+
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
+            mockContext.Setup(c => c.Doctors).Returns(doctorMockSet.Object);
 
             var controller = new DoctorController(mockContext.Object);
 
@@ -118,6 +146,32 @@ namespace VaccinationSystem.UnitTests
 
             // Assert
             Assert.IsType<NotFoundResult>(result.Result);
+        }
+        [Theory]
+        [InlineData("e0dhf715-5548-4993-dddd-edifub4e1394")]
+        [InlineData("BadFormat")]
+        [InlineData("")]
+        [InlineData(null)]
+        public void GetExistingTimeSlotsBadFormatTest(string doctorId)
+        {
+            // Arrange
+            var timeSlotData = GetTimeSlotsData().ToList();
+            var timeSlotMockSet = GetMock(timeSlotData.AsQueryable());
+
+            var doctorData = GetDoctorsData().ToList();
+            var doctorMockSet = GetMock(doctorData.AsQueryable());
+
+            var mockContext = new Mock<VaccinationSystemDbContext>();
+            mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
+            mockContext.Setup(c => c.Doctors).Returns(doctorMockSet.Object);
+
+            var controller = new DoctorController(mockContext.Object);
+
+            // Act
+            var result = controller.GetExistingTimeSlots(doctorId);
+
+            // Assert
+            Assert.IsType<BadRequestResult>(result.Result);
         }
         [Theory]
         [InlineData("e0d50915-5548-4993-dddd-edddab4e1df1", "01-03-2022 10:00", "01-03-2022 11:00", 15, 2)]
@@ -172,6 +226,15 @@ namespace VaccinationSystem.UnitTests
         [InlineData("e0d50915-5548-4993-dddd-edddab4e1df1", "01-03-2022 09:55", "01-03-2022 10:20", 25)]
         [InlineData("e0d50915-5548-4993-dddd-edddab4e1df1", "01-03-2022 10:05", "01-03-2022 10:20", 15)]
         [InlineData("e0d50915-5548-4993-dddd-edddab4e1df1", "01-03-2022 09:55", "01-03-2022 10:10", 15)]
+        [InlineData("BadFormat", "01-03-2022 09:55", "01-03-2022 10:10", 15)]
+        [InlineData("e0d50915-5548-4993-dddd-edddab4e1df1", "01-03-2022", "01-03-2022 10:10", 15)]
+        [InlineData("e0d50915-5548-4993-dddd-edddab4e1df1", "BadFormat", "01-03-2022 10:10", 15)]
+        [InlineData("e0d50915-5548-4993-dddd-edddab4e1df1", "01-03-2022 09:55", "01-03-2022", 15)]
+        [InlineData("e0d50915-5548-4993-dddd-edddab4e1df1", "01-03-2022 09:55", "BadFormat", 15)]
+        [InlineData(null, "01-03-2022 09:55", "01-03-2022 10:10", 15)]
+        [InlineData("e0d50915-5548-4993-dddd-edddab4e1df1", null, "01-03-2022 10:10", 15)]
+        [InlineData("e0d50915-5548-4993-dddd-edddab4e1df1", "01-03-2022 09:55", null, 15)]
+        [InlineData("e0d50915-5548-4993-dddd-edddab4e1df1", "01-03-2022 09:55", "01-03-2022 10:10", null)]
         public void CreateTimeSlotsEmptyTest(string doctorId, string from, string to, int timeSlotDurationInMinutes)
         {
             // Arrange
@@ -215,9 +278,13 @@ namespace VaccinationSystem.UnitTests
                 appointmentData.Add(ap);
             });
 
+            var doctorData = GetDoctorsData().ToList();
+            var doctorMockSet = GetMock(doctorData.AsQueryable());
+
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
             mockContext.Setup(c => c.Appointments).Returns(appointmentMockSet.Object);
+            mockContext.Setup(c => c.Doctors).Returns(doctorMockSet.Object);
 
             var controller = new DoctorController(mockContext.Object);
 
@@ -246,10 +313,7 @@ namespace VaccinationSystem.UnitTests
         [InlineData("e0d50915-5548-4993-dddd-edddab4e1df1", "a2780125-a945-4e20-b2ab-02bcf0ce8f3b")]
         [InlineData("e0d50915-5548-4993-dddd-edddab4e1df5", "a2780125-a945-4e20-b2ab-02bcf0ce8f3b")]
         [InlineData("e0d50915-5548-4993-dddd-edddab4e1df1", "a2784345-a945-4e20-b2ab-02bcf0ce8f3b")]
-        [InlineData(null, "a2784345-a945-4e20-b2ab-02bcf0ce8f3b")]
-        [InlineData("e0d50915-5548-4993-dddd-edddab4e1df1", null)]
-        [InlineData(null, null)]
-        public void DeleteTimeSlotWrongTest(string doctorId, string timeSlotId)
+        public void DeleteTimeSlotEmptyTest(string doctorId, string timeSlotId)
         {
             // Arrange
             var timeSlotData = GetTimeSlotsData().ToList();
@@ -264,9 +328,13 @@ namespace VaccinationSystem.UnitTests
                 appointmentData.Add(ap);
             });
 
+            var doctorData = GetDoctorsData().ToList();
+            var doctorMockSet = GetMock(doctorData.AsQueryable());
+
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
             mockContext.Setup(c => c.Appointments).Returns(appointmentMockSet.Object);
+            mockContext.Setup(c => c.Doctors).Returns(doctorMockSet.Object);
 
             var controller = new DoctorController(mockContext.Object);
             List<string> list = new List<string>();
@@ -277,6 +345,45 @@ namespace VaccinationSystem.UnitTests
 
             // Assert
             Assert.IsType<NotFoundResult>(result);
+        }
+        [Theory]
+        [InlineData("BadFormat", "a2784345-a945-4e20-b2ab-02bcf0ce8f3b")]
+        [InlineData(null, "a2784345-a945-4e20-b2ab-02bcf0ce8f3b")]
+        [InlineData("e0d50915-5548-4993-dddd-edddab4e1df1", null)]
+        [InlineData("e0d50915-5548-4993-dddd-edddab4e1df1", "BadFormat")]
+        [InlineData(null, null)]
+        public void DeleteTimeSlotBadFormatTest(string doctorId, string timeSlotId)
+        {
+            // Arrange
+            var timeSlotData = GetTimeSlotsData().ToList();
+            var timeSlotMockSet = GetMock(timeSlotData.AsQueryable());
+            timeSlotMockSet.Setup(c => c.Add(It.IsAny<TimeSlot>())).Callback(delegate (TimeSlot ts) {
+                timeSlotData.Add(ts);
+            });
+
+            var appointmentData = GetAppointmentsData().ToList();
+            var appointmentMockSet = GetMock(appointmentData.AsQueryable());
+            appointmentMockSet.Setup(c => c.Add(It.IsAny<Appointment>())).Callback(delegate (Appointment ap) {
+                appointmentData.Add(ap);
+            });
+
+            var doctorData = GetDoctorsData().ToList();
+            var doctorMockSet = GetMock(doctorData.AsQueryable());
+
+            var mockContext = new Mock<VaccinationSystemDbContext>();
+            mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
+            mockContext.Setup(c => c.Appointments).Returns(appointmentMockSet.Object);
+            mockContext.Setup(c => c.Doctors).Returns(doctorMockSet.Object);
+
+            var controller = new DoctorController(mockContext.Object);
+            List<string> list = new List<string>();
+            list.Add(timeSlotId);
+
+            // Act
+            var result = controller.DeleteTimeSlot(doctorId, list);
+
+            // Assert
+            Assert.IsType<BadRequestResult>(result);
         }
         [Fact]
         public void GetFormerAppointmentsTest()
@@ -294,11 +401,15 @@ namespace VaccinationSystem.UnitTests
             var patientData = GetPatientsData().ToList();
             var patientMockSet = GetMock(patientData.AsQueryable());
 
+            var doctorData = GetDoctorsData().ToList();
+            var doctorMockSet = GetMock(doctorData.AsQueryable());
+
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
             mockContext.Setup(c => c.Appointments).Returns(appointmentMockSet.Object);
             mockContext.Setup(c => c.Vaccines).Returns(vaccineMockSet.Object);
             mockContext.Setup(c => c.Patients).Returns(patientMockSet.Object);
+            mockContext.Setup(c => c.Doctors).Returns(doctorMockSet.Object);
 
             var controller = new DoctorController(mockContext.Object);
 
@@ -319,7 +430,6 @@ namespace VaccinationSystem.UnitTests
         [Theory]
         [InlineData("e0d50915-5548-4993-dddd-edddab4e1df3")]
         [InlineData("e0d50915-5548-4993-dddd-edddab4e1df5")]
-        [InlineData(null)]
         public void GetFormerAppointmentsEmptyTest(string doctorId)
         {
             // Arrange
@@ -335,11 +445,15 @@ namespace VaccinationSystem.UnitTests
             var patientData = GetPatientsData().ToList();
             var patientMockSet = GetMock(patientData.AsQueryable());
 
+            var doctorData = GetDoctorsData().ToList();
+            var doctorMockSet = GetMock(doctorData.AsQueryable());
+
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
             mockContext.Setup(c => c.Appointments).Returns(appointmentMockSet.Object);
             mockContext.Setup(c => c.Vaccines).Returns(vaccineMockSet.Object);
             mockContext.Setup(c => c.Patients).Returns(patientMockSet.Object);
+            mockContext.Setup(c => c.Doctors).Returns(doctorMockSet.Object);
 
             var controller = new DoctorController(mockContext.Object);
             // Act
@@ -347,6 +461,42 @@ namespace VaccinationSystem.UnitTests
 
             // Assert
             Assert.IsType<NotFoundResult>(result.Result);
+        }
+
+        [Theory]
+        [InlineData("BadFormat")]
+        [InlineData(null)]
+        public void GetFormerAppointmentsBadRequestTest(string doctorId)
+        {
+            // Arrange
+            var timeSlotData = GetTimeSlotsData().ToList();
+            var timeSlotMockSet = GetMock(timeSlotData.AsQueryable());
+
+            var appointmentData = GetAppointmentsData().ToList();
+            var appointmentMockSet = GetMock(appointmentData.AsQueryable());
+
+            var vaccinesData = GetVaccinesData().ToList();
+            var vaccineMockSet = GetMock(vaccinesData.AsQueryable());
+
+            var patientData = GetPatientsData().ToList();
+            var patientMockSet = GetMock(patientData.AsQueryable());
+
+            var doctorData = GetDoctorsData().ToList();
+            var doctorMockSet = GetMock(doctorData.AsQueryable());
+
+            var mockContext = new Mock<VaccinationSystemDbContext>();
+            mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
+            mockContext.Setup(c => c.Appointments).Returns(appointmentMockSet.Object);
+            mockContext.Setup(c => c.Vaccines).Returns(vaccineMockSet.Object);
+            mockContext.Setup(c => c.Patients).Returns(patientMockSet.Object);
+            mockContext.Setup(c => c.Doctors).Returns(doctorMockSet.Object);
+
+            var controller = new DoctorController(mockContext.Object);
+            // Act
+            var result = controller.GetFormerAppointments(doctorId);
+
+            // Assert
+            Assert.IsType<BadRequestResult>(result.Result);
         }
         [Theory]
         [InlineData("e0d50915-5548-4993-dddd-edddab4e1df1")]
@@ -366,11 +516,15 @@ namespace VaccinationSystem.UnitTests
             var patientData = GetPatientsData().ToList();
             var patientMockSet = GetMock(patientData.AsQueryable());
 
+            var doctorData = GetDoctorsData().ToList();
+            var doctorMockSet = GetMock(doctorData.AsQueryable());
+
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
             mockContext.Setup(c => c.Appointments).Returns(appointmentMockSet.Object);
             mockContext.Setup(c => c.Vaccines).Returns(vaccineMockSet.Object);
             mockContext.Setup(c => c.Patients).Returns(patientMockSet.Object);
+            mockContext.Setup(c => c.Doctors).Returns(doctorMockSet.Object);
 
             var controller = new DoctorController(mockContext.Object);
 
@@ -389,7 +543,6 @@ namespace VaccinationSystem.UnitTests
         [Theory]
         [InlineData("e0d50915-5548-4993-dddd-edddab4e1df2")]
         [InlineData("e0d50915-5548-4993-dddd-edddab4e1df4")]
-        [InlineData(null)]
         public void GetIncomingAppointmentsEmptyTest(string doctorId)
         {
             // Arrange
@@ -405,11 +558,15 @@ namespace VaccinationSystem.UnitTests
             var patientData = GetPatientsData().ToList();
             var patientMockSet = GetMock(patientData.AsQueryable());
 
+            var doctorData = GetDoctorsData().ToList();
+            var doctorMockSet = GetMock(doctorData.AsQueryable());
+
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
             mockContext.Setup(c => c.Appointments).Returns(appointmentMockSet.Object);
             mockContext.Setup(c => c.Vaccines).Returns(vaccineMockSet.Object);
             mockContext.Setup(c => c.Patients).Returns(patientMockSet.Object);
+            mockContext.Setup(c => c.Doctors).Returns(doctorMockSet.Object);
 
             var controller = new DoctorController(mockContext.Object);
             // Act
@@ -417,6 +574,42 @@ namespace VaccinationSystem.UnitTests
 
             // Assert
             Assert.IsType<NotFoundResult>(result.Result);
+        }
+
+        [Theory]
+        [InlineData("BadFormat")]
+        [InlineData(null)]
+        public void GetIncomingAppointmentsBadFormatTest(string doctorId)
+        {
+            // Arrange
+            var timeSlotData = GetTimeSlotsData().ToList();
+            var timeSlotMockSet = GetMock(timeSlotData.AsQueryable());
+
+            var appointmentData = GetAppointmentsData().ToList();
+            var appointmentMockSet = GetMock(appointmentData.AsQueryable());
+
+            var vaccinesData = GetVaccinesData().ToList();
+            var vaccineMockSet = GetMock(vaccinesData.AsQueryable());
+
+            var patientData = GetPatientsData().ToList();
+            var patientMockSet = GetMock(patientData.AsQueryable());
+
+            var doctorData = GetDoctorsData().ToList();
+            var doctorMockSet = GetMock(doctorData.AsQueryable());
+
+            var mockContext = new Mock<VaccinationSystemDbContext>();
+            mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
+            mockContext.Setup(c => c.Appointments).Returns(appointmentMockSet.Object);
+            mockContext.Setup(c => c.Vaccines).Returns(vaccineMockSet.Object);
+            mockContext.Setup(c => c.Patients).Returns(patientMockSet.Object);
+            mockContext.Setup(c => c.Doctors).Returns(doctorMockSet.Object);
+
+            var controller = new DoctorController(mockContext.Object);
+            // Act
+            var result = controller.GetIncomingAppointments(doctorId);
+
+            // Assert
+            Assert.IsType<BadRequestResult>(result.Result);
         }
     }
 }
