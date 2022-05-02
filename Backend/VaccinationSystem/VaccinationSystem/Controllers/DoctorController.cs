@@ -19,6 +19,7 @@ namespace VaccinationSystem.Controllers
     {
         private readonly VaccinationSystemDbContext _context;
         private readonly string _dateTimeFormat = "dd-MM-yyyy HH\\:mm";
+        private readonly string _dateFormat = "dd-MM-yyyy";
 
         public DoctorController(VaccinationSystemDbContext context)
         {
@@ -128,7 +129,7 @@ namespace VaccinationSystem.Controllers
             {
                 return BadRequest();
             }
-            if (!createNewTimeSlots(doctorId, createNewVisitsRequestDTO)) return BadRequest();
+            if (result == false) return BadRequest();
             return Ok();
         }
         private bool createNewTimeSlots(string doctorId, CreateNewVisitsRequestDTO createNewVisitsRequestDTO)
@@ -454,31 +455,214 @@ namespace VaccinationSystem.Controllers
         [HttpGet("vaccinate/{doctorId}/{appointmentId}")]
         public ActionResult<DoctorMarkedAppointmentResponseDTO> GetIncomingAppointment(string doctorId, string appointmentId)
         {
-            return NotFound();
+            // TODO: 401/403
+            DoctorMarkedAppointmentResponseDTO result;
+            try
+            {
+                result = fetchIncomingAppointment(doctorId, appointmentId);
+            }
+            catch (BadRequestException)
+            {
+                return BadRequest();
+            }
+            if (result == null) return NotFound();
+            return Ok(result);
+        }
+        private DoctorMarkedAppointmentResponseDTO fetchIncomingAppointment(string doctorId, string appointmentId)
+        {
+            Guid docId, apId;
+            try
+            {
+                docId = Guid.Parse(doctorId);
+                apId = Guid.Parse(appointmentId);
+            }
+            catch (ArgumentNullException)
+            {
+                throw new BadRequestException();
+            }
+            catch (FormatException)
+            {
+                throw new BadRequestException();
+            }
+            var checkIfDoctorActive = _context.Doctors.Where(doc => doc.Id == docId && doc.Active == true).FirstOrDefault();
+            if (checkIfDoctorActive == null) return null;
+
+            var appointment = _context.Appointments.Where(ap => ap.Id == apId && ap.State == AppointmentState.Planned)
+                .Include(ap => ap.Patient).Include(ap => ap.TimeSlot).Include(ap => ap.Vaccine).SingleOrDefault();
+            if (appointment == null) return null;
+            if (appointment.Patient.Active == false || appointment.TimeSlot.Active == false || 
+                appointment.Vaccine.Active == false || appointment.TimeSlot.DoctorId != docId) return null;
+            DoctorMarkedAppointmentResponseDTO result = new DoctorMarkedAppointmentResponseDTO()
+            {
+                vaccineName = appointment.Vaccine.Name,
+                vaccineCompany = appointment.Vaccine.Company,
+                numberOfDoses = appointment.Vaccine.NumberOfDoses,
+                minDaysBetweenDoses = appointment.Vaccine.MinDaysBetweenDoses,
+                maxDaysBetweenDoses = appointment.Vaccine.MaxDaysBetweenDoses,
+                virusName = appointment.Vaccine.Virus.ToString(),
+                minPatientAge = appointment.Vaccine.MinPatientAge,
+                maxPatientAge = appointment.Vaccine.MaxPatientAge,
+                whichVaccineDose = appointment.WhichDose,
+                patientFirstName = appointment.Patient.FirstName,
+                patientLastName = appointment.Patient.LastName,
+                PESEL = appointment.Patient.PESEL,
+                dateOfBirth = appointment.Patient.DateOfBirth.ToString(_dateFormat),
+                from = appointment.TimeSlot.From.ToString(_dateTimeFormat),
+                to = appointment.TimeSlot.To.ToString(_dateTimeFormat),
+            };
+            return result;
         }
 
         [HttpPost("vaccinate/confirmVaccination/{doctorId}/{appointmentId}/{batchId}")]
         public ActionResult<DoctorConfirmVaccinationResponseDTO> ConfirmVaccination(string doctorId, string appointmentId, string batchId)
         {
-            return NotFound();
+            DoctorConfirmVaccinationResponseDTO result;
+            try
+            {
+                result = tryConfirmVaccination(doctorId, appointmentId, batchId);
+            }
+            catch (BadRequestException)
+            {
+                return BadRequest();
+            }
+            if (result == null) return NotFound();
+            return Ok(result);
+        }
+        private DoctorConfirmVaccinationResponseDTO tryConfirmVaccination(string doctorId, string appointmentId, string batchId)
+        {
+            Guid docId, apId;
+            try
+            {
+                docId = Guid.Parse(doctorId);
+                apId = Guid.Parse(appointmentId);
+            }
+            catch (ArgumentNullException)
+            {
+                throw new BadRequestException();
+            }
+            catch (FormatException)
+            {
+                throw new BadRequestException();
+            }
+            if (batchId == null) throw new BadRequestException();
+            var checkIfDoctorActive = _context.Doctors.Where(doc => doc.Id == docId && doc.Active == true).FirstOrDefault();
+            if (checkIfDoctorActive == null) return null;
+
+            var appointment = _context.Appointments.Where(ap => ap.Id == apId && ap.State == AppointmentState.Planned).Include(ap => ap.TimeSlot).Include(ap => ap.Vaccine).SingleOrDefault();
+            if (appointment == null || appointment.TimeSlot.Active == false || appointment.Vaccine.Active == false || appointment.TimeSlot.DoctorId != docId) return null;
+
+            DoctorConfirmVaccinationResponseDTO result = new DoctorConfirmVaccinationResponseDTO();
+            if (appointment.WhichDose == appointment.Vaccine.NumberOfDoses) // That was the last dose for that vaccine
+            {
+                result.canCertify = true;
+                appointment.CertifyState = CertifyState.LastNotCertified;
+            }
+            else
+            {
+                result.canCertify = false;
+                appointment.CertifyState = CertifyState.NotLast;
+            }
+
+            appointment.State = AppointmentState.Finished;
+            appointment.VaccineBatchNumber = batchId;
+            _context.SaveChanges();
+            return result;
         }
 
         [HttpPost("vaccinate/vaccinationDidNotHappen/{doctorId}/{appointmentId}")]
         public IActionResult VaccinationDidNotHappen(string doctorId, string appointmentId)
         {
-            return NotFound();
+            bool result;
+            try
+            {
+                result = tryVaccinationDidNotHappen(doctorId, appointmentId);
+            }
+            catch (BadRequestException)
+            {
+                return BadRequest();
+            }
+            if (result == false) return NotFound();
+            return Ok();
+        }
+        private bool tryVaccinationDidNotHappen(string doctorId, string appointmentId)
+        {
+            Guid docId, apId;
+            try
+            {
+                docId = Guid.Parse(doctorId);
+                apId = Guid.Parse(appointmentId);
+            }
+            catch (ArgumentNullException)
+            {
+                throw new BadRequestException();
+            }
+            catch (FormatException)
+            {
+                throw new BadRequestException();
+            }
+            var checkIfDoctorActive = _context.Doctors.Where(doc => doc.Id == docId && doc.Active == true).FirstOrDefault();
+            if (checkIfDoctorActive == null) return false;
+
+            var appointment = _context.Appointments.Where(ap => ap.Id == apId && ap.State == AppointmentState.Planned)
+                .Include(ap => ap.TimeSlot).Include(ap => ap.Vaccine).SingleOrDefault();
+            if (appointment == null || appointment.TimeSlot.Active == false ||
+                appointment.Vaccine.Active == false || appointment.TimeSlot.DoctorId != docId) return false;
+            appointment.State = AppointmentState.Cancelled; // At least I assume so
+            _context.SaveChanges();
+            return true;
         }
 
         [HttpPost("vaccinate/certify/{doctorId}/{appointmentId}")]
         public IActionResult Certify(string doctorId, string appointmentId)
         {
-            return NotFound();
+            bool result;
+            try
+            {
+                result = tryCertify(doctorId, appointmentId);
+            }
+            catch (BadRequestException)
+            {
+                return BadRequest();
+            }
+            if (result == false) return NotFound();
+            return Ok();
         }
-
-        [HttpPost("vaccinate/endAppointment/{doctorId}/{appointmentId}")]
-        public IActionResult EndVisit(string doctorId, string appointmentId)
+        private bool tryCertify(string doctorId, string appointmentId)
         {
-            return NotFound();
+            Guid docId, apId;
+            try
+            {
+                docId = Guid.Parse(doctorId);
+                apId = Guid.Parse(appointmentId);
+            }
+            catch (ArgumentNullException)
+            {
+                throw new BadRequestException();
+            }
+            catch (FormatException)
+            {
+                throw new BadRequestException();
+            }
+            var checkIfDoctorActive = _context.Doctors.Where(doc => doc.Id == docId && doc.Active == true).FirstOrDefault();
+            if (checkIfDoctorActive == null) return false;
+
+            var appointment = _context.Appointments.Where(ap => ap.Id == apId && ap.State == AppointmentState.Finished && ap.CertifyState == CertifyState.LastNotCertified
+            && ap.VaccineBatchNumber != null).Include(ap => ap.TimeSlot).Include(ap => ap.Patient).Include(ap => ap.Vaccine).SingleOrDefault();
+            if (appointment == null || appointment.TimeSlot.Active == false || appointment.Patient.Active == false ||
+                appointment.Vaccine.Active == false || appointment.TimeSlot.DoctorId != docId) return false;
+            Certificate newCert = new Certificate()
+            {
+                Id = Guid.NewGuid(),
+                Patient = appointment.Patient,
+                PatientId = appointment.PatientId,
+                Vaccine = appointment.Vaccine,
+                VaccineId = appointment.VaccineId,
+                Url = "randomFakeUrl", // to change to something proper once we get there
+            };
+            _context.Certificates.Add(newCert);
+            appointment.CertifyState = CertifyState.Certified;
+            _context.SaveChanges();
+            return true;
         }
     }
 }
