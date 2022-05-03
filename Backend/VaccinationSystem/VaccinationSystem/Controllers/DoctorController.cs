@@ -9,6 +9,7 @@ using VaccinationSystem.DTO;
 using VaccinationSystem.Config;
 using VaccinationSystem.Models;
 using System.Data.Entity;
+using VaccinationSystem.DTO.Errors;
 
 namespace VaccinationSystem.Controllers
 {
@@ -18,20 +19,29 @@ namespace VaccinationSystem.Controllers
     {
         private readonly VaccinationSystemDbContext _context;
         private readonly string _dateTimeFormat = "dd-MM-yyyy HH\\:mm";
+        private readonly string _dateFormat = "dd-MM-yyyy";
 
         public DoctorController(VaccinationSystemDbContext context)
         {
             _context = context;
         }
-        [HttpGet("{doctorId}/patientId")]
-        public ActionResult<GetDoctorPatientIdResponse> GetDoctorPatientId(string doctorId)
+        [HttpGet("info/{doctorId}")]
+        public ActionResult<GetDoctorInfoResponse> GetDoctorInfo(string doctorId)
         {
             // TODO: Token verification for 401 and 403 error codes
-            GetDoctorPatientIdResponse result = FetchDoctorPatientId(doctorId);
+            GetDoctorInfoResponse result;
+            try
+            {
+                result = FetchDoctorPatientId(doctorId);
+            }
+            catch(BadRequestException)
+            {
+                return BadRequest();
+            }
             if (result == null) return NotFound();
             return Ok(result);
         }
-        private GetDoctorPatientIdResponse FetchDoctorPatientId(string doctorId)
+        private GetDoctorInfoResponse FetchDoctorPatientId(string doctorId)
         {
             Guid docId;
             try
@@ -40,18 +50,22 @@ namespace VaccinationSystem.Controllers
             }
             catch (FormatException)
             {
-                return null;
+                throw new BadRequestException();
             }
             catch (ArgumentNullException)
             {
-                return null;
+                throw new BadRequestException();
             }
-            var doctorAccount = _context.Doctors.Where(doc => doc.Id == docId).SingleOrDefault();
+            var doctorAccount = _context.Doctors.Where(doc => doc.Id == docId && doc.Active == true).Include(doc => doc.VaccinationCenter).SingleOrDefault();
             if (doctorAccount == null) return null;
             Guid patientAccountId = doctorAccount.PatientId;
-            GetDoctorPatientIdResponse result = new GetDoctorPatientIdResponse()
+            GetDoctorInfoResponse result = new GetDoctorInfoResponse()
             {
                 patientId = patientAccountId.ToString(),
+                vaccinationCenterId = doctorAccount.VaccinationCenterId.ToString(),
+                vaccinationCenterCity = doctorAccount.VaccinationCenter.City,
+                vaccinationCenterName = doctorAccount.VaccinationCenter.Name,
+                vaccinationCenterStreet = doctorAccount.VaccinationCenter.Address,
             };
             return result;
         }
@@ -59,7 +73,15 @@ namespace VaccinationSystem.Controllers
         public ActionResult<IEnumerable<ExistingTimeSlotDTO>> GetExistingTimeSlots(string doctorId)
         {
             // TODO: Token verification for 401 and 403 error codes
-            IEnumerable<ExistingTimeSlotDTO> result = fetchExistingTimeSlots(doctorId);
+            IEnumerable<ExistingTimeSlotDTO> result;
+            try
+            {
+                result = fetchExistingTimeSlots(doctorId);
+            }
+            catch(BadRequestException)
+            {
+                return BadRequest();
+            }
             if (result == null || result.Count() == 0) return NotFound();
             return Ok(result);
         }
@@ -72,12 +94,14 @@ namespace VaccinationSystem.Controllers
             }
             catch(FormatException)
             {
-                return null;
+                throw new BadRequestException();
             }
             catch (ArgumentNullException)
             {
-                return null;
+                throw new BadRequestException();
             }
+            var checkIfDoctorActive = _context.Doctors.Where(doc => doc.Id == docId && doc.Active == true).FirstOrDefault();
+            if (checkIfDoctorActive == null) return null;
             List<ExistingTimeSlotDTO> result = new List<ExistingTimeSlotDTO>();
             var timeSlots = _context.TimeSlots.Where(ts => ts.DoctorId == docId && ts.Active == true).ToList();
             foreach(TimeSlot timeSlot in timeSlots)
@@ -96,7 +120,16 @@ namespace VaccinationSystem.Controllers
         {
             // TODO: Token verification for 401 and 403 error codes
             if (createNewVisitsRequestDTO.timeSlotDurationInMinutes == 0) return BadRequest();
-            if (!createNewTimeSlots(doctorId, createNewVisitsRequestDTO)) return BadRequest();
+            bool result;
+            try
+            {
+                result = createNewTimeSlots(doctorId, createNewVisitsRequestDTO);
+            }
+            catch (BadRequestException)
+            {
+                return BadRequest();
+            }
+            if (result == false) return BadRequest();
             return Ok();
         }
         private bool createNewTimeSlots(string doctorId, CreateNewVisitsRequestDTO createNewVisitsRequestDTO)
@@ -108,21 +141,19 @@ namespace VaccinationSystem.Controllers
             try
             {
                 docId = Guid.Parse(doctorId);
-                //currentFrom = DateTime.Parse(createNewVisitsRequestDTO.from);
                 currentFrom = DateTime.ParseExact(createNewVisitsRequestDTO.windowBegin, _dateTimeFormat, null);
                 increment = TimeSpan.FromMinutes(createNewVisitsRequestDTO.timeSlotDurationInMinutes);
-                //endTo = DateTime.Parse(createNewVisitsRequestDTO.to);
                 endTo = DateTime.ParseExact(createNewVisitsRequestDTO.windowEnd, _dateTimeFormat, null);
             }
             catch(FormatException)
             {
-                return false;
+                throw new BadRequestException();
             }
             catch (ArgumentNullException)
             {
-                return false;
+                throw new BadRequestException();
             }
-            Doctor doctor = _context.Doctors.Where(doc => doc.Id == docId).SingleOrDefault();
+            Doctor doctor = _context.Doctors.Where(doc => doc.Id == docId && doc.Active == true).SingleOrDefault();
             if (doctor == null) return false;
             currentTo = currentFrom + increment;
             var existingTimeSlots = _context.TimeSlots.Where(ts => ts.Active == true && ts.DoctorId == docId).ToList(); 
@@ -160,11 +191,20 @@ namespace VaccinationSystem.Controllers
         public IActionResult DeleteTimeSlot(string doctorId, IEnumerable<string> ids)
         {
             // TODO: Token verification for 401 and 403 error codes
-            if (!modifyDeleteTimeSlot(doctorId, ids)) return NotFound();
+            bool result;
+            try
+            {
+                result = tryDeleteTimeSlot(doctorId, ids);
+            }
+            catch (BadRequestException)
+            {
+                return BadRequest();
+            }
+            if (result == false) return NotFound();
             return Ok();
         }
 
-        private bool modifyDeleteTimeSlot(string doctorId, IEnumerable<string> ids)
+        private bool tryDeleteTimeSlot(string doctorId, IEnumerable<string> ids)
         {
             // Disallow deleting timeSlots that already passed?
             int changedTimeSlots = 0;
@@ -181,12 +221,14 @@ namespace VaccinationSystem.Controllers
             }
             catch (FormatException)
             {
-                return false;
+                throw new BadRequestException();
             }
             catch (ArgumentNullException)
             {
-                return false;
+                throw new BadRequestException();
             }
+            var checkIfDoctorActive = _context.Doctors.Where(doc => doc.Id == docId && doc.Active == true).FirstOrDefault();
+            if (checkIfDoctorActive == null) return false;
             foreach (Guid id in parsedIDs)
             {
                 var tempTimeSlot = _context.TimeSlots.Where(ts => ts.DoctorId == docId && ts.Id == id && ts.Active == true).SingleOrDefault();
@@ -207,14 +249,73 @@ namespace VaccinationSystem.Controllers
         [HttpPost("timeSlots/modify/{doctorId}/{timeSlotId}")]
         public IActionResult ModifyAppointment(string doctorId, string timeSlotId, ModifyTimeSlotRequestDTO modifyVisitRequestDTO)
         {
-            return NotFound();
+            // TODO: Token verification for 401 and 403 error codes
+            bool result;
+            try
+            {
+                result = tryModifyAppointment(doctorId, timeSlotId, modifyVisitRequestDTO);
+            }
+            catch(BadRequestException)
+            {
+                return BadRequest();
+            }
+            if (result == false) return NotFound();
+            return Ok();
         }
+        private bool tryModifyAppointment(string doctorId, string timeSlotId, ModifyTimeSlotRequestDTO modifyVisitRequestDTO)
+        {
+            Guid docId, tsId;
+            DateTime newFrom, newTo;
+            try
+            {
+                docId = Guid.Parse(doctorId);
+                tsId = Guid.Parse(timeSlotId);
+                newFrom = DateTime.ParseExact(modifyVisitRequestDTO.timeFrom, _dateTimeFormat, null);
+                newTo = DateTime.ParseExact(modifyVisitRequestDTO.timeTo, _dateTimeFormat, null);
+            }
+            catch (ArgumentNullException)
+            {
+                throw new BadRequestException();
+            }
+            catch (FormatException)
+            {
+                throw new BadRequestException();
+            }
 
+            var checkIfDoctorActive = _context.Doctors.Where(doc => doc.Id == docId && doc.Active == true).FirstOrDefault();
+            if (checkIfDoctorActive == null) return false;
+
+            // Find the time slot to change
+            var timeSlotToChange = _context.TimeSlots.Where(ts => ts.Id == tsId && ts.DoctorId == docId && ts.Active == true).SingleOrDefault();
+            if (timeSlotToChange == null) return false;
+
+            // Check if there is a collision
+            var collidingTimeSlot = _context.TimeSlots.Where(ts => ts.DoctorId == docId && ts.Active == true && 
+                                ((ts.From <= newFrom && newFrom < ts.To) ||
+                                 (ts.From < newTo && newTo <= ts.To) ||
+                                 (newFrom <= ts.From && ts.To <= newTo) ||
+                                 (ts.From <= newFrom && newTo <= ts.To)) && ts.Id != tsId).ToList();
+            // All time slots which are active, belong to this doctor, collide with new time slot start and end times and are NOT the time slot we're changing
+            if (collidingTimeSlot == null || collidingTimeSlot.Count == 0) throw new BadRequestException(); // There are collisions
+
+            timeSlotToChange.From = newFrom;
+            timeSlotToChange.To = newTo;
+            _context.SaveChanges();
+            return true;
+        }
         [HttpGet("formerAppointments/{doctorId}")]
         public ActionResult<IEnumerable<DoctorFormerAppointmentDTO>> GetFormerAppointments(string doctorId)
         {
             // TODO: Token verification for 401 and 403 error codes
-            IEnumerable<DoctorFormerAppointmentDTO> result = fetchFormerAppointments(doctorId);
+            IEnumerable<DoctorFormerAppointmentDTO> result;
+            try
+            {
+                result = fetchFormerAppointments(doctorId);
+            }
+            catch (BadRequestException)
+            {
+                return BadRequest();
+            }
             if (result == null || result.Count() == 0) return NotFound();
             return Ok(result);
         }
@@ -227,12 +328,16 @@ namespace VaccinationSystem.Controllers
             }
             catch(FormatException)
             {
-                return null;
+                throw new BadRequestException();
             }
             catch(ArgumentNullException)
             {
-                return null;
+                throw new BadRequestException();
             }
+
+            var checkIfDoctorActive = _context.Doctors.Where(doc => doc.Id == docId && doc.Active == true).FirstOrDefault();
+            if (checkIfDoctorActive == null) return null;
+
             List<DoctorFormerAppointmentDTO> result = new List<DoctorFormerAppointmentDTO>();
             var appointments = _context.Appointments.Where(ap => ap.State != Models.AppointmentState.Planned).Include(ap => ap.TimeSlot).Include(ap => ap.Patient).Include(ap => ap.Vaccine).ToList();
             foreach (Appointment appointment in appointments)
@@ -269,16 +374,24 @@ namespace VaccinationSystem.Controllers
                 doctorFormerAppointmentDTO.batchNumber = appointment.VaccineBatchNumber;
                 doctorFormerAppointmentDTO.from = timeSlot.From.ToString(_dateTimeFormat);
                 doctorFormerAppointmentDTO.to = timeSlot.To.ToString(_dateTimeFormat);
+                doctorFormerAppointmentDTO.certifyState = appointment.CertifyState.ToString();
                 result.Add(doctorFormerAppointmentDTO);
             }
             return result;
-
         }
         [HttpGet("incomingAppointments/{doctorId}")]
         public ActionResult<IEnumerable<DoctorIncomingAppointmentDTO>> GetIncomingAppointments(string doctorId)
         {
             // TODO: Token verification for 401 and 403 error codes
-            IEnumerable<DoctorIncomingAppointmentDTO> result = fetchIncomingAppointments(doctorId);
+            IEnumerable<DoctorIncomingAppointmentDTO> result;
+            try
+            {
+                result = fetchIncomingAppointments(doctorId);
+            }
+            catch (BadRequestException)
+            {
+                return BadRequest();
+            }
             if (result == null || result.Count() == 0) return NotFound();
             return Ok(result);
         }
@@ -291,12 +404,15 @@ namespace VaccinationSystem.Controllers
             }
             catch (FormatException)
             {
-                return null;
+                throw new BadRequestException();
             }
             catch (ArgumentNullException)
             {
-                return null;
+                throw new BadRequestException();
             }
+            var checkIfDoctorActive = _context.Doctors.Where(doc => doc.Id == docId && doc.Active == true).FirstOrDefault();
+            if (checkIfDoctorActive == null) return null;
+
             List<DoctorIncomingAppointmentDTO> result = new List<DoctorIncomingAppointmentDTO>();
             var appointments = _context.Appointments.Where(ap => ap.State == AppointmentState.Planned).Include(ap => ap.TimeSlot).Include(ap => ap.Patient).Include(ap => ap.Vaccine).ToList();
             foreach (Appointment appointment in appointments)
@@ -339,31 +455,214 @@ namespace VaccinationSystem.Controllers
         [HttpGet("vaccinate/{doctorId}/{appointmentId}")]
         public ActionResult<DoctorMarkedAppointmentResponseDTO> GetIncomingAppointment(string doctorId, string appointmentId)
         {
-            return NotFound();
+            // TODO: 401/403
+            DoctorMarkedAppointmentResponseDTO result;
+            try
+            {
+                result = fetchIncomingAppointment(doctorId, appointmentId);
+            }
+            catch (BadRequestException)
+            {
+                return BadRequest();
+            }
+            if (result == null) return NotFound();
+            return Ok(result);
+        }
+        private DoctorMarkedAppointmentResponseDTO fetchIncomingAppointment(string doctorId, string appointmentId)
+        {
+            Guid docId, apId;
+            try
+            {
+                docId = Guid.Parse(doctorId);
+                apId = Guid.Parse(appointmentId);
+            }
+            catch (ArgumentNullException)
+            {
+                throw new BadRequestException();
+            }
+            catch (FormatException)
+            {
+                throw new BadRequestException();
+            }
+            var checkIfDoctorActive = _context.Doctors.Where(doc => doc.Id == docId && doc.Active == true).FirstOrDefault();
+            if (checkIfDoctorActive == null) return null;
+
+            var appointment = _context.Appointments.Where(ap => ap.Id == apId && ap.State == AppointmentState.Planned)
+                .Include(ap => ap.Patient).Include(ap => ap.TimeSlot).Include(ap => ap.Vaccine).SingleOrDefault();
+            if (appointment == null) return null;
+            if (appointment.Patient.Active == false || appointment.TimeSlot.Active == false || 
+                appointment.Vaccine.Active == false || appointment.TimeSlot.DoctorId != docId) return null;
+            DoctorMarkedAppointmentResponseDTO result = new DoctorMarkedAppointmentResponseDTO()
+            {
+                vaccineName = appointment.Vaccine.Name,
+                vaccineCompany = appointment.Vaccine.Company,
+                numberOfDoses = appointment.Vaccine.NumberOfDoses,
+                minDaysBetweenDoses = appointment.Vaccine.MinDaysBetweenDoses,
+                maxDaysBetweenDoses = appointment.Vaccine.MaxDaysBetweenDoses,
+                virusName = appointment.Vaccine.Virus.ToString(),
+                minPatientAge = appointment.Vaccine.MinPatientAge,
+                maxPatientAge = appointment.Vaccine.MaxPatientAge,
+                whichVaccineDose = appointment.WhichDose,
+                patientFirstName = appointment.Patient.FirstName,
+                patientLastName = appointment.Patient.LastName,
+                PESEL = appointment.Patient.PESEL,
+                dateOfBirth = appointment.Patient.DateOfBirth.ToString(_dateFormat),
+                from = appointment.TimeSlot.From.ToString(_dateTimeFormat),
+                to = appointment.TimeSlot.To.ToString(_dateTimeFormat),
+            };
+            return result;
         }
 
         [HttpPost("vaccinate/confirmVaccination/{doctorId}/{appointmentId}/{batchId}")]
         public ActionResult<DoctorConfirmVaccinationResponseDTO> ConfirmVaccination(string doctorId, string appointmentId, string batchId)
         {
-            return NotFound();
+            DoctorConfirmVaccinationResponseDTO result;
+            try
+            {
+                result = tryConfirmVaccination(doctorId, appointmentId, batchId);
+            }
+            catch (BadRequestException)
+            {
+                return BadRequest();
+            }
+            if (result == null) return NotFound();
+            return Ok(result);
+        }
+        private DoctorConfirmVaccinationResponseDTO tryConfirmVaccination(string doctorId, string appointmentId, string batchId)
+        {
+            Guid docId, apId;
+            try
+            {
+                docId = Guid.Parse(doctorId);
+                apId = Guid.Parse(appointmentId);
+            }
+            catch (ArgumentNullException)
+            {
+                throw new BadRequestException();
+            }
+            catch (FormatException)
+            {
+                throw new BadRequestException();
+            }
+            if (batchId == null) throw new BadRequestException();
+            var checkIfDoctorActive = _context.Doctors.Where(doc => doc.Id == docId && doc.Active == true).FirstOrDefault();
+            if (checkIfDoctorActive == null) return null;
+
+            var appointment = _context.Appointments.Where(ap => ap.Id == apId && ap.State == AppointmentState.Planned).Include(ap => ap.TimeSlot).Include(ap => ap.Vaccine).SingleOrDefault();
+            if (appointment == null || appointment.TimeSlot.Active == false || appointment.Vaccine.Active == false || appointment.TimeSlot.DoctorId != docId) return null;
+
+            DoctorConfirmVaccinationResponseDTO result = new DoctorConfirmVaccinationResponseDTO();
+            if (appointment.WhichDose == appointment.Vaccine.NumberOfDoses) // That was the last dose for that vaccine
+            {
+                result.canCertify = true;
+                appointment.CertifyState = CertifyState.LastNotCertified;
+            }
+            else
+            {
+                result.canCertify = false;
+                appointment.CertifyState = CertifyState.NotLast;
+            }
+
+            appointment.State = AppointmentState.Finished;
+            appointment.VaccineBatchNumber = batchId;
+            _context.SaveChanges();
+            return result;
         }
 
         [HttpPost("vaccinate/vaccinationDidNotHappen/{doctorId}/{appointmentId}")]
         public IActionResult VaccinationDidNotHappen(string doctorId, string appointmentId)
         {
-            return NotFound();
+            bool result;
+            try
+            {
+                result = tryVaccinationDidNotHappen(doctorId, appointmentId);
+            }
+            catch (BadRequestException)
+            {
+                return BadRequest();
+            }
+            if (result == false) return NotFound();
+            return Ok();
+        }
+        private bool tryVaccinationDidNotHappen(string doctorId, string appointmentId)
+        {
+            Guid docId, apId;
+            try
+            {
+                docId = Guid.Parse(doctorId);
+                apId = Guid.Parse(appointmentId);
+            }
+            catch (ArgumentNullException)
+            {
+                throw new BadRequestException();
+            }
+            catch (FormatException)
+            {
+                throw new BadRequestException();
+            }
+            var checkIfDoctorActive = _context.Doctors.Where(doc => doc.Id == docId && doc.Active == true).FirstOrDefault();
+            if (checkIfDoctorActive == null) return false;
+
+            var appointment = _context.Appointments.Where(ap => ap.Id == apId && ap.State == AppointmentState.Planned)
+                .Include(ap => ap.TimeSlot).Include(ap => ap.Vaccine).SingleOrDefault();
+            if (appointment == null || appointment.TimeSlot.Active == false ||
+                appointment.Vaccine.Active == false || appointment.TimeSlot.DoctorId != docId) return false;
+            appointment.State = AppointmentState.Cancelled; // At least I assume so
+            _context.SaveChanges();
+            return true;
         }
 
         [HttpPost("vaccinate/certify/{doctorId}/{appointmentId}")]
         public IActionResult Certify(string doctorId, string appointmentId)
         {
-            return NotFound();
+            bool result;
+            try
+            {
+                result = tryCertify(doctorId, appointmentId);
+            }
+            catch (BadRequestException)
+            {
+                return BadRequest();
+            }
+            if (result == false) return NotFound();
+            return Ok();
         }
-
-        [HttpPost("vaccinate/endAppointment/{doctorId}/{appointmentId}")]
-        public IActionResult EndVisit(string doctorId, string appointmentId)
+        private bool tryCertify(string doctorId, string appointmentId)
         {
-            return NotFound();
+            Guid docId, apId;
+            try
+            {
+                docId = Guid.Parse(doctorId);
+                apId = Guid.Parse(appointmentId);
+            }
+            catch (ArgumentNullException)
+            {
+                throw new BadRequestException();
+            }
+            catch (FormatException)
+            {
+                throw new BadRequestException();
+            }
+            var checkIfDoctorActive = _context.Doctors.Where(doc => doc.Id == docId && doc.Active == true).FirstOrDefault();
+            if (checkIfDoctorActive == null) return false;
+
+            var appointment = _context.Appointments.Where(ap => ap.Id == apId && ap.State == AppointmentState.Finished && ap.CertifyState == CertifyState.LastNotCertified
+            && ap.VaccineBatchNumber != null).Include(ap => ap.TimeSlot).Include(ap => ap.Patient).Include(ap => ap.Vaccine).SingleOrDefault();
+            if (appointment == null || appointment.TimeSlot.Active == false || appointment.Patient.Active == false ||
+                appointment.Vaccine.Active == false || appointment.TimeSlot.DoctorId != docId) return false;
+            Certificate newCert = new Certificate()
+            {
+                Id = Guid.NewGuid(),
+                Patient = appointment.Patient,
+                PatientId = appointment.PatientId,
+                Vaccine = appointment.Vaccine,
+                VaccineId = appointment.VaccineId,
+                Url = "randomFakeUrl", // to change to something proper once we get there
+            };
+            _context.Certificates.Add(newCert);
+            appointment.CertifyState = CertifyState.Certified;
+            _context.SaveChanges();
+            return true;
         }
     }
 }

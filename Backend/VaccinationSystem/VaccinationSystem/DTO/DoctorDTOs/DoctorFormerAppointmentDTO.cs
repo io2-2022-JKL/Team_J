@@ -19,5 +19,6 @@ namespace VaccinationSystem.DTO.DoctorDTOs
         public string batchNumber { get; set; }
         public string from { get; set; }
         public string to { get; set; }
+        public string certifyState { get; set; }
     }
 }

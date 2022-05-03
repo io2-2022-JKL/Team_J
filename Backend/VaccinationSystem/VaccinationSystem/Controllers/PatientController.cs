@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using VaccinationSystem.Config;
 using VaccinationSystem.DTO;
+using VaccinationSystem.DTO.Errors;
 using VaccinationSystem.DTO.PatientDTOs;
 using VaccinationSystem.Models;
 
@@ -32,7 +33,7 @@ namespace VaccinationSystem.Controllers
             {
                 result = fetchPatientInfo(patientId);
             }
-            catch(ArgumentException)
+            catch(BadRequestException)
             {
                 return BadRequest();
             }
@@ -48,11 +49,11 @@ namespace VaccinationSystem.Controllers
             }
             catch(ArgumentNullException)
             {
-                throw new ArgumentException();
+                throw new BadRequestException();
             }
             catch(FormatException)
             {
-                throw new ArgumentException();
+                throw new BadRequestException();
             }
             var patient = _context.Patients.Where(pat => pat.Id == patId && pat.Active == true).SingleOrDefault();
             if (patient == null) return null;
@@ -77,7 +78,7 @@ namespace VaccinationSystem.Controllers
             {
                 result = fetchFilteredTimeSlots(city, dateFrom, dateTo, virus);
             }
-            catch (ArgumentException)
+            catch (BadRequestException)
             {
                 return BadRequest();
             }
@@ -96,13 +97,13 @@ namespace VaccinationSystem.Controllers
             }
             catch (FormatException)
             {
-                throw new ArgumentException();
+                throw new BadRequestException();
             }
             catch (ArgumentNullException)
             {
-                throw new ArgumentException();
+                throw new BadRequestException();
             }
-            if (city == null || virus == null) throw new ArgumentException();
+            if (city == null || virus == null) throw new BadRequestException();
             List<TimeSlot> timeSlots;
             // Check if the patient already has a booked visit for this virus
             /*var booked = _context.Appointments.Include(ap => ap.Vaccine).Where(ap => ap.Vaccine.Virus.ToString() == virus &&
@@ -215,7 +216,7 @@ namespace VaccinationSystem.Controllers
             {
                 result = tryBookVisit(patientId, timeSlotId, vaccineId);
             }
-            catch(ArgumentException)
+            catch(BadRequestException)
             {
                 return BadRequest();
             }
@@ -233,11 +234,11 @@ namespace VaccinationSystem.Controllers
             }
             catch(ArgumentNullException)
             {
-                throw new ArgumentException();
+                throw new BadRequestException();
             }
             catch(FormatException)
             {
-                throw new ArgumentException();
+                throw new BadRequestException();
             }
             var vaccine = _context.Vaccines.Where(vac => vac.Id == vacId && vac.Active == true).SingleOrDefault();
             if (vaccine == null) return false;
@@ -278,7 +279,7 @@ namespace VaccinationSystem.Controllers
             {
                 result = fetchIncomingVisits(patientId);
             }
-            catch(ArgumentException)
+            catch(BadRequestException)
             {
                 return BadRequest();
             }
@@ -295,12 +296,14 @@ namespace VaccinationSystem.Controllers
             }
             catch(FormatException)
             {
-                throw new ArgumentException();
+                throw new BadRequestException();
             }
             catch (ArgumentNullException)
             {
-                throw new ArgumentException();
+                throw new BadRequestException();
             }
+            var checkIfPatientIsActive = _context.Patients.Where(pat => pat.Id == patId && pat.Active == true).FirstOrDefault();
+            if (checkIfPatientIsActive == null) return null;
             var appointments = _context.Appointments.Where(ap => ap.PatientId == patId && ap.State == Models.AppointmentState.Planned).Include(ap => ap.TimeSlot).Include(ap => ap.Vaccine).ToList();
             foreach(Appointment appointment in appointments)
             {
@@ -338,7 +341,7 @@ namespace VaccinationSystem.Controllers
             {
                 result = modifyCancelVisit(appointmentId, patientId);
             }
-            catch(ArgumentException)
+            catch(BadRequestException)
             {
                 return BadRequest();
             }
@@ -355,12 +358,14 @@ namespace VaccinationSystem.Controllers
             }
             catch(FormatException)
             {
-                throw new ArgumentException();
+                throw new BadRequestException();
             }
             catch (ArgumentNullException)
             {
-                throw new ArgumentException();
+                throw new BadRequestException();
             }
+            var checkIfPatientIsActive = _context.Patients.Where(pat => pat.Id == patId && pat.Active == true).FirstOrDefault();
+            if (checkIfPatientIsActive == null) return false;
             var appointment = _context.Appointments.Where(a => a.Id == appId && a.PatientId == patId).FirstOrDefault();
             if (appointment == null || appointment.State != AppointmentState.Planned) return false;
             Guid timeSlotId = appointment.TimeSlotId.GetValueOrDefault();
@@ -382,7 +387,7 @@ namespace VaccinationSystem.Controllers
             {
                 result = fetchFormerVisits(patientId);
             }
-            catch(ArgumentException)
+            catch(BadRequestException)
             {
                 return BadRequest();
             }
@@ -399,12 +404,14 @@ namespace VaccinationSystem.Controllers
             }
             catch(FormatException)
             {
-                throw new ArgumentException();
+                throw new BadRequestException();
             }
             catch (ArgumentNullException)
             {
-                throw new ArgumentException();
+                throw new BadRequestException();
             }
+            var checkIfPatientIsActive = _context.Patients.Where(pat => pat.Id == patId && pat.Active == true).FirstOrDefault();
+            if (checkIfPatientIsActive == null) return null;
             var appointments = _context.Appointments.Where(ap => ap.PatientId == patId && ap.State != Models.AppointmentState.Planned).Include(ap => ap.TimeSlot)
                 .Include(ap => ap.Vaccine).ToList();
             foreach(Appointment appointment in appointments)
@@ -450,7 +457,7 @@ namespace VaccinationSystem.Controllers
             {
                 result = fetchCertificates(patientId);
             }
-            catch(ArgumentException)
+            catch(BadRequestException)
             {
                 return BadRequest();
             }
@@ -466,12 +473,14 @@ namespace VaccinationSystem.Controllers
             }
             catch(FormatException)
             {
-                throw new ArgumentException();
+                throw new BadRequestException();
             }
             catch (ArgumentNullException)
             {
-                throw new ArgumentException();
+                throw new BadRequestException();
             }
+            var checkIfPatientIsActive = _context.Patients.Where(pat => pat.Id == patId && pat.Active == true).FirstOrDefault();
+            if (checkIfPatientIsActive == null) return null;
             List<BasicCertificateInfoDTO> result = new List<BasicCertificateInfoDTO>();
             var certificates = _context.Certificates.Where(c => c.PatientId == patId).Include(c => c.Vaccine).ToList();
             foreach(Certificate certificate in certificates)
