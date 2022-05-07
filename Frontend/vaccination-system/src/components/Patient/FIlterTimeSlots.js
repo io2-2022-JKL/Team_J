@@ -21,7 +21,6 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import Slide from '@mui/material/Slide';
 import Dialog from '@mui/material/Dialog';
-import Moment from 'moment';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -59,6 +58,37 @@ export default function FilterTimeSlots() {
     const [openSnackBar, setOpenSnackBar] = React.useState()
     const [snackBarMessage, setSnackBarMessage] = React.useState("Pomyślnie zapisano na szczepienie")
 
+    function getFilterErrorMessage(errCode) {
+        switch (errCode) {
+            case '400':
+                return 'Nieprawidłowe dane wyszukiwania';
+            case '401':
+                return 'Użytkownik nieuprawniony do wyszukiwania'
+            case '403':
+                return 'Użytkownikowi zabroniono wyszukiwania'
+            case '404':
+                return 'Nie znaleziono dostępnych terminów dla tych danych'
+            default:
+                return 'Wystąpił błąd!';
+        }
+    }
+    function renderBookError(errCode) {
+        switch (errCode) {
+            case '200':
+                return 'Anulowano wizytę'
+            case '400':
+                return 'Złe dane';
+            case '401':
+                return 'Użytkownik nieuprawniony do anulowania wizyty'
+            case '403':
+                return 'Użytkownikowi zabroniono anulować wizytę'
+            case '404':
+                return 'Nie znaleziono przyszłego szczepienia'
+            default:
+                return 'Wystąpił błąd!';
+        }
+    }
+
     const handleDayChoice = (dayInCenter) => {
         setDayTimeSlots(dayInCenter[Object.keys(dayInCenter)[0]].sort(function (a, b) { // non-anonymous as you ordered...
             return b.from < a.from ? 1 : -1
@@ -78,10 +108,7 @@ export default function FilterTimeSlots() {
     }
 
     const handleVaccineChoice = async () => {
-        console.log('handle vaccine choice')
-
         setOpenConfrimDialog(true)
-
         setOpenVaccinesDialog(false)
     }
 
@@ -107,7 +134,6 @@ export default function FilterTimeSlots() {
     }
 
     const handleConfirmTrue = async () => {
-        console.log(vaccine, timeSlot)
         let result = await bookTimeSlot(timeSlot, vaccine)
         setOpenConfrimDialog(false)
         if (result === "success") setSnackBarMessage("Pomyślnie zapisano na szczepienie")
@@ -117,13 +143,10 @@ export default function FilterTimeSlots() {
 
 
     function getDayFromDate(date) {
-        //console.log(date.substring(0, 10))
         return date.substring(0, 10)
     }
 
     function divideCenterIntoDays(center) {
-        console.log('divideCenter')
-        //console.log(center)
         const days = center.reduce((days, item) => {
             const day = getDayFromDate(item.from)
             const group = (days[day] || []);
@@ -140,14 +163,14 @@ export default function FilterTimeSlots() {
     }
 
     const submitSearch = async () => {
-        const response = await getFreeTimeSlots(city, dateFrom, dateTo, virus)
+        const [data, code] = await getFreeTimeSlots(city, dateFrom, dateTo, virus)
 
-        if (response === "fail") {
-            setSnackBarMessage("Nie znaleziono wyników dla tych danych")
+        if (code != "200") {
+            setSnackBarMessage(getFilterErrorMessage(code))
             setOpenSnackBar(true)
         }
 
-        const data = response.data
+        //const data = response.data
 
         const centers = data.reduce((centers, item) => {
             const group = (centers[item.vaccinationCenterName] || []);
@@ -173,12 +196,8 @@ export default function FilterTimeSlots() {
             }
         }
 
-        console.log(centersDays)
-
         setDaysInCenters(centersDays)
-
         setShowDaysList(true);
-
     }
 
     function getWeekDayNumberForDate(date) {

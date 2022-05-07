@@ -2,15 +2,12 @@ import * as React from 'react';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import { Box, Grid } from '@mui/material';
-import { randomAddress, randomCity, randomCommodity, randomCompanyName, randomDate, randomInt, randomId, randomTraderName } from '@mui/x-data-grid-generator';
 import { useNavigate } from 'react-router-dom';
 import { FixedSizeList } from 'react-window';
-import ListItemButton from '@mui/material/ListItemButton';
 import Button from '@mui/material/Button';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Container, CssBaseline } from '@mui/material';
 import Typography from '@mui/material/Typography';
-import dateFormat from 'dateformat';
 import { getFormerAppointments } from './PatientApi';
 import CircularProgress from '@mui/material/CircularProgress';
 import { blue } from '@mui/material/colors';
@@ -24,27 +21,7 @@ const theme = createTheme();
 const Alert = React.forwardRef(function Alert(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
-/*
-let id = randomId();
-const createRandomRow = () => {
-    id = randomId();
-    return {
-        vaccineName: randomCompanyName(),
-        vaccineCompany: randomCompanyName(),
-        vaccineVirus: "Koronavirus",
-        whichVaccineDose: randomInt(1, 3),
-        appointmentId: id,
-        windowBegin: dateFormat(randomDate(new Date(50, 1), new Date("1/1/30")), "isoDate").toString(),
-        windowEnd: dateFormat(randomDate(new Date(50, 1), new Date("1/1/30")), "isoDate").toString(),
-        vaccinationCenterName: randomCommodity(),
-        vaccinationCenterCity: randomCity(),
-        vaccinationCenterStreet: randomAddress(),
-        doctorFirstName: randomTraderName().split(' ')[0],
-        doctorLastName: randomTraderName().split(' ')[1],
-        visitState: "Finished"
-    }
-};
-*/
+
 function renderRow(props) {
     const { index, style, data } = props;
     const item = data[index];
@@ -85,21 +62,6 @@ function renderError(param) {
 
 export default function FormerAppointment() {
     const navigate = useNavigate();
-    /*
-    const [data, setData] = React.useState(() => [
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-    ]);
-    */
     const [data, setData] = React.useState([]);
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState('');

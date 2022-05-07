@@ -1,4 +1,4 @@
-export class FilteringHelepers {
+export default class FilteringHelepers {
     static filterFirstName(array, filter) {
         return array.filter((item) => item.firstName.includes(filter));
     };
