@@ -32,6 +32,8 @@ export default function LoginPage() {
     const [password, setPassword] = useState('');
     const [emailError, setEmailError] = useState('');
     const [emailErrorState, setEmailErrorState] = useState(false);
+    const [passwordError, setPasswordError] = useState('');
+    const [passwordErrorState, setPasswordErrorState] = useState(false);
     const [loading, setLoading] = useState(false);
 
     const location = useLocation();
@@ -73,8 +75,10 @@ export default function LoginPage() {
 
         } catch (error) {
             console.error(error.message);
-            setEmailError("Nieprawidłowy email lub hasło")
+            setEmailError("Logowanie nie powiodło się")
             setEmailErrorState(true)
+            setPasswordError("Logowanie nie powiodło się")
+            setPasswordErrorState(true)
             setLoading(false)
         }
 
@@ -91,7 +95,6 @@ export default function LoginPage() {
                 break;
             case "doctor":
                 navigate("/patient", { state: { name: "Jan", surname: "Kowalski" } });
-            //navigate("/doctor",);
         }
     }
 
@@ -136,7 +139,9 @@ export default function LoginPage() {
                             type="password"
                             id="password"
                             autoComplete="current-password"
-                            onChange={(e) => { setPassword(e.target.value) }}
+                            onChange={(e) => { setPassword(e.target.value); ValidationHelpers.validatePassword(e, setPasswordError, setPasswordErrorState) }}
+                            error={passwordErrorState}
+                            helperText={passwordError}
                         />
                         <Button
                             type="submit"
