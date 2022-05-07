@@ -8,7 +8,7 @@ export async function getFreeTimeSlots(city, dateFrom, dateTo, virus) {
     //console.log("dateFrom", Moment(dateFrom).format('DD-MM-YYYY hh:mm'))
 
     let response;
-    let err = '200'
+    let errCode = '200'
     try {
         response = await axios({
             method: 'get',
@@ -28,7 +28,7 @@ export async function getFreeTimeSlots(city, dateFrom, dateTo, virus) {
         console.log(
             "request succueeded"
         )
-        return [response.data, err];
+        return [response.data, errCode];
     } catch (error) {
         console.error(error.message);
         return [response, error.response.status.toString()];
@@ -45,20 +45,17 @@ export async function bookTimeSlot(timeSlot, vaccine) {
 
     console.log(patientId, timeSlotId, vaccineId)
 
+    let errCode = '200'
 
     try {
-        let response = await axios({
+        await axios({
             method: 'post',
             url: SYSTEM_SZCZEPIEN_URL + '/patient/timeSlots/Book/' + patientId + '/' + timeSlotId + '/' + vaccineId,
         });
-        console.log(
-            "request succueeded"
-        )
-        return "success"
-
+        return [errCode];
     } catch (error) {
         console.error(error.message);
-        return "fail"
+        return [error.response.status.toString()];
     }
 }
 
@@ -105,17 +102,16 @@ export async function getIncomingAppointments(patientId) {
 }
 
 export async function cancelAppointment(patientId, appointmentId) {
-    let response;
     let err = '200'
     try {
-        response = await axios({
+        await axios({
             method: 'delete',
             url: SYSTEM_SZCZEPIEN_URL + '/patient/appointments/incomingAppointments/cancelAppointments/' + patientId + '/' + appointmentId,
         });
 
-        console.log({
-            response,
-        })
+        //console.log({
+        //    response,
+        //})
         return err;
     } catch (error) {
         console.error(error.message);
@@ -139,6 +135,22 @@ export async function getCertificates(patientId) {
         })
         */
         return [response.data, error];//[response,err];
+
+    } catch (error) {
+        console.error(error.message);
+        return [response, error.response.status.toString()];
+    }
+}
+
+export async function getPatientInfo(patientId) {
+    let response;
+    let errCode = '200';
+    try {
+        response = await axios({
+            method: 'get',
+            url: SYSTEM_SZCZEPIEN_URL + '/patient/info/' + patientId,
+        });
+        return [response.data, errCode];
 
     } catch (error) {
         console.error(error.message);

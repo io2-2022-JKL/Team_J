@@ -84,7 +84,7 @@ export default function FormerAppointment() {
             setLoading(false);
         }
         fetchData();
-        console.log("run useEffect")
+        //console.log("run useEffect")
     }, []);
 
     const handleClose = (event, reason) => {

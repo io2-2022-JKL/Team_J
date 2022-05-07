@@ -41,20 +41,14 @@ export default function FilterTimeSlots() {
     const [virus, setVirus] = React.useState();
     const [dateFrom, setDateFrom] = React.useState();
     const [dateTo, setDateTo] = React.useState();
-
     const [daysInCenters, setDaysInCenters] = React.useState();
     const [openTimeSlotsDialog, setOpenTimeSlotsDialog] = React.useState(false);
     const [openVaccinesDialog, setOpenVaccinesDialog] = React.useState(false);
-
     const [dayTimeSlots, setDayTimeSlots] = React.useState();
-
     const [possibleVaccines, setPossibleVaccines] = React.useState();
     const [vaccine, setVaccine] = React.useState();
-
     const [timeSlot, setTimeSlot] = React.useState()
-
     const [openConfirmDialog, setOpenConfrimDialog] = React.useState(false)
-
     const [openSnackBar, setOpenSnackBar] = React.useState()
     const [snackBarMessage, setSnackBarMessage] = React.useState("Pomyślnie zapisano na szczepienie")
 
@@ -72,18 +66,18 @@ export default function FilterTimeSlots() {
                 return 'Wystąpił błąd!';
         }
     }
-    function renderBookError(errCode) {
+    function getBookErrorMessage(errCode) {
         switch (errCode) {
             case '200':
-                return 'Anulowano wizytę'
+                return 'Udało się zapisać na szczepienie'
             case '400':
-                return 'Złe dane';
+                return 'Nieprawidłowe dane';
             case '401':
-                return 'Użytkownik nieuprawniony do anulowania wizyty'
+                return 'Użytkownik nieuprawniony do zapisu na to szczepienie'
             case '403':
-                return 'Użytkownikowi zabroniono anulować wizytę'
+                return 'Użytkownikowi zabroniono zapisać się na to szczepienie'
             case '404':
-                return 'Nie znaleziono przyszłego szczepienia'
+                return 'Nie udało się zapisać na szczepienie'
             default:
                 return 'Wystąpił błąd!';
         }
@@ -97,9 +91,9 @@ export default function FilterTimeSlots() {
         setOpenTimeSlotsDialog(true);
     };
 
-    const handleVaccineChange = (event) => {
+    const handleVaccineChange = (e) => {
         setVaccine(possibleVaccines.filter(vaccine => {
-            return vaccine.name === 'Pfizer'
+            return vaccine.name === e.target.value
         })[0])
     }
 
@@ -115,7 +109,6 @@ export default function FilterTimeSlots() {
     const handleTimeSLotsClose = () => {
         setOpenTimeSlotsDialog(false);
     };
-
 
     const handleTimeSlotChoice = (dayTimeSlot) => {
         setTimeSlot(dayTimeSlot)
@@ -133,14 +126,22 @@ export default function FilterTimeSlots() {
         setOpenConfrimDialog(false)
     }
 
-    const handleConfirmTrue = async () => {
-        let result = await bookTimeSlot(timeSlot, vaccine)
+    const bookTimeSlotTrue = async () => {
+        const errCode = await bookTimeSlot(timeSlot, vaccine)
+
+        console.log(vaccine)
+
         setOpenConfrimDialog(false)
-        if (result === "success") setSnackBarMessage("Pomyślnie zapisano na szczepienie")
-        else setSnackBarMessage("Zapisanie na szczepienie nie powiodło się")
+
+        if (errCode != "200") {
+            setSnackBarMessage(getBookErrorMessage(errCode))
+            setOpenSnackBar(true)
+            return
+        }
+
+        setSnackBarMessage("Pomyślnie zapisano na szczepienie")
         setOpenSnackBar(true)
     }
-
 
     function getDayFromDate(date) {
         return date.substring(0, 10)
@@ -168,9 +169,8 @@ export default function FilterTimeSlots() {
         if (code != "200") {
             setSnackBarMessage(getFilterErrorMessage(code))
             setOpenSnackBar(true)
+            return
         }
-
-        //const data = response.data
 
         const centers = data.reduce((centers, item) => {
             const group = (centers[item.vaccinationCenterName] || []);
@@ -182,16 +182,8 @@ export default function FilterTimeSlots() {
         let centersDays = []
 
         for (let c in centers) {
-            console.log("centrum", centers[c])
             let days = divideCenterIntoDays(centers[c]);
-            console.log("days", days)
             for (let d in days) {
-                console.log("days[d]")
-                console.log(d)
-                console.log(days[d])
-                console.log({ d: days[d] })
-
-
                 centersDays.push({ d: days[d] })
             }
         }
@@ -310,6 +302,7 @@ export default function FilterTimeSlots() {
                                     {daysInCenters &&
                                         daysInCenters.map(dayInCenter =>
                                         (<ListItemButton
+                                            //key={dayInCenter}
                                             onClick={() => { handleDayChoice(dayInCenter) }}
                                         >
                                             <ListItemText
@@ -420,9 +413,10 @@ export default function FilterTimeSlots() {
                                     width: 'fit-content',
                                 }}
                             >
-                                <FormControl sx={{ mt: 2, minWidth: 120 }}>
+                                {openVaccinesDialog && <FormControl sx={{ mt: 2, minWidth: 120 }}>
                                     <InputLabel htmlFor="max-width">Wybierz</InputLabel>
                                     <Select
+                                        value={possibleVaccines[0].name}
                                         autoFocus
                                         onChange={handleVaccineChange}
                                         label="maxWidth"
@@ -430,7 +424,7 @@ export default function FilterTimeSlots() {
                                         {possibleVaccines && possibleVaccines.map(possibleVaccine =>
                                             <MenuItem value={possibleVaccine.name}>{possibleVaccine.name + ", firma: " + possibleVaccine.company}</MenuItem>)}
                                     </Select>
-                                </FormControl>
+                                </FormControl>}
                             </Box>
                         </DialogContent>
                         <DialogActions>
@@ -455,7 +449,7 @@ export default function FilterTimeSlots() {
                         </DialogContent>
                         <DialogActions>
                             <Button onClick={handleConfrimClose}>Nie</Button>
-                            <Button onClick={handleConfirmTrue} autoFocus>
+                            <Button onClick={bookTimeSlotTrue} autoFocus>
                                 Tak
                             </Button>
                         </DialogActions>
