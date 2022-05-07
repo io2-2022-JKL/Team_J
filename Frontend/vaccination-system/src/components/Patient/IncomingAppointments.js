@@ -2,7 +2,6 @@ import * as React from 'react';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import { Box, Grid } from '@mui/material';
-//import { randomAddress, randomCity, randomCommodity, randomCompanyName, randomDate, randomInt, randomId, randomTraderName } from '@mui/x-data-grid-generator';
 import { useNavigate } from 'react-router-dom';
 import { FixedSizeList } from 'react-window';
 import Button from '@mui/material/Button';
@@ -23,94 +22,56 @@ const Alert = React.forwardRef(function Alert(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
-/*
-let id = randomId();
-const createRandomRow = () => {
-    id = randomId();
-    return {
-        vaccineName: randomCompanyName(),
-        vaccineCompany: randomCompanyName(),
-        vaccineVirus: "Koronavirus",
-        whichVaccineDose: randomInt(1, 3),
-        appointmentId: id,
-        windowBegin: dateFormat(randomDate(new Date(50, 1), new Date("1/1/30")), "isoDate").toString(),
-        windowEnd: dateFormat(randomDate(new Date(50, 1), new Date("1/1/30")), "isoDate").toString(),
-        vaccinationCenterName: randomCommodity(),
-        vaccinationCenterCity: randomCity(),
-        vaccinationCenterStreet: randomAddress(),
-        doctorFirstName: randomTraderName().split(' ')[0],
-        doctorLastName: randomTraderName().split(' ')[1],
-    }
-};
-*/ 
-
 function renderError(param) {
-        switch (param) {
-            case '400':
-                return 'Złe dane';
-            case '401':
-                return 'Użytkownik nieuprawniony do uzyskania przyszłych szczepień'
-            case '403':
-                return 'Użytkownikowi zabroniono uzyskiwania przyszłych szczepień'
-            case '404':
-                return 'Nie znaleziono przyszłych szczepień'
-            default:
-                return 'Wystąpił błąd!';
-        }
+    switch (param) {
+        case '400':
+            return 'Złe dane';
+        case '401':
+            return 'Użytkownik nieuprawniony do uzyskania przyszłych szczepień'
+        case '403':
+            return 'Użytkownikowi zabroniono uzyskiwania przyszłych szczepień'
+        case '404':
+            return 'Nie znaleziono przyszłych szczepień'
+        default:
+            return 'Wystąpił błąd!';
     }
-function renderCancelStatus(param) {
-        switch (param) {
-            case '200':
-                return 'Anulowano wizytę'
-            case '400':
-                return 'Złe dane';
-            case '401':
-                return 'Użytkownik nieuprawniony do anulowania wizyty'
-            case '403':
-                return 'Użytkownikowi zabroniono anulować wizytę'
-            case '404':
-                return 'Nie znaleziono przyszłego szczepienia'
-            default:
-                return 'Wystąpił błąd!';
-        }
+}
+function renderCancelError(param) {
+    switch (param) {
+        case '200':
+            return 'Anulowano wizytę'
+        case '400':
+            return 'Złe dane';
+        case '401':
+            return 'Użytkownik nieuprawniony do anulowania wizyty'
+        case '403':
+            return 'Użytkownikowi zabroniono anulować wizytę'
+        case '404':
+            return 'Nie znaleziono przyszłego szczepienia'
+        default:
+            return 'Wystąpił błąd!';
     }
+}
 
 export default function IncomingAppointment() {
     const navigate = useNavigate();
-    /*
-    const [data, setData] = React.useState(() => [
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-    ]);
-    */
     const [data, setData] = React.useState([]);
     const [loading, setLoading] = React.useState(false);
-    const [error,setError] = React.useState('');
+    const [errorMessage, setError] = React.useState('');
     const [errorState, setErrorState] = React.useState(false);
-    const [errorCancel,setErrorCancel] = React.useState('');
+    const [cancelError, setErrorCancel] = React.useState('');
     const [errorCancelState, setErrorCancelState] = React.useState(false);
 
     React.useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
             let userID = localStorage.getItem('userID');
-            let [patientData,err] = await getIncomingAppointments(userID);
-            if (patientData != null)
-            {
+            let [patientData, err] = await getIncomingAppointments(userID);
+            if (patientData != null) {
                 setData(patientData);
                 console.log(patientData)
             }
-            else
-            {
+            else {
                 setData([]);
                 setError(err);
                 setErrorState(true);
@@ -119,7 +80,7 @@ export default function IncomingAppointment() {
         }
         fetchData();
         console.log("run useEffect")
-    }, [errorCancel]);
+    }, [cancelError]);
 
     function renderRow(props) {
         const { index, style, data } = props;
@@ -158,7 +119,7 @@ export default function IncomingAppointment() {
             </ListItem>
         );
     }
-    
+
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {
             return;
@@ -183,17 +144,17 @@ export default function IncomingAppointment() {
                             alignItems: 'center',
                         }}
                     >
-                         <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+                        <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
                             <SummarizeIcon />
                         </Avatar>
                         <Typography component="h1" variant='h5'>
                             Przyszłe szczepienia
                         </Typography>
 
-                        <Box sx={{marginTop: 2,}}/>
-                        
+                        <Box sx={{ marginTop: 2, }} />
+
                         <FixedSizeList
-                            height={Math.min(window.innerHeight-200, data.length * 100)}
+                            height={Math.min(window.innerHeight - 200, data.length * 100)}
                             width="70%"
                             itemSize={100}
                             itemCount={data.length}
@@ -202,7 +163,7 @@ export default function IncomingAppointment() {
                         >
                             {renderRow}
                         </FixedSizeList>
-                        
+
                         <Button
                             type="submit"
                             variant="contained"
@@ -228,14 +189,14 @@ export default function IncomingAppointment() {
                         <Snackbar open={errorState} autoHideDuration={6000} onClose={handleClose}>
                             <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
                                 {
-                                    renderError(error)
+                                    renderError(errorMessage)
                                 }
                             </Alert>
                         </Snackbar>
                         <Snackbar open={errorCancelState} autoHideDuration={6000} onClose={handleClose2}>
-                            <Alert onClose={handleClose2} severity={errorCancel==='200'?"success":"error"} sx={{ width: '100%' }}>
+                            <Alert onClose={handleClose2} severity={cancelError === '200' ? "success" : "error"} sx={{ width: '100%' }}>
                                 {
-                                    renderCancelStatus(errorCancel)
+                                    renderCancelError(cancelError)
                                 }
                             </Alert>
                         </Snackbar>
