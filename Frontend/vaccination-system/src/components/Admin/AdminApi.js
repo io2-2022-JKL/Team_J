@@ -4,12 +4,19 @@ import axios from 'axios';
 import { SYSTEM_SZCZEPIEN_URL } from '../../api/Api';
 
 export async function getPatientsData() {
+    let response;
+    let errCode = '200';
     try {
-        const { data: response } = await axios.get(SYSTEM_SZCZEPIEN_URL + '/admin/patients');
-        return response;
+        response = await axios({
+            method: 'get',
+            url: SYSTEM_SZCZEPIEN_URL + '/admin/patients',
+        });
+        console.log('udało się pobrac dane')
+        return [response.data, errCode];
+
     } catch (error) {
         console.error(error.message);
-        return [];
+        return [response, error.response.status.toString()];
     }
 }
 

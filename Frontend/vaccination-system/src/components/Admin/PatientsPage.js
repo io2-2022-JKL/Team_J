@@ -28,7 +28,7 @@ export default function PatientsPage() {
             flex: 2
         },
         {
-            field: 'PESEL',
+            field: 'pesel',
             minWidth: 110,
             flex: 0.5,
             editable: true
@@ -46,7 +46,7 @@ export default function PatientsPage() {
             editable: true
         },
         {
-            field: 'email',
+            field: 'mail',
             headerName: 'E-Mail',
             minWidth: 125,
             flex: 0.5,
@@ -102,34 +102,21 @@ export default function PatientsPage() {
     const [rows, setRows] = React.useState([]);
 
     React.useEffect(() => {
-        let patientData;
+
         const fetchData = async () => {
             setLoading(true);
-
-            patientData = await getPatientsData();
-            console.log(patientData)
-            //if (patientData.length === 0)
-            patientData = getRandomPatientData();
-
-            console.log(getRandomPatientData())
-
-            //setTimeout(() => {
-            setRows(patientData);
-            setFilteredRows(rows);
-            //});
-
-            console.log(filteredRows)
-
+            let [data, err] = await getPatientsData();
+            if (data != null) {
+                setRows(data);
+                setFilteredRows(data)
+            }
+            else {
+                //setError(err);
+                //setErrorState(true);
+            }
             setLoading(false);
-
         }
-
         fetchData();
-
-        setRows(getRandomPatientData())
-        console.log("run useEffect")
-
-
     }, []);
 
     const [filteredRows, setFilteredRows] = React.useState(rows);
@@ -145,7 +132,7 @@ export default function PatientsPage() {
     );
 
     const editCell = async (params, event) => {
-        const result = await confirm("Czy na pewno chcesz edytować pacjenta?", confirmOptionsInPolish);
+        /*const result = await confirm("Czy na pewno chcesz edytować pacjenta?", confirmOptionsInPolish);
         if (result) {
             console.log("You click yes!");
             rows[params.id] = params.value;
@@ -161,13 +148,11 @@ export default function PatientsPage() {
         }
         setFilteredRows(filteredRows);
         console.log("You click No!");
-
+    
         if (!event.ctrlKey) {
             event.defaultMuiPrevented = true;
         }
-        console.log(params.row.PESEL);
-
-
+        console.log(params.row.PESEL);*/
     }
 
     const confirmOptionsInPolish = {
@@ -298,7 +283,7 @@ export default function PatientsPage() {
                             fullWidth
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
-                            onClick={async () => { /*navigate("/admin"),*/ console.log(await getPatientsData()) }}
+                            onClick={async () => { navigate("/admin") }}
                         >
                             Powrót
                         </Button>
