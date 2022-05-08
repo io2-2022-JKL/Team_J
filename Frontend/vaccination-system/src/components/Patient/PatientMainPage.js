@@ -15,7 +15,7 @@ export default function PatientMainPage() {
     const navigate = useNavigate();
     const [patientData, setPatientData] = React.useState();
 
-    React.useEffect(() => {
+    /*React.useEffect(() => {
         const fetchData = async () => {
             let userID = localStorage.getItem('userID');
             let [data, err] = await getPatientInfo(userID);
@@ -24,7 +24,7 @@ export default function PatientMainPage() {
             }
         }
         fetchData();
-    }, []);
+    }, []);*/
 
     return (
         <ThemeProvider theme={theme}>
