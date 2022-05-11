@@ -15,6 +15,7 @@ import { confirm } from "react-confirm-box";
 import DataDisplayArray from '../DataDisplayArray';
 import { getPatientsData, getRandomPatientData } from './AdminApi';
 import FilteringHelepers from '../../tools/FilteringHelepers';
+import Autocomplete from '@mui/material/Autocomplete';
 
 const theme = createTheme();
 
@@ -177,6 +178,32 @@ export default function PatientsPage() {
         setFilteredRows(result);
     };
 
+
+    const top100Films = [
+        'aktywny', 'niekatywny'
+    ]
+
+    const [currency, setCurrency] = React.useState('');
+
+    const handleChange = (event) => {
+        setCurrency(event.target.value);
+    };
+
+    const currencies = [
+        {
+            value: 'aktywny',
+            label: 'aktywny',
+        },
+        {
+            value: 'nieaktywny',
+            label: 'nieaktywny',
+        },
+        {
+            value: '',
+            label: '',
+        }
+    ];
+
     return (
         <ThemeProvider theme={theme}>
             <Container component="main" maxWidth='lg'>
@@ -266,9 +293,21 @@ export default function PatientsPage() {
                                     <TextField
                                         fullWidth
                                         id="activeFilter"
+                                        select
                                         label="Aktywny"
                                         name="activeFilter"
-                                    />
+                                        value={currency}
+                                        onChange={handleChange}
+                                        SelectProps={{
+                                            native: true,
+                                        }}
+                                    >
+                                        {currencies.map((option) => (
+                                            <option key={option.value} value={option.value}>
+                                                {option.label}
+                                            </option>
+                                        ))}
+                                    </TextField>
                                 </Grid>
                             </Grid>
                         </Box>
