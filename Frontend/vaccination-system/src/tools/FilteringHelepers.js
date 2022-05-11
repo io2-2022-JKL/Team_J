@@ -6,13 +6,13 @@ export default class FilteringHelepers {
         return array.filter((item) => item.lastName.includes(filter));
     };
     static filterEmail(array, filter) {
-        return array.filter((item) => item.email.includes(filter));
+        return array.filter((item) => item.mail.includes(filter));
     };
     static filterPhoneNumber(array, filter) {
         return array.filter((item) => item.phoneNumber.includes(filter));
     };
     static filterPESEL(array, filter) {
-        return array.filter((item) => item.PESEL.includes(filter));
+        return array.filter((item) => item.pesel.includes(filter));
     };
     static filterId(array, filter) {
         return array.filter((item) => item.id.includes(filter));

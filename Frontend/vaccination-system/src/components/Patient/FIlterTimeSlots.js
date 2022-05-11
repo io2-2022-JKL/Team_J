@@ -302,7 +302,7 @@ export default function FilterTimeSlots() {
                                     {daysInCenters &&
                                         daysInCenters.map(dayInCenter =>
                                         (<ListItemButton
-                                            //key={dayInCenter}
+                                            key={dayInCenter[Object.keys(dayInCenter)[0]][0].timeSlotId}
                                             onClick={() => { handleDayChoice(dayInCenter) }}
                                         >
                                             <ListItemText
@@ -398,7 +398,6 @@ export default function FilterTimeSlots() {
 
                     <Dialog
                         fullWidth
-                        maxWidth
                         open={openVaccinesDialog}
                     >
                         <DialogTitle>Wybierz szczepionkę</DialogTitle>
