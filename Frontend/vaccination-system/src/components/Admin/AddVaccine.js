@@ -53,7 +53,7 @@ export default function AddNewVaccine() {
 
     React.useEffect(() => {
 
-        if (maxDBD < minDBD) {
+        if (maxDBD>=0 && maxDBD < minDBD) {
             setMinDBDErrorState2(true);
             setMaxDBDErrorState2(true);
             setMaxDBDError2("Wartość maksymalna jest mniejsza od minimalnej!");
@@ -66,7 +66,7 @@ export default function AddNewVaccine() {
             setMinDBDError2("");
         }
 
-        if (maxPA < minPA) {
+        if (maxPA>=0 && maxPA < minPA) {
             setMinPAErrorState2(true);
             setMaxPAErrorState2(true);
             setMaxPAError2("Wartość maksymalna jest mniejsza od minimalnej!");
@@ -196,7 +196,7 @@ export default function AddNewVaccine() {
                                     id="numberOfDoses"
                                     label="Liczba dawek"
                                     name="numberOfDoses"
-                                    onChange={(e) => ValidationHelpers.validateInt(e, setNODError, setNODErrorState)}
+                                    onChange={(e) => ValidationHelpers.validateNumberOfDoses(e, setNODError, setNODErrorState)}
                                     helperText={nODError}
                                     error={nODErrorState}
                                 />

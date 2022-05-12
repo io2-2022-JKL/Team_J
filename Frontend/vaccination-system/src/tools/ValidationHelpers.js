@@ -100,4 +100,15 @@ export default class ValidationHelpers {
             setErrorState(true);
         }
     }
+    static validateNumberOfDoses(e, setError, setErrorState) {
+        var integer = e.target.value;
+        if (validator.isNumeric(integer) && Number.parseInt(integer)>0) {
+            setError('');
+            setErrorState(false);
+        }
+        else {
+            setError("Minimalna dawka wynosi 1!");
+            setErrorState(true);
+        }
+    }
 }
