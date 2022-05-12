@@ -35,4 +35,48 @@ export default class FilteringHelepers {
                 return true;
         });
     }
+    static filterName = (array, filter) => {
+        return array.filter((item) => item.name.includes(filter));
+    };
+    static filterNumberOfDoses = (array, filter) => {
+        return array.filter((item) => {
+            if(filter === '')
+                return true;
+            return item.numberOfDoses == filter;
+        });
+    };
+   static filterMinDaysBetweenDoses = (array, filter) => {
+        return array.filter((item) => {
+            if(filter === '')
+                return true;
+            return item.minDaysBetweenDoses == filter
+        });
+    };
+    static filterMaxDaysBetweenDoses = (array, filter) => {
+        return array.filter((item) => {
+            if(filter === '')
+                return true;
+            return item.maxDaysBetweenDoses == filter
+        });
+    };
+    static filterVirus = (array, filter) => {
+        return array.filter((item) => item.virus.includes(filter));
+    };
+    static filterCompany = (array, filter) => {
+        return array.filter((item) => item.company.includes(filter));
+    };
+    static filterMinPatientAge = (array, filter) => {
+        return array.filter((item) => {
+            if(filter === '')
+                return true;
+            return item.minPatientAge == filter
+        });
+    };
+    static filterMaxPatientAge = (array, filter) => {
+        return array.filter((item) => {
+            if(filter === '')
+                return true;
+            return item.maxPatientAge == filter
+        });
+    };
 }

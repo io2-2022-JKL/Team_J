@@ -12,11 +12,147 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Link, useNavigate } from "react-router-dom";
+import { addVaccine } from './AdminApi';
+import ValidationHelpers from '../../tools/ValidationHelpers';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
 
 const theme = createTheme();
 
+const Alert = React.forwardRef(function Alert(props, ref) {
+    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
+
 export default function AddNewVaccine() {
     const navigate = useNavigate();
+    const [nODErrorState, setNODErrorState] = useState(false);
+    const [nODError, setNODError] = useState('');
+    const [minDBDErrorState, setMinDBDErrorState] = useState(false);
+    const [minDBDError, setMinDBDError] = useState('');
+    const [maxDBDErrorState, setMaxDBDErrorState] = useState(false);
+    const [maxDBDError, setMaxDBDError] = useState('');
+    const [minDBDErrorState2, setMinDBDErrorState2] = useState(false);
+    const [minDBDError2, setMinDBDError2] = useState('');
+    const [maxDBDErrorState2, setMaxDBDErrorState2] = useState(false);
+    const [maxDBDError2, setMaxDBDError2] = useState('');
+    const [minPAErrorState, setMinPAErrorState] = useState(false);
+    const [minPAError, setMinPAError] = useState('');
+    const [maxPAErrorState, setMaxPAErrorState] = useState(false);
+    const [maxPAError, setMaxPAError] = useState('');
+    const [minPAErrorState2, setMinPAErrorState2] = useState(false);
+    const [minPAError2, setMinPAError2] = useState('');
+    const [maxPAErrorState2, setMaxPAErrorState2] = useState(false);
+    const [maxPAError2, setMaxPAError2] = useState('');
+    const [minDBD, setMinDBD] = useState(0);
+    const [maxDBD, setMaxDBD] = useState(0);
+    const [minPA, setMinPA] = useState(0);
+    const [maxPA, setMaxPA] = useState(0);
+    const [addError, setAddError] = useState('');
+    const [addErrorState, setAddErrorState] = useState(false);
+    const [success,setSuccess] = useState(false);
+
+    React.useEffect(() => {
+
+        if (maxDBD < minDBD) {
+            setMinDBDErrorState2(true);
+            setMaxDBDErrorState2(true);
+            setMaxDBDError2("Wartość maksymalna jest mniejsza od minimalnej!");
+            setMinDBDError2("Wartość minimalna jest większa od maksymalnej!");
+        }
+        else {
+            setMinDBDErrorState2(false);
+            setMaxDBDErrorState2(false);
+            setMaxDBDError2("");
+            setMinDBDError2("");
+        }
+
+        if (maxPA < minPA) {
+            setMinPAErrorState2(true);
+            setMaxPAErrorState2(true);
+            setMaxPAError2("Wartość maksymalna jest mniejsza od minimalnej!");
+            setMinPAError2("Wartość minimalna jest większa od maksymalnej!");
+        }
+        else {
+            setMinPAErrorState2(false);
+            setMaxPAErrorState2(false);
+            setMaxPAError2("");
+            setMinPAError2("");
+        }
+
+    }, [minDBD, maxDBD, minPA, maxPA]);
+
+    const handleSubmit = async (event) => {
+        if (minPAErrorState || minPAErrorState2 || minDBDErrorState || minDBDErrorState2 || maxPAErrorState || maxPAErrorState2 || maxDBDErrorState || maxDBDErrorState2 || nODErrorState)
+            return
+        event.preventDefault();
+        const data = new FormData(event.currentTarget);
+        console.log({
+            company: data.get('company'),
+            name: data.get('name'),
+            numberOfDoses: Number.parseInt(data.get('numberOfDoses')),
+            minDBD: Number.parseInt(data.get('minDaysBetweenDoses')),
+            maxDBD: Number.parseInt(data.get('maxDaysBetweenDoses')),
+            virus: data.get('virus'),
+            minPA: Number.parseInt(data.get('minPatientAge')),
+            maxPA: Number.parseInt(data.get('maxPatientAge')),
+            active: data.get('active')
+        });
+        let error = await addVaccine(data.get('company'), data.get('name'), Number.parseInt(data.get('numberOfDoses')),
+            Number.parseInt(data.get('minDaysBetweenDoses')), Number.parseInt(data.get('maxDaysBetweenDoses')),
+            data.get('virus'), Number.parseInt(data.get('minPatientAge')), Number.parseInt(data.get('maxPatientAge')),
+            data.get('active'));
+        setAddError(error);
+        if(error!='200')
+            setAddErrorState(true);
+        else
+            setSuccess(true);
+    };
+
+    const [currency, setCurrency] = React.useState('');
+
+    const handleChange = (event) => {
+        setCurrency(event.target.value);
+    };
+
+    const currencies = [
+        {
+            value: 'aktywny',
+            label: 'aktywny',
+        },
+        {
+            value: 'nieaktywny',
+            label: 'nieaktywny',
+        },
+    ];
+
+    const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setAddErrorState(false);
+    };
+
+    const handleClose2 = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setSuccess(false);
+    };
+
+    function renderError(param) {
+        switch (param) {
+            case '400':
+                return 'Złe dane. Czyżbyś próbował dodać nieistniejącego wirusa?';
+            case '401':
+                return 'Użytkownik nieuprawniony do dodania szczepionki'
+            case '403':
+                return 'Użytkownikowi zabroniono dodawania szczepionki'
+            case '404':
+                return 'Nie znaleziono szczepionki do dodania'
+            default:
+                return 'Wystąpił błąd!';
+        }
+    }
     return (
         <ThemeProvider theme={theme}>
             <Container component="main" maxWidth="xs">
@@ -32,7 +168,7 @@ export default function AddNewVaccine() {
                     <Typography component="h1" variant="h5">
                         Wpisz dane nowej szczepionki
                     </Typography>
-                    <Box component="form" noValidate sx={{ mt: 3 }}>
+                    <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
                         <Grid container spacing={2}>
                             <Grid item xs={12}>
                                 <TextField
@@ -60,6 +196,9 @@ export default function AddNewVaccine() {
                                     id="numberOfDoses"
                                     label="Liczba dawek"
                                     name="numberOfDoses"
+                                    onChange={(e) => ValidationHelpers.validateInt(e, setNODError, setNODErrorState)}
+                                    helperText={nODError}
+                                    error={nODErrorState}
                                 />
                             </Grid>
                             <Grid item xs={12}>
@@ -69,6 +208,12 @@ export default function AddNewVaccine() {
                                     name="minDaysBetweenDoses"
                                     label="Minimalna liczba dni pomiędzy dawkami"
                                     id="minDaysBetweenDoses"
+                                    onChange={(e) => {
+                                        setMinDBD(Number.parseInt(e.target.value))
+                                        ValidationHelpers.validateInt(e, setMinDBDError, setMinDBDErrorState)
+                                    }}
+                                    helperText={minDBDError + "\n" + minDBDError2}
+                                    error={minDBDErrorState || minDBDErrorState2}
                                 />
                             </Grid>
                             <Grid item xs={12}>
@@ -78,6 +223,12 @@ export default function AddNewVaccine() {
                                     name="maxDaysBetweenDoses"
                                     label="Maksymalna liczba dni pomiędzy dawkami"
                                     id="maxDaysBetweenDoses"
+                                    onChange={(e) => {
+                                        setMaxDBD(Number.parseInt(e.target.value))
+                                        ValidationHelpers.validateInt(e, setMaxDBDError, setMaxDBDErrorState)
+                                    }}
+                                    helperText={maxDBDError + "\n" + maxDBDError2}
+                                    error={maxDBDErrorState || maxDBDErrorState2}
                                 />
                             </Grid>
                             <Grid item xs={12}>
@@ -96,6 +247,12 @@ export default function AddNewVaccine() {
                                     name="minPatientAge"
                                     label="Minimalny wiek pacjenta"
                                     id="minPatientAge"
+                                    onChange={(e) => {
+                                        setMinPA(Number.parseInt(e.target.value));
+                                        ValidationHelpers.validateInt(e, setMinPAError, setMinPAErrorState)
+                                    }}
+                                    helperText={minPAError + "\n" + minPAError2}
+                                    error={minPAErrorState || minPAErrorState2}
                                 />
                             </Grid>
                             <Grid item xs={12}>
@@ -105,28 +262,44 @@ export default function AddNewVaccine() {
                                     name="maxPatientAge"
                                     label="Maksymalny wiek pacjenta"
                                     id="maxPatientAge"
+                                    onChange={(e) => {
+                                        setMaxPA(Number.parseInt(e.target.value));
+                                        ValidationHelpers.validateInt(e, setMaxPAError, setMaxPAErrorState)
+                                    }}
+                                    helperText={maxPAError + "\n" + maxPAError2}
+                                    error={maxPAErrorState || maxPAErrorState2}
                                 />
                             </Grid>
                             <Grid item xs={12}>
                                 <TextField
-                                    name="active"
-                                    required
                                     fullWidth
                                     id="active"
-                                    label="Aktywna"
-                                />
+                                    select
+                                    label="Aktywny"
+                                    name="active"
+                                    value={currency}
+                                    onChange={handleChange}
+                                    SelectProps={{
+                                        native: true,
+                                    }}
+                                >
+                                    {currencies.map((option) => (
+                                        <option key={option.value} value={option.value}>
+                                            {option.label}
+                                        </option>
+                                    ))}
+                                </TextField>
                             </Grid>
                         </Grid>
+                        <Button
+                            type="submit"
+                            fullWidth
+                            variant="contained"
+                            sx={{ mt: 3, mb: 2 }}
+                        >
+                            Dodaj szczepionkę
+                        </Button>
                     </Box>
-                    <Button
-                        type="submit"
-                        fullWidth
-                        variant="contained"
-                        sx={{ mt: 3, mb: 2 }}
-                        onClick={() => { navigate("/admin/vaccines") }}
-                    >
-                        Dodaj szczepionkę
-                    </Button>
                     <Button
                         type="submit"
                         fullWidth
@@ -136,6 +309,16 @@ export default function AddNewVaccine() {
                     >
                         Powrót
                     </Button>
+                    <Snackbar open={addErrorState} autoHideDuration={6000} onClose={handleClose}>
+                        <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
+                            {renderError(addError)}
+                        </Alert>
+                    </Snackbar>
+                    <Snackbar open={success} autoHideDuration={6000} onClose={handleClose2}>
+                        <Alert onClose={handleClose2} severity="success" sx={{ width: '100%' }}>
+                            Pomyślnie dodano szczepionkę
+                        </Alert>
+                    </Snackbar>
                 </Box>
             </Container>
         </ThemeProvider>
