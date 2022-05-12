@@ -88,4 +88,27 @@ export default class ValidationHelpers {
             setPhoneNumberErrorState(true);
         }
     }
+
+    static validateInt(e, setError, setErrorState) {
+        var integer = e.target.value;
+        if (validator.isNumeric(integer)) {
+            setError('');
+            setErrorState(false);
+        }
+        else {
+            setError("Podana wartość nie jest liczbą!");
+            setErrorState(true);
+        }
+    }
+    static validateNumberOfDoses(e, setError, setErrorState) {
+        var integer = e.target.value;
+        if (validator.isNumeric(integer) && Number.parseInt(integer)>0) {
+            setError('');
+            setErrorState(false);
+        }
+        else {
+            setError("Minimalna dawka wynosi 1!");
+            setErrorState(true);
+        }
+    }
 }
