@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Button from '@mui/material/Button';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { Container, CssBaseline, TextField } from '@mui/material';
+import { Container, CssBaseline, Slide, TextField } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import { useNavigate } from "react-router-dom";
@@ -11,17 +11,32 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import clsx from 'clsx';
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
 import Avatar from '@mui/material/Avatar';
-import { confirm } from "react-confirm-box";
 import DataDisplayArray from '../DataDisplayArray';
-import { getPatientsData, getRandomPatientData } from './AdminApi';
+import { editPatient, getPatientsData } from './AdminApi';
 import FilteringHelepers from '../../tools/FilteringHelepers';
-import Autocomplete from '@mui/material/Autocomplete';
+import PatientForm from './forms/PatientForm';
+import { Toolbar } from '@mui/material';
+import { IconButton } from '@mui/material';
+import { Dialog } from '@mui/material';
+import { AppBar } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 
 const theme = createTheme();
 
 export default function PatientsPage() {
 
     const navigate = useNavigate();
+
+    const [activeStateFiler, setActiveStateFilter] = React.useState('');
+
+    const [loading, setLoading] = React.useState(true);
+
+    const [rows, setRows] = React.useState([]);
+    const [filteredRows, setFilteredRows] = React.useState(rows);
+    const [selectedRow, setSelectedRow] = React.useState()
+    const [openForm, setOpenForm] = React.useState(false)
+
+
 
     const columns = [
         {
@@ -90,17 +105,12 @@ export default function PatientsPage() {
                 <GridActionsCellItem
                     icon={<DeleteIcon color='error' />}
                     label="Delete"
-                    onClick={deleteUser(params.id)}
+                    onClick={deletePatients(params.id)}
                 />,
             ],
         },
     ];
 
-    const [loading, setLoading] = React.useState(true);
-
-    //const [rows, setRows] = React.useState();
-
-    const [rows, setRows] = React.useState([]);
 
     React.useEffect(() => {
 
@@ -120,9 +130,8 @@ export default function PatientsPage() {
         fetchData();
     }, []);
 
-    const [filteredRows, setFilteredRows] = React.useState(rows);
 
-    const deleteUser = React.useCallback(
+    const deletePatients = React.useCallback(
         (id) => () => {
             setTimeout(() => {
                 setRows((prevRows) => prevRows.filter((row) => row.id !== id));
@@ -132,35 +141,21 @@ export default function PatientsPage() {
         [],
     );
 
-    const editCell = async (params, event) => {
-        /*const result = await confirm("Czy na pewno chcesz edytować pacjenta?", confirmOptionsInPolish);
-        if (result) {
-            console.log("You click yes!");
-            rows[params.id] = params.value;
-            filteredRows[params.id] = params.value;
-            setRows(rows);
-            setFilteredRows(filteredRows);
-            return;
-        }
-        else {
-            rows[params.id] = params.value;
-            filteredRows[params.id] = params.value;
-            setFilteredRows(filteredRows);
-        }
-        setFilteredRows(filteredRows);
-        console.log("You click No!");
-    
-        if (!event.ctrlKey) {
-            event.defaultMuiPrevented = true;
-        }
-        console.log(params.row.PESEL);*/
+
+
+    function handleRowClick(row) {
+        console.log('kliknięto row')
+        console.log(row)
+        setSelectedRow(row)
+        setOpenForm(true)
     }
 
-    const confirmOptionsInPolish = {
-        labels: {
-            confirmable: "Tak",
-            cancellable: "Nie"
-        }
+    const handleFormClose = () => {
+        setOpenForm(false)
+    }
+
+    const handleFormSubmit = async () => {
+        const err = await editPatient()
     }
 
     const handleSubmit = (event) => {
@@ -179,17 +174,11 @@ export default function PatientsPage() {
     };
 
 
-    const top100Films = [
-        'aktywny', 'niekatywny'
-    ]
-
-    const [currency, setCurrency] = React.useState('');
-
     const handleChange = (event) => {
-        setCurrency(event.target.value);
+        setActiveStateFilter(event.target.value);
     };
 
-    const currencies = [
+    const activeStates = [
         {
             value: 'aktywny',
             label: 'aktywny',
@@ -296,13 +285,13 @@ export default function PatientsPage() {
                                         select
                                         label="Aktywny"
                                         name="activeFilter"
-                                        value={currency}
+                                        value={activeStateFiler}
                                         onChange={handleChange}
                                         SelectProps={{
                                             native: true,
                                         }}
                                     >
-                                        {currencies.map((option) => (
+                                        {activeStates.map((option) => (
                                             <option key={option.value} value={option.value}>
                                                 {option.label}
                                             </option>
@@ -313,9 +302,10 @@ export default function PatientsPage() {
                         </Box>
                         <DataDisplayArray
                             loading={loading}
-                            editCell={editCell}
+                            //editCell={editCell}
                             columns={columns}
                             filteredRows={filteredRows}
+                            handleRowClick={handleRowClick}
                         />
                         <Button
                             type="submit"
@@ -327,9 +317,41 @@ export default function PatientsPage() {
                             Powrót
                         </Button>
                     </Box>
+
+                    <Dialog
+                        TransitionComponent={Transition}
+                        fullScreen
+                        open={openForm}
+                        onClose={handleFormClose}
+                    >
+                        <AppBar sx={{ position: 'relative' }}>
+                            <Toolbar>
+                                <IconButton
+                                    edge="start"
+                                    color="inherit"
+                                    onClick={handleFormClose}
+                                    aria-label="close"
+                                >
+                                    <CloseIcon />
+                                </IconButton>
+                                <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
+                                    {"Wpisz dane pacjenta"}
+                                </Typography>
+                                <Button autoFocus color="inherit" onClick={handleFormClose}>
+                                    Wróć
+                                </Button>
+                            </Toolbar>
+                        </AppBar>
+                        {selectedRow && PatientForm({ handleFormClose }, { handleFormSubmit }, selectedRow)}
+                    </Dialog>
+
                 </CssBaseline>
             </Container >
         </ThemeProvider >
     );
 }
 
+
+const Transition = React.forwardRef(function Transition(props, ref) {
+    return <Slide direction="up" ref={ref} {...props} />;
+});
