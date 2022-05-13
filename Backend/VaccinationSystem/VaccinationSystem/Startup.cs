@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -11,6 +12,9 @@ using Microsoft.OpenApi;
 using VaccinationSystem.Config;
 using VaccinationSystem.Models;
 using System.IO;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
+using Microsoft.OpenApi.Models;
 
 namespace VaccinationSystem
 {
@@ -35,16 +39,78 @@ namespace VaccinationSystem
                     options.SuppressMapClientErrors = true;
                 });
             //services.AddControllersWithViews();
-            services.AddSwaggerGen(c =>
+
+            services.AddAuthentication("Bearer")
+                .AddJwtBearer("Bearer", options =>
+                {
+                    options.Authority = "https://localhost:6001";
+
+                    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                    {
+                        ValidateAudience = false,
+
+                    };
+                });
+
+            services.AddAuthorization(options =>
             {
-                c.SwaggerDoc("3.0.0",
+                options.AddPolicy("AdminPolicy", policy =>
+                {
+                    policy.RequireAuthenticatedUser();
+                    policy.RequireClaim("scope", "vaccination-system-api");
+                    policy.RequireRole(Role.Admin);
+                });
+                options.AddPolicy("DoctorPolicy", policy =>
+                {
+                    policy.RequireAuthenticatedUser();
+                    policy.RequireClaim("scope", "vaccination-system-api");
+                    policy.RequireRole(Role.Doctor);
+                });
+                options.AddPolicy("PatientPolicy", policy =>
+                {
+                    policy.RequireAuthenticatedUser();
+                    policy.RequireClaim("scope", "vaccination-system-api");
+                    policy.RequireRole(Role.Patient, Role.Doctor);
+                });
+            });
+
+            services.AddSwaggerGen(options =>
+            {
+                options.SwaggerDoc("3.0.0",
                     new Microsoft.OpenApi.Models.OpenApiInfo
                     {
                         Title = "VaccinationSystem",
                         Version = "3.0.0"
                     });
                 var filePath = Path.Combine(System.AppContext.BaseDirectory, "VaccinationSystem.xml");
-                c.IncludeXmlComments(filePath);
+                options.IncludeXmlComments(filePath);
+
+                options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme()
+                {
+                    Name = "Authorization",
+                    Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+                    Description = "JWT Authorization header using the Bearer scheme"
+                });
+                options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            },
+                            In = ParameterLocation.Header,
+                            Name = "Bearer"
+                        },
+                        new string[]{ }
+                    }
+                });
+
             });
 
             services.AddHttpClient();
@@ -71,13 +137,14 @@ namespace VaccinationSystem
              .AllowAnyMethod()
              .AllowAnyHeader());
             app.UseSwagger();
-            app.UseSwaggerUI(c =>
+            app.UseSwaggerUI(options =>
             {
-                c.SwaggerEndpoint("3.0.0/swagger.json", "VaccinationSystem 3.0.0");
+                options.SwaggerEndpoint("3.0.0/swagger.json", "VaccinationSystem 3.0.0");
             });
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
+            app.UseAuthentication();
             app.UseAuthorization();
             app.UseEndpoints(endpoints =>
             {

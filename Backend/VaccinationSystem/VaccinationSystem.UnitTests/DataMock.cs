@@ -3,7 +3,12 @@ using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Net;
+using System.Net.Http;
+using System.Text.Json;
+using System.Threading.Tasks;
+using System.Web.Http;
+using VaccinationSystem.DTO;
 using VaccinationSystem.Models;
 
 namespace VaccinationSystem.UnitTests
@@ -18,6 +23,56 @@ namespace VaccinationSystem.UnitTests
             mockSet.As<IQueryable<T>>().Setup(m => m.ElementType).Returns(data.ElementType);
             mockSet.As<IQueryable<T>>().Setup(m => m.GetEnumerator()).Returns(data.GetEnumerator());
             return mockSet;
+        }
+
+        protected IHttpClientFactory GetMockHttpClientFactory(HttpStatusCode code)
+        {
+            var mockFactory = new Mock<IHttpClientFactory>();
+            var configuration = new HttpConfiguration();
+            var clientHandlerStub = new DelegatingHandlerStub((request, cancellationToken) =>
+            {
+                request.SetConfiguration(configuration);
+                var response = request.CreateResponse(code);
+                return Task.FromResult(response);
+            });
+            var client = new HttpClient(clientHandlerStub);
+            mockFactory.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(client);
+            IHttpClientFactory factory = mockFactory.Object;
+
+            return factory;
+        }
+
+        protected IHttpClientFactory GetMockHttpClientFactoryTokenResponseDTO(HttpStatusCode code)
+        {
+            var mockFactory = new Mock<IHttpClientFactory>();
+            var configuration = new HttpConfiguration();
+            var clientHandlerStub = new DelegatingHandlerStub((request, cancellationToken) =>
+            {
+                request.SetConfiguration(configuration);
+                if (code != HttpStatusCode.OK)
+                {
+                    var response = request.CreateResponse(code);
+                    return Task.FromResult(response);
+                }
+                else
+                {
+                    TokenResponseDTO dto = new TokenResponseDTO()
+                    {
+                        access_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+                    };
+                    var dtoJson = JsonSerializer.Serialize<TokenResponseDTO>(dto);
+
+
+                    var response = request.CreateResponse(code);
+                    response.Content = new StringContent(dtoJson);
+                    return Task.FromResult(response);
+                }
+            });
+            var client = new HttpClient(clientHandlerStub);
+            mockFactory.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(client);
+            IHttpClientFactory factory = mockFactory.Object;
+
+            return factory;
         }
 
         protected IQueryable<Patient> GetPatientsData()
