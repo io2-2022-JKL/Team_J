@@ -51,9 +51,13 @@ export default function AddOrEditVaccine(action, ...props) {
     const [addErrorState, setErrorState] = useState(false);
     const [success, setSuccess] = useState(false);
 
+    const [company, setCompany] = useState('')
+
     React.useEffect(() => {
 
-
+        if (action === "edit") {
+            setCompany(props.company)
+        }
 
         if (maxDBD >= 0 && maxDBD < minDBD) {
             setMinDBDErrorState2(true);
@@ -119,13 +123,13 @@ export default function AddOrEditVaccine(action, ...props) {
             setSuccess(true);
     };
 
-    const [currency, setCurrency] = React.useState('');
+    const [activeOption, setActiveOption] = React.useState('');
 
     const handleChange = (event) => {
-        setCurrency(event.target.value);
+        setActiveOption(event.target.value);
     };
 
-    const currencies = [
+    const activeOptions = [
         {
             value: 'aktywny',
             label: 'aktywny',
@@ -177,22 +181,23 @@ export default function AddOrEditVaccine(action, ...props) {
                     }}
                 >
                     <Typography component="h1" variant="h5">
-                        Wpisz dane nowej szczepionki
+                        Wpisz dane szczepionki
                     </Typography>
                     <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
                         <Grid container spacing={2}>
                             <Grid item xs={12}>
                                 <TextField
+                                    defaultValue={company}
                                     name="company"
                                     required
                                     fullWidth
                                     id="company"
                                     label="Firma"
-                                    autoFocus
                                 />
                             </Grid>
                             <Grid item xs={12}>
                                 <TextField
+                                    defaultValue={action == 'edit' ? props.name : null}
                                     required
                                     fullWidth
                                     id="name"
@@ -288,13 +293,13 @@ export default function AddOrEditVaccine(action, ...props) {
                                     select
                                     label="Aktywny"
                                     name="active"
-                                    value={currency}
+                                    value={activeOption}
                                     onChange={handleChange}
                                     SelectProps={{
                                         native: true,
                                     }}
                                 >
-                                    {currencies.map((option) => (
+                                    {activeOptions.map((option) => (
                                         <option key={option.value} value={option.value}>
                                             {option.label}
                                         </option>
@@ -308,7 +313,7 @@ export default function AddOrEditVaccine(action, ...props) {
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
                         >
-                            Dodaj szczepionkę
+                            Zatwierdź
                         </Button>
                     </Box>
                     <Button

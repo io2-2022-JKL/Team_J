@@ -27,7 +27,7 @@ export default function DataDisplayArray(
             }}
         >
             <DataGrid
-                onCellEditCommit={props.editCell}
+                onRowClick={(dataRow) => props.onRowClick(dataRow.row)}
                 disableColumnFilter
                 autoHeight
                 pageSize={pageSize}

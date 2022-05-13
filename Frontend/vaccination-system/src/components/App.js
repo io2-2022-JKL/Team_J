@@ -36,6 +36,7 @@ function App() {
           <Route exact path='/admin/vaccinationCenters' element={<VaccinationCentersPage />} />
           <Route exact path='/admin/vaccines' element={<VaccinesPage />} />
           <Route exact path='/admin/vaccines/addVaccine' element={<AddOrEditVaccine />} />
+          <Route exact path='/admin/vaccines/editVaccine' element={<AddOrEditVaccine />} />
           <Route exact path='/patient/timeSlots' element={<FilterTimeSlots />} />
           <Route path="" element={<Navigate to="/signin" />} />
         </Routes>

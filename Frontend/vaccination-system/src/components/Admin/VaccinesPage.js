@@ -192,6 +192,14 @@ export default function DoctorsPage() {
         setErrorState(false);
     };
 
+    function handleRowClick(row) {
+        console.log('kliknięto row')
+        navigate('/admin/vaccines/editVaccine', {
+            action: "edit", id: row.id, company: row.company, name: row.name, numberOfDoses: row.numberOfDoses,
+            minDaysBetweenDoses: row.minDaysBetweenDoses, maxDaysBetweenDoses: row.maxDaysBetweenDoses, virusName: row.virus, minPatientAge: row.minPatientAge, maxDaysBetweenDoses: row.maxDaysBetweenDoses
+        })
+    }
+
     function renderError(param) {
         switch (param) {
             case '401':
@@ -325,7 +333,7 @@ export default function DoctorsPage() {
                         </Box>
                         <DataDisplayArray
                             loading={loading}
-                            //editCell={editCell}
+                            onRowClick={handleRowClick}
                             columns={columns}
                             filteredRows={filteredRows}
                         />
