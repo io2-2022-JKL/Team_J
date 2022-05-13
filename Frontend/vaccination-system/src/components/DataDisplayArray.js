@@ -27,7 +27,7 @@ export default function DataDisplayArray(
             }}
         >
             <DataGrid
-                onCellEditCommit={props.editCell}
+                onRowClick={(dataRow) => props.onRowClick(dataRow.row)}
                 disableColumnFilter
                 autoHeight
                 pageSize={pageSize}
@@ -40,6 +40,15 @@ export default function DataDisplayArray(
                 loading={props.loading}
                 columns={props.columns}
                 rows={props.filteredRows}
+                initialState={{
+                    columns: {
+                        columnVisibilityModel: {
+                            // Hide column id, the other columns will remain visible
+                            id: false,
+                        },
+                    },
+                }
+                }
             />
         </Box>
     );

@@ -10,11 +10,11 @@ import VaccinesPage from './Admin/VaccinesPage';
 import PrivateRoute from './PrivateRoute';
 import DoctorMainPage from './Doctor/DoctorMainPage';
 import AddNewDoctor from './Admin/AddDoctor';
-import AddNewVaccine from './Admin/AddVaccine';
 import FilterTimeSlots from './Patient/FIlterTimeSlots';
 import FormerAppointment from './Patient/FormerAppointments';
 import IncomingAppointment from './Patient/IncomingAppointments';
 import Certificate from './Patient/Certificates';
+import AddOrEditVaccine from './Admin/AddOrEditVaccine';
 
 
 function App() {
@@ -35,7 +35,8 @@ function App() {
           <Route exact path='/admin/doctors/addDoctor' element={< AddNewDoctor />} />
           <Route exact path='/admin/vaccinationCenters' element={<VaccinationCentersPage />} />
           <Route exact path='/admin/vaccines' element={<VaccinesPage />} />
-          <Route exact path='/admin/vaccines/addVaccine' element={<AddNewVaccine />} />
+          <Route exact path='/admin/vaccines/addVaccine' element={<AddOrEditVaccine />} />
+          <Route exact path='/admin/vaccines/editVaccine' element={<AddOrEditVaccine />} />
           <Route exact path='/patient/timeSlots' element={<FilterTimeSlots />} />
           <Route path="" element={<Navigate to="/signin" />} />
         </Routes>

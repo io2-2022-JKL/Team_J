@@ -1,4 +1,4 @@
-export class FilteringHelepers {
+export default class FilteringHelepers {
     static filterFirstName(array, filter) {
         return array.filter((item) => item.firstName.includes(filter));
     };
@@ -6,13 +6,13 @@ export class FilteringHelepers {
         return array.filter((item) => item.lastName.includes(filter));
     };
     static filterEmail(array, filter) {
-        return array.filter((item) => item.email.includes(filter));
+        return array.filter((item) => item.mail.includes(filter));
     };
     static filterPhoneNumber(array, filter) {
         return array.filter((item) => item.phoneNumber.includes(filter));
     };
     static filterPESEL(array, filter) {
-        return array.filter((item) => item.PESEL.includes(filter));
+        return array.filter((item) => item.pesel.includes(filter));
     };
     static filterId(array, filter) {
         return array.filter((item) => item.id.includes(filter));
@@ -35,4 +35,48 @@ export class FilteringHelepers {
                 return true;
         });
     }
+    static filterName = (array, filter) => {
+        return array.filter((item) => item.name.includes(filter));
+    };
+    static filterNumberOfDoses = (array, filter) => {
+        return array.filter((item) => {
+            if(filter === '')
+                return true;
+            return item.numberOfDoses == filter;
+        });
+    };
+   static filterMinDaysBetweenDoses = (array, filter) => {
+        return array.filter((item) => {
+            if(filter === '')
+                return true;
+            return item.minDaysBetweenDoses == filter
+        });
+    };
+    static filterMaxDaysBetweenDoses = (array, filter) => {
+        return array.filter((item) => {
+            if(filter === '')
+                return true;
+            return item.maxDaysBetweenDoses == filter
+        });
+    };
+    static filterVirus = (array, filter) => {
+        return array.filter((item) => item.virus.includes(filter));
+    };
+    static filterCompany = (array, filter) => {
+        return array.filter((item) => item.company.includes(filter));
+    };
+    static filterMinPatientAge = (array, filter) => {
+        return array.filter((item) => {
+            if(filter === '')
+                return true;
+            return item.minPatientAge == filter
+        });
+    };
+    static filterMaxPatientAge = (array, filter) => {
+        return array.filter((item) => {
+            if(filter === '')
+                return true;
+            return item.maxPatientAge == filter
+        });
+    };
 }

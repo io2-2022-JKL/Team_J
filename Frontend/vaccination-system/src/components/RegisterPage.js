@@ -1,7 +1,5 @@
 import * as React from 'react';
-import { Fragment } from 'react';
 import { useState } from 'react';
-import validator from 'validator';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -22,6 +20,7 @@ import { blue } from '@mui/material/colors';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import { SYSTEM_SZCZEPIEN_URL } from '../api/Api';
+import ValidationHelpers from '../tools/ValidationHelpers';
 
 const theme = createTheme();
 
@@ -42,121 +41,25 @@ export default function SignUp() {
   const [date, setDate] = useState(null);
   const [registerError, setRegisterError] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [peselError,setPeselError] = useState('');
-  const [peselErrorState,setPeselErrorState] = useState(false);
-  const [firstNameError,setFirstNameError] = useState('');
-  const [firstNameErrorState,setFirstNameErrorState] = useState(false);
-  const [lastNameError,setLastNameError] = useState('');
-  const [lastNameErrorState,setLastNameErrorState] = useState(false);
-  const [dateError,setDateError] = useState(false);
-  const [phoneNumberError,setPhoneNumberError] = useState('');
-  const [phoneNumberErrorState,setPhoneNumberErrorState] = useState('');
+  const [peselError, setPeselError] = useState('');
+  const [peselErrorState, setPeselErrorState] = useState(false);
+  const [firstNameError, setFirstNameError] = useState('');
+  const [firstNameErrorState, setFirstNameErrorState] = useState(false);
+  const [lastNameError, setLastNameError] = useState('');
+  const [lastNameErrorState, setLastNameErrorState] = useState(false);
+  const [phoneNumberError, setPhoneNumberError] = useState('');
+  const [phoneNumberErrorState, setPhoneNumberErrorState] = useState('');
 
   const navigate = useNavigate();
 
-  const validateEmail = (e) => {
-    var email = e.target.value
-
-    if (validator.isEmail(email)) {
-      setEmailError('')
-      setEmailErrorState(false)
-    } else {
-      setEmailError('Wprowadź poprawny adres email!')
-      setEmailErrorState(true)
-    }
-  }
-  const validatePESEL = (e) => {
-    var pesel = e.target.value;
-    if(pesel.length === 11 && validator.isNumeric(pesel))
-    {
-      setPeselError('')
-      setPeselErrorState(false)
-    }
-    else
-    {
-      setPeselError('Wprowadź poprawny PESEL!')
-      setPeselErrorState(true)
-    }
-  }
-  const validateFirstName = (e) => {
-    var name = e.target.value;
-    const substrings = ['!','@','#','$','%','^','&','*','(',')','_','+','=','[','{',']','}',';',':','"','\\','|','<','>',',','.','/']
-    if(name.length > 0 && !substrings.some(c => name.includes(c)))
-    {
-      setFirstNameError('')
-      setFirstNameErrorState(false)
-    }
-    else
-    {
-      setFirstNameError('Imię nie może zawierać symboli !@#$%^&*()_+=[{]};:"\|<>,./ i musi mieć przynajmniej jeden znak!')
-      setFirstNameErrorState(true)
-    }
-  }
-  const validateLastName = (e) => {
-    var name = e.target.value;
-    const substrings = ['!','@','#','$','%','^','&','*','(',')','_','+','=','[','{',']','}',';',':','"','\\','|','<','>',',','.','/']
-    if(name.length > 0 && !substrings.some(c => name.includes(c)))
-    {
-      setLastNameError('')
-      setLastNameErrorState(false)
-    }
-    else
-    {
-      setLastNameError('Nazwisko nie może zawierać symboli !@#$%^&*()_+=[{]};:"|<>,./\\ i musi mieć przynajmniej jeden znak!')
-      setLastNameErrorState(true)
-    }
-  }
-  const validatePassword1 = (e) => {
-    var password1 = e.target.value;
-    setPassword(password1)
-    setPassword2('')
-    if (password1.length > 0) {
-      setPassword1Error('')
-      setPassword1ErrorState(false)
-    }
-    else {
-      setPassword1Error('Hasło musi mieć co najmniej 1 znak')
-      setPassword1ErrorState(true)
-    }
-  }
-  const validatePassword2 = (e) => {
-    var password2 = e.target.value;
-    setPassword2(password2);
-    if (validator.equals(password2, password)) {
-      setPassword2Error('')
-      setPassword2ErrorState(false)
-    }
-    else {
-      setPassword2Error('Hasła się nie pokrywają ze sobą')
-      setPassword2ErrorState(true)
-    }
-  }
-  
-  const validatePhoneNumber = (e) => {
-    var number = e.target.value;
-    var phoneNumberWithoutSpaces = number.replace(/ /g,"");
-    var regEx = /^[+]?[0-9]*$/
-    if(number.length > 0 && phoneNumberWithoutSpaces.length <= 15 && regEx.test(phoneNumberWithoutSpaces))
-    {
-      setPhoneNumberError('');
-      setPhoneNumberErrorState(false);
-    }
-    else
-    {
-      setPhoneNumberError('Niepoprawny numer telefonu!');
-      setPhoneNumberErrorState(true);
-    }
-  }
-  
   const signInUser = async (pesel, firstName, lastName, mail, dateOfBirth, password, phoneNumber) => {
     // request i response
     if (emailErrorState) return;
     if (password2ErrorState) return;
     if (password1ErrorState) return;
     if (peselErrorState) return;
-    if(firstNameErrorState) return;
-    if(lastNameErrorState) return;
-    if(dateError) return;
+    if (firstNameErrorState) return;
+    if (lastNameErrorState) return;
 
     setLoading(true);
     try {
@@ -207,7 +110,7 @@ export default function SignUp() {
 
     setRegisterError(false);
   };
-  
+
   return (
     <ThemeProvider theme={theme}>
       <Container component="main" maxWidth="xs">
@@ -236,9 +139,9 @@ export default function SignUp() {
                   id="PESEL"
                   label="PESEL"
                   autoFocus
-                  onChange={(e) => validatePESEL(e)}
-                  helperText = {peselError}
-                  error = {peselErrorState}
+                  onChange={(e) => ValidationHelpers.validatePESEL(e, setPeselError, setPeselErrorState)}
+                  helperText={peselError}
+                  error={peselErrorState}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -250,9 +153,9 @@ export default function SignUp() {
                   id="firstName"
                   label="Imię"
                   autoFocus
-                  onChange={(e) => validateFirstName(e)}
-                  helperText = {firstNameError}
-                  error = {firstNameErrorState}
+                  onChange={(e) => ValidationHelpers.validateFirstName(e, setFirstNameError, setFirstNameErrorState)}
+                  helperText={firstNameError}
+                  error={firstNameErrorState}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -263,9 +166,9 @@ export default function SignUp() {
                   label="Nazwisko"
                   name="lastName"
                   autoComplete="family-name"
-                  onChange={(e) => validateLastName(e)}
-                  helperText = {lastNameError}
-                  error = {lastNameErrorState}
+                  onChange={(e) => ValidationHelpers.validateLastName(e, setLastNameError, setLastNameErrorState)}
+                  helperText={lastNameError}
+                  error={lastNameErrorState}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -278,7 +181,7 @@ export default function SignUp() {
                   name="mail"
                   autoComplete="email"
                   type="email"
-                  onChange={(e) => validateEmail(e)}
+                  onChange={(e) => ValidationHelpers.validateEmail(e, setEmailError, setEmailErrorState)}
                   helperText={emailError}
                 />
               </Grid>
@@ -292,7 +195,10 @@ export default function SignUp() {
                   type="password"
                   id="password"
                   autoComplete="new-password"
-                  onChange={(e) => validatePassword1(e)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    ValidationHelpers.validatePassword(e, setPassword1Error, setPassword1ErrorState)
+                  }}
                   helperText={password1Error}
                 />
               </Grid>
@@ -305,10 +211,13 @@ export default function SignUp() {
                   label="Wprowadź ponownie hasło"
                   type="password"
                   id="password2"
-                  onChange={(e) => validatePassword2(e)}
+                  onChange={(e) => {
+                    setPassword2(e.target.value);
+                    ValidationHelpers.validateRepeatPassword(e, setPassword2Error, setPassword2ErrorState, password)
+                  }}
                   helperText={password2Error}
-                  disabled = {password1ErrorState || password.length === 0}
-                  value = {password2}
+                  disabled={password1ErrorState || password.length === 0}
+                  value={password2}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -319,19 +228,19 @@ export default function SignUp() {
                     inputFormat="dd-MM-yyyy"
                     mask="__-__-____"
                     value={date}
-                    minDate = {new Date("01/01/1900")}
-                    maxDate = {new Date()}
+                    minDate={new Date("01/01/1900")}
+                    maxDate={new Date()}
                     onChange={(newDate) => {
                       setDate(newDate);
                     }}
-                    onError={()=>{setDateError(true)}}
+                    //onError={()=>{setDateError(true)}}
                     renderInput={(params) => <TextField
                       {...params}
                       fullWidth
                       id='dateOfBirth'
                       name='dateOfBirth'
-                      onBlur={() => {setDateError(false)}}
-                      helperText = {dateError?"Błędna data":""}    
+                    //onBlur={() => {setDateError(false)}}
+                    //helperText = {dateError?"Błędna data":""}    
                     />}
                   />
                 </LocalizationProvider>
@@ -345,7 +254,7 @@ export default function SignUp() {
                   label="Numer telefonu"
                   autoFocus
                   //type="tel"
-                  onChange={(e) => validatePhoneNumber(e)}
+                  onChange={(e) => ValidationHelpers.validatePhoneNumber(e, setPhoneNumberError, setPhoneNumberErrorState)}
                   helperText={phoneNumberError}
                   error={phoneNumberErrorState}
                 />
@@ -365,8 +274,8 @@ export default function SignUp() {
                 size={24}
                 sx={{
                   color: blue,
-                  position:'relative',
-                  alignSelf: 'center',                  
+                  position: 'relative',
+                  alignSelf: 'center',
                   left: '50%',
                 }}
               />
