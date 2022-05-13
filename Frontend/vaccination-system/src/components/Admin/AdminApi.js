@@ -74,7 +74,7 @@ export async function addVaccine(company, name, numberOfDoses, minDaysBetweenDos
                 virus: virus,
                 minPatientAge: minPatientAge,
                 maxPatientAge: maxPatientAge,
-                active: active === 'tak' ? true : false
+                active: active === 'aktywny' ? true : false
             },
             timeout: 2000
         });
@@ -90,6 +90,35 @@ export async function addVaccine(company, name, numberOfDoses, minDaysBetweenDos
     }
 }
 
-export async function editVaccine(id, company, name, numberOfDoses, minDaysBetweenDoses, maxDaysBetweenDoses, virus, minPatientAge, maxPatientAge, active) {
+export async function editVaccine(company, name, numberOfDoses, minDaysBetweenDoses, maxDaysBetweenDoses, virus, minPatientAge, maxPatientAge, active) {
+    let response;
+    let err = '200';
+    try {
+        response = await axios({
+            method: 'post',
+            url: SYSTEM_SZCZEPIEN_URL + '/admin/vaccines/editVaccine',
+            data:
+            {
+                company: company,
+                name: name,
+                numberOfDoses: numberOfDoses,
+                minDaysBetweenDoses: minDaysBetweenDoses,
+                maxDaysBetweenDoses: maxDaysBetweenDoses,
+                virus: virus,
+                minPatientAge: minPatientAge,
+                maxPatientAge: maxPatientAge,
+                active: active === 'aktywny' ? true : false
+            },
+            timeout: 2000
+        });
+        console.log(response)
+        return err;
 
+    } catch (error) {
+        console.error(error.message);
+        console.error(error.code);
+        if (response == null)
+            return error.code;
+        return error.response.status.toString();
+    }
 }

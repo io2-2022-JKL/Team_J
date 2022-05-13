@@ -194,10 +194,23 @@ export default function DoctorsPage() {
 
     function handleRowClick(row) {
         console.log('kliknięto row')
-        navigate('/admin/vaccines/editVaccine', {
-            action: "edit", id: row.id, company: row.company, name: row.name, numberOfDoses: row.numberOfDoses,
-            minDaysBetweenDoses: row.minDaysBetweenDoses, maxDaysBetweenDoses: row.maxDaysBetweenDoses, virusName: row.virus, minPatientAge: row.minPatientAge, maxDaysBetweenDoses: row.maxDaysBetweenDoses
+        console.log({
+            action: "edit", 
+            id: row.id, 
+            company: row.company, 
+            name: row.name, 
+            numberOfDoses: row.numberOfDoses,
+            minDaysBetweenDoses: row.minDaysBetweenDoses, 
+            maxDaysBetweenDoses: row.maxDaysBetweenDoses, 
+            virusName: row.virus, 
+            minPatientAge: row.minPatientAge, 
+            maxPatientAge: row.maxPatientAge,
+            active: row.active
         })
+        navigate('/admin/vaccines/editVaccine', {state: {
+            action: "edit", id: row.id, company: row.company, name: row.name, numberOfDoses: row.numberOfDoses,
+            minDaysBetweenDoses: row.minDaysBetweenDoses, maxDaysBetweenDoses: row.maxDaysBetweenDoses, virusName: row.virus, minPatientAge: row.minPatientAge, maxPatientAge: row.maxPatientAge, active: row.active
+        }})
     }
 
     function renderError(param) {

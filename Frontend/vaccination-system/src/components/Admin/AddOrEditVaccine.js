@@ -1,21 +1,19 @@
 import * as React from 'react';
 import { useState } from 'react';
-import validator from 'validator';
-import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { Link, useNavigate } from "react-router-dom";
-import { addVaccine } from './AdminApi';
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { addVaccine, editVaccine } from './AdminApi';
 import ValidationHelpers from '../../tools/ValidationHelpers';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
+import Snackbars from '../../tools/Snackbars';
 
 const theme = createTheme();
 
@@ -23,7 +21,7 @@ const Alert = React.forwardRef(function Alert(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
-export default function AddOrEditVaccine(action, ...props) {
+export default function AddOrEditVaccine(action) {
     const navigate = useNavigate();
     const [nODErrorState, setNODErrorState] = useState(false);
     const [nODError, setNODError] = useState('');
@@ -50,15 +48,9 @@ export default function AddOrEditVaccine(action, ...props) {
     const [addError, setError] = useState('');
     const [addErrorState, setErrorState] = useState(false);
     const [success, setSuccess] = useState(false);
-
-    const [company, setCompany] = useState('')
+    const location = useLocation();
 
     React.useEffect(() => {
-
-        if (action === "edit") {
-            setCompany(props.company)
-        }
-
         if (maxDBD >= 0 && maxDBD < minDBD) {
             setMinDBDErrorState2(true);
             setMaxDBDErrorState2(true);
@@ -88,8 +80,12 @@ export default function AddOrEditVaccine(action, ...props) {
     }, [minDBD, maxDBD, minPA, maxPA]);
 
     const handleSubmit = async (event) => {
-        if (minPAErrorState || minPAErrorState2 || minDBDErrorState || minDBDErrorState2 || maxPAErrorState || maxPAErrorState2 || maxDBDErrorState || maxDBDErrorState2 || nODErrorState)
+        if (minPAErrorState || minPAErrorState2 || minDBDErrorState || minDBDErrorState2 || maxPAErrorState || maxPAErrorState2 || maxDBDErrorState || maxDBDErrorState2 || nODErrorState) {
+            setError("Błąd walidacji pól")
+            setErrorState(true)
             return
+        }
+
         event.preventDefault();
         const data = new FormData(event.currentTarget);
         console.log({
@@ -110,9 +106,9 @@ export default function AddOrEditVaccine(action, ...props) {
                 Number.parseInt(data.get('minDaysBetweenDoses')), Number.parseInt(data.get('maxDaysBetweenDoses')),
                 data.get('virus'), Number.parseInt(data.get('minPatientAge')), Number.parseInt(data.get('maxPatientAge')),
                 data.get('active'));
-        else if (error === "edit")
+        else if (action === "edit")
             //editVaccine    
-            error = await addVaccine(data.get('company'), data.get('name'), Number.parseInt(data.get('numberOfDoses')),
+            error = await editVaccine(data.get('company'), data.get('name'), Number.parseInt(data.get('numberOfDoses')),
                 Number.parseInt(data.get('minDaysBetweenDoses')), Number.parseInt(data.get('maxDaysBetweenDoses')),
                 data.get('virus'), Number.parseInt(data.get('minPatientAge')), Number.parseInt(data.get('maxPatientAge')),
                 data.get('active'));
@@ -123,7 +119,7 @@ export default function AddOrEditVaccine(action, ...props) {
             setSuccess(true);
     };
 
-    const [activeOption, setActiveOption] = React.useState('');
+    const [activeOption, setActiveOption] = React.useState(location.state != null ? location.state.active ? 'aktywny' : 'nieaktywny' : '');
 
     const handleChange = (event) => {
         setActiveOption(event.target.value);
@@ -187,7 +183,7 @@ export default function AddOrEditVaccine(action, ...props) {
                         <Grid container spacing={2}>
                             <Grid item xs={12}>
                                 <TextField
-                                    defaultValue={company}
+                                    defaultValue={location.state != null ? location.state.action == "edit" ? location.state.company : null : null}
                                     name="company"
                                     required
                                     fullWidth
@@ -197,7 +193,7 @@ export default function AddOrEditVaccine(action, ...props) {
                             </Grid>
                             <Grid item xs={12}>
                                 <TextField
-                                    defaultValue={action == 'edit' ? props.name : null}
+                                    defaultValue={location.state != null ? location.state.action == "edit" ? location.state.name : null : null}
                                     required
                                     fullWidth
                                     id="name"
@@ -207,6 +203,7 @@ export default function AddOrEditVaccine(action, ...props) {
                             </Grid>
                             <Grid item xs={12}>
                                 <TextField
+                                    defaultValue={location.state != null ? location.state.action == "edit" ? location.state.numberOfDoses : null : null}
                                     required
                                     fullWidth
                                     id="numberOfDoses"
@@ -219,6 +216,7 @@ export default function AddOrEditVaccine(action, ...props) {
                             </Grid>
                             <Grid item xs={12}>
                                 <TextField
+                                    defaultValue={location.state != null ? location.state.action == "edit" ? location.state.minDaysBetweenDoses : null : null}
                                     required
                                     fullWidth
                                     name="minDaysBetweenDoses"
@@ -234,6 +232,7 @@ export default function AddOrEditVaccine(action, ...props) {
                             </Grid>
                             <Grid item xs={12}>
                                 <TextField
+                                    defaultValue={location.state != null ? location.state.action == "edit" ? location.state.maxDaysBetweenDoses : null : null}
                                     required
                                     fullWidth
                                     name="maxDaysBetweenDoses"
@@ -249,6 +248,7 @@ export default function AddOrEditVaccine(action, ...props) {
                             </Grid>
                             <Grid item xs={12}>
                                 <TextField
+                                    defaultValue={location.state != null ? location.state.action == "edit" ? location.state.virusName : null : null}
                                     name="virus"
                                     required
                                     fullWidth
@@ -258,6 +258,7 @@ export default function AddOrEditVaccine(action, ...props) {
                             </Grid>
                             <Grid item xs={12}>
                                 <TextField
+                                    defaultValue={location.state != null ? location.state.action == "edit" ? location.state.minPatientAge : null : null}
                                     required
                                     fullWidth
                                     name="minPatientAge"
@@ -273,6 +274,7 @@ export default function AddOrEditVaccine(action, ...props) {
                             </Grid>
                             <Grid item xs={12}>
                                 <TextField
+                                    defaultValue={location.state != null ? location.state.action == "edit" ? location.state.maxPatientAge : null : null}
                                     required
                                     fullWidth
                                     name="maxPatientAge"
@@ -338,5 +340,6 @@ export default function AddOrEditVaccine(action, ...props) {
                 </Box>
             </Container>
         </ThemeProvider>
+
     )
 }
