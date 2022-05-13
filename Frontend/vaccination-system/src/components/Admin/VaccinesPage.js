@@ -115,12 +115,12 @@ export default function DoctorsPage() {
             ],
         },
     ];
-    
+
     const [rows, setRows] = React.useState([]);
     const [filteredRows, setFilteredRows] = React.useState(rows);
-    const [loading,setLoading] = React.useState(false);
-    const [error,setError] = React.useState('');
-    const [errorState,setErrorState] = React.useState(false);
+    const [loading, setLoading] = React.useState(false);
+    const [error, setError] = React.useState('');
+    const [errorState, setErrorState] = React.useState(false);
 
     React.useEffect(() => {
         const fetchData = async () => {
@@ -161,8 +161,8 @@ export default function DoctorsPage() {
         result = FilteringHelepers.filterMinDaysBetweenDoses(result, data.get('minDaysBetweenDosesFilter'));
         result = FilteringHelepers.filterMaxDaysBetweenDoses(result, data.get('maxDaysBetweenDosesFilter'));
         result = FilteringHelepers.filterVirus(result, data.get('virusFilter'));
-        result = FilteringHelepers.filterMinPatientAge(result,data.get('minPatientAgeFilter'));
-        result = FilteringHelepers.filterMaxPatientAge(result,data.get('maxPatientAgeFilter'));
+        result = FilteringHelepers.filterMinPatientAge(result, data.get('minPatientAgeFilter'));
+        result = FilteringHelepers.filterMaxPatientAge(result, data.get('maxPatientAgeFilter'));
         setFilteredRows(result);
     };
     const [currency, setCurrency] = React.useState('');
@@ -299,7 +299,7 @@ export default function DoctorsPage() {
                                     />
                                 </Grid>
                                 <Grid item >
-                                <TextField
+                                    <TextField
                                         fullWidth
                                         id="activeFilter"
                                         select
@@ -319,7 +319,7 @@ export default function DoctorsPage() {
                                     </TextField>
                                 </Grid>
                             </Grid>
-                            <Button variant='outlined' onClick={() => { navigate("/admin/vaccines/addVaccine") }}>
+                            <Button variant='outlined' onClick={() => { navigate("/admin/vaccines/addVaccine", { action: "add" }) }}>
                                 Dodaj nową szczepionkę
                             </Button>
                         </Box>

@@ -23,7 +23,7 @@ const Alert = React.forwardRef(function Alert(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
-export default function AddNewVaccine() {
+export default function AddOrEditVaccine(action, ...props) {
     const navigate = useNavigate();
     const [nODErrorState, setNODErrorState] = useState(false);
     const [nODError, setNODError] = useState('');
@@ -47,13 +47,15 @@ export default function AddNewVaccine() {
     const [maxDBD, setMaxDBD] = useState(0);
     const [minPA, setMinPA] = useState(0);
     const [maxPA, setMaxPA] = useState(0);
-    const [addError, setAddError] = useState('');
-    const [addErrorState, setAddErrorState] = useState(false);
-    const [success,setSuccess] = useState(false);
+    const [addError, setError] = useState('');
+    const [addErrorState, setErrorState] = useState(false);
+    const [success, setSuccess] = useState(false);
 
     React.useEffect(() => {
 
-        if (maxDBD>=0 && maxDBD < minDBD) {
+
+
+        if (maxDBD >= 0 && maxDBD < minDBD) {
             setMinDBDErrorState2(true);
             setMaxDBDErrorState2(true);
             setMaxDBDError2("Wartość maksymalna jest mniejsza od minimalnej!");
@@ -66,7 +68,7 @@ export default function AddNewVaccine() {
             setMinDBDError2("");
         }
 
-        if (maxPA>=0 && maxPA < minPA) {
+        if (maxPA >= 0 && maxPA < minPA) {
             setMinPAErrorState2(true);
             setMaxPAErrorState2(true);
             setMaxPAError2("Wartość maksymalna jest mniejsza od minimalnej!");
@@ -97,13 +99,22 @@ export default function AddNewVaccine() {
             maxPA: Number.parseInt(data.get('maxPatientAge')),
             active: data.get('active')
         });
-        let error = await addVaccine(data.get('company'), data.get('name'), Number.parseInt(data.get('numberOfDoses')),
-            Number.parseInt(data.get('minDaysBetweenDoses')), Number.parseInt(data.get('maxDaysBetweenDoses')),
-            data.get('virus'), Number.parseInt(data.get('minPatientAge')), Number.parseInt(data.get('maxPatientAge')),
-            data.get('active'));
-        setAddError(error);
-        if(error!='200')
-            setAddErrorState(true);
+
+        let error;
+        if (action === "add")
+            error = await addVaccine(data.get('company'), data.get('name'), Number.parseInt(data.get('numberOfDoses')),
+                Number.parseInt(data.get('minDaysBetweenDoses')), Number.parseInt(data.get('maxDaysBetweenDoses')),
+                data.get('virus'), Number.parseInt(data.get('minPatientAge')), Number.parseInt(data.get('maxPatientAge')),
+                data.get('active'));
+        else if (error === "edit")
+            //editVaccine    
+            error = await addVaccine(data.get('company'), data.get('name'), Number.parseInt(data.get('numberOfDoses')),
+                Number.parseInt(data.get('minDaysBetweenDoses')), Number.parseInt(data.get('maxDaysBetweenDoses')),
+                data.get('virus'), Number.parseInt(data.get('minPatientAge')), Number.parseInt(data.get('maxPatientAge')),
+                data.get('active'));
+        setError(error);
+        if (error != '200')
+            setErrorState(true);
         else
             setSuccess(true);
     };
@@ -129,7 +140,7 @@ export default function AddNewVaccine() {
         if (reason === 'clickaway') {
             return;
         }
-        setAddErrorState(false);
+        setErrorState(false);
     };
 
     const handleClose2 = (event, reason) => {
