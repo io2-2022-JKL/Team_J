@@ -17,9 +17,9 @@ export async function getPatientsData() {
 
     } catch (error) {
         console.error(error.message);
-        if(response!=null)
+        if (response != null)
             return [response, error.response.status.toString()];
-        return [response,error.code];
+        return [response, error.code];
     }
 }
 
@@ -52,13 +52,12 @@ export async function getVaccinesData() {
 
     } catch (error) {
         console.error(error.message);
-        if(response!=null)
+        if (response != null)
             return [response, error.response.status.toString()];
-        return [response,error.code];
+        return [response, error.code];
     }
 }
-export async function addVaccine(company,name,numberOfDoses,minDaysBetweenDoses,maxDaysBetweenDoses,virus,minPatientAge,maxPatientAge,active)
-{
+export async function addVaccine(company, name, numberOfDoses, minDaysBetweenDoses, maxDaysBetweenDoses, virus, minPatientAge, maxPatientAge, active) {
     let response;
     let err = '200';
     try {
@@ -75,7 +74,7 @@ export async function addVaccine(company,name,numberOfDoses,minDaysBetweenDoses,
                 virus: virus,
                 minPatientAge: minPatientAge,
                 maxPatientAge: maxPatientAge,
-                active: active === 'tak'?true:false
+                active: active === 'aktywny' ? true : false
             },
             timeout: 2000
         });
@@ -85,40 +84,41 @@ export async function addVaccine(company,name,numberOfDoses,minDaysBetweenDoses,
     } catch (error) {
         console.error(error.message);
         console.error(error.code);
-        if(response==null)
+        if (response == null)
             return error.code;
         return error.response.status.toString();
     }
 }
-export function getRandomPatientData() {
 
-    return [createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()]
-}
+export async function editVaccine(company, name, numberOfDoses, minDaysBetweenDoses, maxDaysBetweenDoses, virus, minPatientAge, maxPatientAge, active) {
+    let response;
+    let err = '200';
+    try {
+        response = await axios({
+            method: 'post',
+            url: SYSTEM_SZCZEPIEN_URL + '/admin/vaccines/editVaccine',
+            data:
+            {
+                company: company,
+                name: name,
+                numberOfDoses: numberOfDoses,
+                minDaysBetweenDoses: minDaysBetweenDoses,
+                maxDaysBetweenDoses: maxDaysBetweenDoses,
+                virus: virus,
+                minPatientAge: minPatientAge,
+                maxPatientAge: maxPatientAge,
+                active: active === 'aktywny' ? true : false
+            },
+            timeout: 2000
+        });
+        console.log(response)
+        return err;
 
-const createRandomRow = () => {
-    return {
-        id: randomId(),
-        PESEL: randomInt(10000000000, 100000000000).toString(),
-        firstName: randomTraderName().split(' ')[0],
-        lastName: randomTraderName().split(' ')[1],
-        email: randomEmail(),
-        dateOfBirth: dateFormat(randomDate(new Date(50, 1), new Date("1/1/30")), "isoDate").toString(),
-        phoneNumber: randomPhoneNumber(),
-        active: randomBoolean()
+    } catch (error) {
+        console.error(error.message);
+        console.error(error.code);
+        if (response == null)
+            return error.code;
+        return error.response.status.toString();
     }
-};
+}

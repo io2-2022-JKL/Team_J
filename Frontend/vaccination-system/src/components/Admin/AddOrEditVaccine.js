@@ -1,21 +1,19 @@
 import * as React from 'react';
 import { useState } from 'react';
-import validator from 'validator';
-import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { Link, useNavigate } from "react-router-dom";
-import { addVaccine } from './AdminApi';
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { addVaccine, editVaccine } from './AdminApi';
 import ValidationHelpers from '../../tools/ValidationHelpers';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
+import Snackbars from '../../tools/Snackbars';
 
 const theme = createTheme();
 
@@ -23,7 +21,7 @@ const Alert = React.forwardRef(function Alert(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
-export default function AddNewVaccine() {
+export default function AddOrEditVaccine(action) {
     const navigate = useNavigate();
     const [nODErrorState, setNODErrorState] = useState(false);
     const [nODError, setNODError] = useState('');
@@ -47,13 +45,13 @@ export default function AddNewVaccine() {
     const [maxDBD, setMaxDBD] = useState(0);
     const [minPA, setMinPA] = useState(0);
     const [maxPA, setMaxPA] = useState(0);
-    const [addError, setAddError] = useState('');
-    const [addErrorState, setAddErrorState] = useState(false);
-    const [success,setSuccess] = useState(false);
+    const [addError, setError] = useState('');
+    const [addErrorState, setErrorState] = useState(false);
+    const [success, setSuccess] = useState(false);
+    const location = useLocation();
 
     React.useEffect(() => {
-
-        if (maxDBD>=0 && maxDBD < minDBD) {
+        if (maxDBD >= 0 && maxDBD < minDBD) {
             setMinDBDErrorState2(true);
             setMaxDBDErrorState2(true);
             setMaxDBDError2("Wartość maksymalna jest mniejsza od minimalnej!");
@@ -66,7 +64,7 @@ export default function AddNewVaccine() {
             setMinDBDError2("");
         }
 
-        if (maxPA>=0 && maxPA < minPA) {
+        if (maxPA >= 0 && maxPA < minPA) {
             setMinPAErrorState2(true);
             setMaxPAErrorState2(true);
             setMaxPAError2("Wartość maksymalna jest mniejsza od minimalnej!");
@@ -82,8 +80,12 @@ export default function AddNewVaccine() {
     }, [minDBD, maxDBD, minPA, maxPA]);
 
     const handleSubmit = async (event) => {
-        if (minPAErrorState || minPAErrorState2 || minDBDErrorState || minDBDErrorState2 || maxPAErrorState || maxPAErrorState2 || maxDBDErrorState || maxDBDErrorState2 || nODErrorState)
+        if (minPAErrorState || minPAErrorState2 || minDBDErrorState || minDBDErrorState2 || maxPAErrorState || maxPAErrorState2 || maxDBDErrorState || maxDBDErrorState2 || nODErrorState) {
+            setError("Błąd walidacji pól")
+            setErrorState(true)
             return
+        }
+
         event.preventDefault();
         const data = new FormData(event.currentTarget);
         console.log({
@@ -97,24 +99,33 @@ export default function AddNewVaccine() {
             maxPA: Number.parseInt(data.get('maxPatientAge')),
             active: data.get('active')
         });
-        let error = await addVaccine(data.get('company'), data.get('name'), Number.parseInt(data.get('numberOfDoses')),
-            Number.parseInt(data.get('minDaysBetweenDoses')), Number.parseInt(data.get('maxDaysBetweenDoses')),
-            data.get('virus'), Number.parseInt(data.get('minPatientAge')), Number.parseInt(data.get('maxPatientAge')),
-            data.get('active'));
-        setAddError(error);
-        if(error!='200')
-            setAddErrorState(true);
+
+        let error;
+        if (action === "add")
+            error = await addVaccine(data.get('company'), data.get('name'), Number.parseInt(data.get('numberOfDoses')),
+                Number.parseInt(data.get('minDaysBetweenDoses')), Number.parseInt(data.get('maxDaysBetweenDoses')),
+                data.get('virus'), Number.parseInt(data.get('minPatientAge')), Number.parseInt(data.get('maxPatientAge')),
+                data.get('active'));
+        else if (action === "edit")
+            //editVaccine    
+            error = await editVaccine(data.get('company'), data.get('name'), Number.parseInt(data.get('numberOfDoses')),
+                Number.parseInt(data.get('minDaysBetweenDoses')), Number.parseInt(data.get('maxDaysBetweenDoses')),
+                data.get('virus'), Number.parseInt(data.get('minPatientAge')), Number.parseInt(data.get('maxPatientAge')),
+                data.get('active'));
+        setError(error);
+        if (error != '200')
+            setErrorState(true);
         else
             setSuccess(true);
     };
 
-    const [currency, setCurrency] = React.useState('');
+    const [activeOption, setActiveOption] = React.useState(location.state != null ? location.state.active ? 'aktywny' : 'nieaktywny' : '');
 
     const handleChange = (event) => {
-        setCurrency(event.target.value);
+        setActiveOption(event.target.value);
     };
 
-    const currencies = [
+    const activeOptions = [
         {
             value: 'aktywny',
             label: 'aktywny',
@@ -129,7 +140,7 @@ export default function AddNewVaccine() {
         if (reason === 'clickaway') {
             return;
         }
-        setAddErrorState(false);
+        setErrorState(false);
     };
 
     const handleClose2 = (event, reason) => {
@@ -166,22 +177,23 @@ export default function AddNewVaccine() {
                     }}
                 >
                     <Typography component="h1" variant="h5">
-                        Wpisz dane nowej szczepionki
+                        Wpisz dane szczepionki
                     </Typography>
                     <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
                         <Grid container spacing={2}>
                             <Grid item xs={12}>
                                 <TextField
+                                    defaultValue={location.state != null ? location.state.action == "edit" ? location.state.company : null : null}
                                     name="company"
                                     required
                                     fullWidth
                                     id="company"
                                     label="Firma"
-                                    autoFocus
                                 />
                             </Grid>
                             <Grid item xs={12}>
                                 <TextField
+                                    defaultValue={location.state != null ? location.state.action == "edit" ? location.state.name : null : null}
                                     required
                                     fullWidth
                                     id="name"
@@ -191,6 +203,7 @@ export default function AddNewVaccine() {
                             </Grid>
                             <Grid item xs={12}>
                                 <TextField
+                                    defaultValue={location.state != null ? location.state.action == "edit" ? location.state.numberOfDoses : null : null}
                                     required
                                     fullWidth
                                     id="numberOfDoses"
@@ -203,6 +216,7 @@ export default function AddNewVaccine() {
                             </Grid>
                             <Grid item xs={12}>
                                 <TextField
+                                    defaultValue={location.state != null ? location.state.action == "edit" ? location.state.minDaysBetweenDoses : null : null}
                                     required
                                     fullWidth
                                     name="minDaysBetweenDoses"
@@ -218,6 +232,7 @@ export default function AddNewVaccine() {
                             </Grid>
                             <Grid item xs={12}>
                                 <TextField
+                                    defaultValue={location.state != null ? location.state.action == "edit" ? location.state.maxDaysBetweenDoses : null : null}
                                     required
                                     fullWidth
                                     name="maxDaysBetweenDoses"
@@ -233,6 +248,7 @@ export default function AddNewVaccine() {
                             </Grid>
                             <Grid item xs={12}>
                                 <TextField
+                                    defaultValue={location.state != null ? location.state.action == "edit" ? location.state.virusName : null : null}
                                     name="virus"
                                     required
                                     fullWidth
@@ -242,6 +258,7 @@ export default function AddNewVaccine() {
                             </Grid>
                             <Grid item xs={12}>
                                 <TextField
+                                    defaultValue={location.state != null ? location.state.action == "edit" ? location.state.minPatientAge : null : null}
                                     required
                                     fullWidth
                                     name="minPatientAge"
@@ -257,6 +274,7 @@ export default function AddNewVaccine() {
                             </Grid>
                             <Grid item xs={12}>
                                 <TextField
+                                    defaultValue={location.state != null ? location.state.action == "edit" ? location.state.maxPatientAge : null : null}
                                     required
                                     fullWidth
                                     name="maxPatientAge"
@@ -277,13 +295,13 @@ export default function AddNewVaccine() {
                                     select
                                     label="Aktywny"
                                     name="active"
-                                    value={currency}
+                                    value={activeOption}
                                     onChange={handleChange}
                                     SelectProps={{
                                         native: true,
                                     }}
                                 >
-                                    {currencies.map((option) => (
+                                    {activeOptions.map((option) => (
                                         <option key={option.value} value={option.value}>
                                             {option.label}
                                         </option>
@@ -297,7 +315,7 @@ export default function AddNewVaccine() {
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
                         >
-                            Dodaj szczepionkę
+                            Zatwierdź
                         </Button>
                     </Box>
                     <Button
@@ -322,5 +340,6 @@ export default function AddNewVaccine() {
                 </Box>
             </Container>
         </ThemeProvider>
+
     )
 }
