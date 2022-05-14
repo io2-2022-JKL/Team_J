@@ -12,9 +12,14 @@ using VaccinationSystem.Config;
 using VaccinationSystem.Models;
 using System.Diagnostics;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
+using System.Net.Http;
+using System.IO;
+using System.Net.Http.Headers;
 
 namespace VaccinationSystem.Controllers
 {
+    [Authorize(Policy = "AdminPolicy")]
     [ApiController]
     [Route("admin")]
     public class AdminController : ControllerBase
@@ -23,10 +28,13 @@ namespace VaccinationSystem.Controllers
         private readonly string _dateFormat = "dd-MM-yyyy";
         private readonly string _dateTimeFormat = "dd-MM-yyyy HH\\:mm";
         private readonly string _timeSpanFormat = "hh\\:mm";
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly string _baseUri = "https://localhost:6001";
 
-        public AdminController(VaccinationSystemDbContext context)
+        public AdminController(VaccinationSystemDbContext context, IHttpClientFactory httpClientFactory)
         {
             _context = context;
+            _httpClientFactory = httpClientFactory;
         }
 
         /// <remarks>Returns all patients</remarks>
@@ -108,11 +116,11 @@ namespace VaccinationSystem.Controllers
         [ProducesResponseType(404)]
         public IActionResult DeletePatient([FromRoute]string patientId)
         {
-            var result = FindAndDeletePatient(patientId);
+            var result = FindAndDeletePatient(patientId).Result;
             return result;
         }
 
-        private IActionResult FindAndDeletePatient(string patientId)
+        private async Task<IActionResult> FindAndDeletePatient(string patientId)
         {
             Guid id;
             try
@@ -130,9 +138,20 @@ namespace VaccinationSystem.Controllers
             Patient patient = _context.Patients.Where(patient => patient.Active == true && patient.Id == id).FirstOrDefault();
             if(patient != null)
             {
+                var httpClient = _httpClientFactory.CreateClient();
                 Doctor doctor = _context.Doctors.Where(doc => doc.Active == true && doc.PatientAccount.Id == id).FirstOrDefault();
                 if(doctor != null)
                 {
+                    var uri = Path.Combine("user/deletePatient", doctor.Id.ToString());
+                    var request = new HttpRequestMessage(HttpMethod.Delete, uri);
+                    request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                    httpClient.BaseAddress = new Uri(_baseUri);
+
+                    var response = await httpClient.SendAsync(request);
+                    if (!response.IsSuccessStatusCode)
+                        return BadRequest();
+
                     doctor.Active = false;
 
                     foreach(var appointment in _context.Appointments.Where(a => a.TimeSlot.DoctorId == doctor.Id && a.State == AppointmentState.Planned).Include("TimeSlots").ToList())
@@ -146,6 +165,18 @@ namespace VaccinationSystem.Controllers
                     }
                     _context.TimeSlots.Where(slot => slot.DoctorId == doctor.Id && slot.Active == true).ToList().ForEach(slot => { slot.Active = false; });
 
+                }
+                else
+                {
+                    var uri = Path.Combine("user/deletePatient", patientId);
+                    var request = new HttpRequestMessage(HttpMethod.Delete, uri);
+                    request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                    httpClient.BaseAddress = new Uri(_baseUri);
+
+                    var response = await httpClient.SendAsync(request);
+                    if (!response.IsSuccessStatusCode)
+                        return BadRequest();
                 }
                 patient.Active = false;
                 _context.SaveChanges();
@@ -246,11 +277,11 @@ namespace VaccinationSystem.Controllers
         [ProducesResponseType(403)]
         public IActionResult AddDoctor([FromBody, Required] AddDoctorRequestDTO addDoctorRequestDTO)
         {
-            var result = AddNewDoctor(addDoctorRequestDTO);
+            var result = AddNewDoctor(addDoctorRequestDTO).Result;
             return result;
         }
 
-        private IActionResult AddNewDoctor(AddDoctorRequestDTO addDoctorRequestDTO)
+        private async Task<IActionResult> AddNewDoctor(AddDoctorRequestDTO addDoctorRequestDTO)
         {
             Guid id;
             try
@@ -299,8 +330,19 @@ namespace VaccinationSystem.Controllers
 
             doctor.Active = true;
 
+            var uri = Path.Combine("user/addDoctor", doctor.PatientId.ToString(), doctor.Id.ToString());
+            var request = new HttpRequestMessage(HttpMethod.Get, uri);
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            var httpClient = _httpClientFactory.CreateClient();
+            httpClient.BaseAddress = new Uri(_baseUri);
+
+            var response = await httpClient.SendAsync(request);
+            if (!response.IsSuccessStatusCode)
+                return BadRequest();
+
             _context.Doctors.Add(doctor);
-            Debug.WriteLine(_context.SaveChanges());
+            _context.SaveChanges();
             return Ok();
 
         }
@@ -320,11 +362,11 @@ namespace VaccinationSystem.Controllers
         [ProducesResponseType(404)]
         public IActionResult DeleteDoctor([FromRoute]string doctorId)
         {
-            var result = FindAndDeleteDoctor(doctorId);
+            var result = FindAndDeleteDoctor(doctorId).Result;
             return result;
         }
 
-        private IActionResult FindAndDeleteDoctor(string doctorId)
+        private async Task<IActionResult> FindAndDeleteDoctor(string doctorId)
         {
             Guid id;
             try
@@ -343,8 +385,18 @@ namespace VaccinationSystem.Controllers
             Doctor doctor = _context.Doctors.Where(doc => doc.Active == true && doc.Id == id).SingleOrDefault();
             if(doctor != null)
             {
+                var uri = Path.Combine("user/deleteDoctor", doctorId, doctor.PatientId.ToString());
+                var request = new HttpRequestMessage(HttpMethod.Get, uri);
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                foreach(var appointment in _context.Appointments.Include("TimeSlots").Where(a => a.TimeSlot.DoctorId == doctor.Id && a.State == AppointmentState.Planned).ToList())
+                var httpClient = _httpClientFactory.CreateClient();
+                httpClient.BaseAddress = new Uri(_baseUri);
+
+                var response = await httpClient.SendAsync(request);
+                if (!response.IsSuccessStatusCode)
+                    return BadRequest();
+
+                foreach (var appointment in _context.Appointments.Include("TimeSlots").Where(a => a.TimeSlot.DoctorId == doctor.Id && a.State == AppointmentState.Planned).ToList())
                 {
                     appointment.State = AppointmentState.Cancelled; // powiadomić pacjentów
                     var timeSlot = _context.TimeSlots.SingleOrDefault(ts => ts.Id == appointment.TimeSlotId);
@@ -706,11 +758,11 @@ namespace VaccinationSystem.Controllers
         [ProducesResponseType(404)]
         public IActionResult DeleteVaccinationCenter([FromRoute]string vaccinationCenterId)
         {
-            var result = FindAndDeleteVaccinationCenter(vaccinationCenterId);
+            var result = FindAndDeleteVaccinationCenter(vaccinationCenterId).Result;
             return result;
         }
 
-        private IActionResult FindAndDeleteVaccinationCenter(string vaccinationCenterId)
+        private async Task<IActionResult> FindAndDeleteVaccinationCenter(string vaccinationCenterId)
         {
             Guid id;
             try
@@ -728,9 +780,20 @@ namespace VaccinationSystem.Controllers
             VaccinationCenter vaccinationCenter;
             if((vaccinationCenter = _context.VaccinationCenters.Where(vc => vc.Active == true && vc.Id == id).SingleOrDefault())!=null)
             {
-                foreach(Doctor doctor in _context.Doctors.Where(doc => doc.Active == true && doc.VaccinationCenterId == id).ToList())
+                var httpClient = _httpClientFactory.CreateClient();
+                foreach (Doctor doctor in _context.Doctors.Where(doc => doc.Active == true && doc.VaccinationCenterId == id).ToList())
                 {
-                    foreach(var appointment in _context.Appointments.Include("TimeSlots").Where(a => a.TimeSlot.DoctorId == doctor.Id && a.State == AppointmentState.Planned).ToList())
+                    var uri = Path.Combine("user/deleteDoctor", doctor.Id.ToString(), doctor.PatientId.ToString());
+                    var request = new HttpRequestMessage(HttpMethod.Get, uri);
+                    request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                    httpClient.BaseAddress = new Uri(_baseUri);
+
+                    var response = await httpClient.SendAsync(request);
+                    if (!response.IsSuccessStatusCode)
+                        return BadRequest();
+
+                    foreach (var appointment in _context.Appointments.Include("TimeSlots").Where(a => a.TimeSlot.DoctorId == doctor.Id && a.State == AppointmentState.Planned).ToList())
                     {
                         appointment.State = AppointmentState.Cancelled;
                         var timeSlot = _context.TimeSlots.SingleOrDefault(ts => ts.Id == appointment.TimeSlotId);

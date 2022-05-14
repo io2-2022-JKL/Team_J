@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
@@ -13,6 +14,7 @@ using VaccinationSystem.Models;
 
 namespace VaccinationSystem.Controllers
 {
+    [Authorize(Policy = "PatientPolicy")]
     [ApiController]
     [Route("patient")]
     public class PatientController : ControllerBase

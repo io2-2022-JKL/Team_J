@@ -2,7 +2,6 @@ using System;
 using Xunit;
 using Moq;
 using VaccinationSystem.Models;
-using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using VaccinationSystem.Config;
@@ -11,6 +10,8 @@ using Microsoft.AspNetCore.Mvc;
 using VaccinationSystem.DTO;
 using VaccinationSystem.DTO.PatientDTOs;
 using VaccinationSystem.DTO.AdminDTOs;
+using System.Net.Http;
+using System.Net;
 
 namespace VaccinationSystem.UnitTests
 {
@@ -27,7 +28,7 @@ namespace VaccinationSystem.UnitTests
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.Patients).Returns(patientMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            var controller = new AdminController(mockContext.Object, null);
 
             // Act
 
@@ -69,7 +70,7 @@ namespace VaccinationSystem.UnitTests
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.Patients).Returns(mockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            var controller = new AdminController(mockContext.Object, null);
 
             // Act
 
@@ -108,7 +109,9 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
             mockContext.Setup(c => c.Appointments).Returns(appointmentMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            IHttpClientFactory factory = GetMockHttpClientFactory(HttpStatusCode.OK);
+
+            var controller = new AdminController(mockContext.Object, factory);
 
             // Act
 
@@ -141,7 +144,9 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.Doctors).Returns(doctorMockSet.Object);
             mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            IHttpClientFactory factory = GetMockHttpClientFactory(HttpStatusCode.OK);
+
+            var controller = new AdminController(mockContext.Object, factory);
 
             // Act
 
@@ -167,7 +172,9 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.Doctors).Returns(doctorMockSet.Object);
             mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            IHttpClientFactory factory = GetMockHttpClientFactory(HttpStatusCode.OK);
+
+            var controller = new AdminController(mockContext.Object, factory);
 
             // Act
 
@@ -194,7 +201,7 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.VaccinationCenters).Returns(vaccinationCenterMockSet.Object);
             mockContext.Setup(c => c.Doctors).Returns(doctorMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            var controller = new AdminController(mockContext.Object, null);
 
             // Act
 
@@ -243,7 +250,7 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.VaccinationCenters).Returns(vaccinationCenterMockSet.Object);
             mockContext.Setup(c => c.Doctors).Returns(doctorMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            var controller = new AdminController(mockContext.Object, null);
 
             // Act
 
@@ -283,7 +290,9 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.VaccinationCenters).Returns(vaccinationCenterMockSet.Object);
             mockContext.Setup(c => c.Doctors).Returns(doctorMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            IHttpClientFactory factory = GetMockHttpClientFactory(HttpStatusCode.OK);
+
+            var controller = new AdminController(mockContext.Object, factory);
 
             var request = new AddDoctorRequestDTO { patientId = doctorId, vaccinationCenterId = vaccinationCenterId };
 
@@ -333,7 +342,9 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.VaccinationCenters).Returns(vaccinationCenterMockSet.Object);
             mockContext.Setup(c => c.Doctors).Returns(doctorMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            IHttpClientFactory factory = GetMockHttpClientFactory(HttpStatusCode.OK);
+
+            var controller = new AdminController(mockContext.Object, factory);
 
             var request = new AddDoctorRequestDTO { patientId = doctorId, vaccinationCenterId = vaccinationCenterId };
 
@@ -391,7 +402,9 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.VaccinationCenters).Returns(vaccinationCenterMockSet.Object);
             mockContext.Setup(c => c.Doctors).Returns(doctorMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            IHttpClientFactory factory = GetMockHttpClientFactory(HttpStatusCode.OK);
+
+            var controller = new AdminController(mockContext.Object, factory);
 
             var request = new AddDoctorRequestDTO { patientId = doctorId, vaccinationCenterId = vaccinationCenterId };
 
@@ -428,7 +441,9 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.VaccinationCenters).Returns(vaccinationCenterMockSet.Object);
             mockContext.Setup(c => c.Doctors).Returns(doctorMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            IHttpClientFactory factory = GetMockHttpClientFactory(HttpStatusCode.OK);
+
+            var controller = new AdminController(mockContext.Object, factory);
 
             var request = new AddDoctorRequestDTO { patientId = doctorId, vaccinationCenterId = vaccinationCenterId };
 
@@ -460,12 +475,15 @@ namespace VaccinationSystem.UnitTests
                 doctorData.Add(doc);
             });
 
+
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.Patients).Returns(patientMockSet.Object);
             mockContext.Setup(c => c.VaccinationCenters).Returns(vaccinationCenterMockSet.Object);
             mockContext.Setup(c => c.Doctors).Returns(doctorMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            IHttpClientFactory factory = GetMockHttpClientFactory(HttpStatusCode.OK);
+
+            var controller = new AdminController(mockContext.Object, factory);
 
             var request = new AddDoctorRequestDTO { patientId = doctorId, vaccinationCenterId = vaccinationCenterId };
 
@@ -503,7 +521,9 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
             mockContext.Setup(c => c.Appointments).Returns(appointmentMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            IHttpClientFactory factory = GetMockHttpClientFactory(HttpStatusCode.OK);
+
+            var controller = new AdminController(mockContext.Object, factory);
 
             // Act
 
@@ -541,7 +561,9 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
             mockContext.Setup(c => c.Appointments).Returns(appointmentMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            IHttpClientFactory factory = GetMockHttpClientFactory(HttpStatusCode.OK);
+
+            var controller = new AdminController(mockContext.Object, factory);
 
             // Act
 
@@ -592,7 +614,9 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
             mockContext.Setup(c => c.Appointments).Returns(appointmentMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            IHttpClientFactory factory = GetMockHttpClientFactory(HttpStatusCode.OK);
+
+            var controller = new AdminController(mockContext.Object, factory);
 
             // Act
 
@@ -637,7 +661,7 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.OpeningHours).Returns(openingHoursMockSet.Object);
             mockContext.Setup(c => c.VaccinesInVaccinationCenter).Returns(vaccinesInVaccinationCenterMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            var controller = new AdminController(mockContext.Object, null);
 
             // Act
 
@@ -674,7 +698,7 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.OpeningHours).Returns(openingHoursMockSet.Object);
             mockContext.Setup(c => c.VaccinesInVaccinationCenter).Returns(vaccinesInVaccinationCenterMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            var controller = new AdminController(mockContext.Object, null);
 
             // Act
 
@@ -749,7 +773,7 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.OpeningHours).Returns(openingHoursMockSet.Object);
             mockContext.Setup(c => c.Vaccines).Returns(vaccineMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            var controller = new AdminController(mockContext.Object, null);
 
             var request = new AddVaccinationCenterRequestDTO {
                 name = name,
@@ -832,7 +856,7 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.OpeningHours).Returns(openingHoursMockSet.Object);
             mockContext.Setup(c => c.Vaccines).Returns(vaccineMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            var controller = new AdminController(mockContext.Object, null);
 
             var request = new AddVaccinationCenterRequestDTO
             {
@@ -901,7 +925,7 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.OpeningHours).Returns(openingHoursMockSet.Object);
             mockContext.Setup(c => c.Vaccines).Returns(vaccineMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            var controller = new AdminController(mockContext.Object, null);
 
             var request = new AddVaccinationCenterRequestDTO
             {
@@ -967,7 +991,7 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.OpeningHours).Returns(openingHoursMockSet.Object);
             mockContext.Setup(c => c.Vaccines).Returns(vaccineMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            var controller = new AdminController(mockContext.Object, null);
 
             var request = new AddVaccinationCenterRequestDTO
             {
@@ -1035,7 +1059,7 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.OpeningHours).Returns(openingHoursMockSet.Object);
             mockContext.Setup(c => c.Vaccines).Returns(vaccineMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            var controller = new AdminController(mockContext.Object, null);
 
             var openingHoursDays = new List<OpeningHoursDayDTO>();
             for (int i = 0; i < count; i++)
@@ -1101,7 +1125,9 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.TimeSlots).Returns(timeSlotsMockSet.Object);
             mockContext.Setup(c => c.Appointments).Returns(appointmentsMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            IHttpClientFactory factory = GetMockHttpClientFactory(HttpStatusCode.OK);
+
+            var controller = new AdminController(mockContext.Object, factory);
 
             // Act
 
@@ -1160,7 +1186,9 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.TimeSlots).Returns(timeSlotsMockSet.Object);
             mockContext.Setup(c => c.Appointments).Returns(appointmentsMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            IHttpClientFactory factory = GetMockHttpClientFactory(HttpStatusCode.OK);
+
+            var controller = new AdminController(mockContext.Object, factory);
 
             // Act
 
@@ -1232,7 +1260,9 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.TimeSlots).Returns(timeSlotsMockSet.Object);
             mockContext.Setup(c => c.Appointments).Returns(appointmentsMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            IHttpClientFactory factory = GetMockHttpClientFactory(HttpStatusCode.OK);
+
+            var controller = new AdminController(mockContext.Object, factory);
 
             // Act
 
@@ -1278,7 +1308,7 @@ namespace VaccinationSystem.UnitTests
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.Vaccines).Returns(vaccineMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            var controller = new AdminController(mockContext.Object, null);
 
             // Act
 
@@ -1305,7 +1335,7 @@ namespace VaccinationSystem.UnitTests
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.Vaccines).Returns(vaccineMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            var controller = new AdminController(mockContext.Object, null);
 
             // Act
 
@@ -1365,7 +1395,7 @@ namespace VaccinationSystem.UnitTests
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.Vaccines).Returns(vaccineMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            var controller = new AdminController(mockContext.Object, null);
 
             var vaccineDTO = new AddVaccineRequestDTO()
             {
@@ -1421,7 +1451,7 @@ namespace VaccinationSystem.UnitTests
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.Vaccines).Returns(vaccineMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            var controller = new AdminController(mockContext.Object, null);
 
             var vaccineDTO = new AddVaccineRequestDTO()
             {
@@ -1479,7 +1509,7 @@ namespace VaccinationSystem.UnitTests
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.Vaccines).Returns(vaccineMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            var controller = new AdminController(mockContext.Object, null);
 
             var vaccineDTO = new AddVaccineRequestDTO()
             {
@@ -1553,7 +1583,7 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.Appointments).Returns(appointmentMockSet.Object);
             mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            var controller = new AdminController(mockContext.Object, null);
 
             // Act
 
@@ -1601,7 +1631,7 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.Appointments).Returns(appointmentMockSet.Object);
             mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            var controller = new AdminController(mockContext.Object, null);
 
             // Act
 
@@ -1656,7 +1686,7 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.Appointments).Returns(appointmentMockSet.Object);
             mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            var controller = new AdminController(mockContext.Object, null);
 
             // Act
 
@@ -1715,7 +1745,7 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.Appointments).Returns(appointmentMockSet.Object);
             mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            var controller = new AdminController(mockContext.Object, null);
 
             string format = "dd-MM-yyyy HH\\:mm";
 
@@ -1779,7 +1809,7 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.Appointments).Returns(appointmentMockSet.Object);
             mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            var controller = new AdminController(mockContext.Object, null);
 
             //string format = "dd-MM-yyyy HH\\:mm";
 
@@ -1827,7 +1857,7 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.Appointments).Returns(appointmentMockSet.Object);
             mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            var controller = new AdminController(mockContext.Object, null);
 
             //string format = "dd-MM-yyyy HH\\:mm";
 
@@ -1873,7 +1903,7 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.Appointments).Returns(appointmentMockSet.Object);
             mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            var controller = new AdminController(mockContext.Object, null);
 
             // Act
 
@@ -1959,7 +1989,7 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.Appointments).Returns(appointmentMockSet.Object);
             mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
 
-            var controller = new AdminController(mockContext.Object);
+            var controller = new AdminController(mockContext.Object, null);
 
             // Act
 

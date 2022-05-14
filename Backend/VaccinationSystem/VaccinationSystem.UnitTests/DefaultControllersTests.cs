@@ -2,15 +2,15 @@
 using Xunit;
 using Moq;
 using VaccinationSystem.Models;
-using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using VaccinationSystem.Config;
 using VaccinationSystem.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using VaccinationSystem.DTO;
-using VaccinationSystem.DTO.PatientDTOs;
-using VaccinationSystem.DTO.AdminDTOs;
+using System.Net.Http;
+using System.Net;
+using Microsoft.AspNetCore.Http;
 
 namespace VaccinationSystem.UnitTests
 {
@@ -40,7 +40,9 @@ namespace VaccinationSystem.UnitTests
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.Patients).Returns(patientsMockSet.Object);
 
-            var controller = new DefaultController(mockContext.Object);
+            IHttpClientFactory factory = GetMockHttpClientFactory(HttpStatusCode.OK);
+
+            var controller = new DefaultController(mockContext.Object, factory);
 
             var request = new RegisterRequestDTO()
             {
@@ -97,7 +99,9 @@ namespace VaccinationSystem.UnitTests
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.Patients).Returns(patientsMockSet.Object);
 
-            var controller = new DefaultController(mockContext.Object);
+            IHttpClientFactory factory = GetMockHttpClientFactory(HttpStatusCode.OK);
+
+            var controller = new DefaultController(mockContext.Object, factory);
 
             var request = new RegisterRequestDTO()
             {
@@ -171,7 +175,9 @@ namespace VaccinationSystem.UnitTests
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.Patients).Returns(patientsMockSet.Object);
 
-            var controller = new DefaultController(mockContext.Object);
+            IHttpClientFactory factory = GetMockHttpClientFactory(HttpStatusCode.OK);
+
+            var controller = new DefaultController(mockContext.Object, factory);
 
             var request = new RegisterRequestDTO()
             {
@@ -219,7 +225,11 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.Doctors).Returns(doctorsMockSet.Object);
             mockContext.Setup(c => c.Admins).Returns(adminsMockSet.Object);
 
-            var controller = new DefaultController(mockContext.Object);
+            IHttpClientFactory factory = GetMockHttpClientFactoryTokenResponseDTO(HttpStatusCode.OK);
+
+            var controller = new DefaultController(mockContext.Object, factory);
+            controller.ControllerContext = new ControllerContext();
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
             var request = new SigninRequestDTO()
             {
@@ -272,7 +282,9 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.Doctors).Returns(doctorsMockSet.Object);
             mockContext.Setup(c => c.Admins).Returns(adminsMockSet.Object);
 
-            var controller = new DefaultController(mockContext.Object);
+            IHttpClientFactory factory = GetMockHttpClientFactory(HttpStatusCode.OK);
+
+            var controller = new DefaultController(mockContext.Object, factory);
 
             var request = new SigninRequestDTO()
             {
@@ -296,7 +308,7 @@ namespace VaccinationSystem.UnitTests
             // Arrange
 
             var mockContext = new Mock<VaccinationSystemDbContext>();
-            var controller = new DefaultController(mockContext.Object);
+            var controller = new DefaultController(mockContext.Object, null);
 
             // Act
 
@@ -334,7 +346,7 @@ namespace VaccinationSystem.UnitTests
             // Arrange
 
             var mockContext = new Mock<VaccinationSystemDbContext>();
-            var controller = new DefaultController(mockContext.Object);
+            var controller = new DefaultController(mockContext.Object, null);
 
             // Act
 
@@ -370,7 +382,7 @@ namespace VaccinationSystem.UnitTests
             var vaccinationCenterMockSet = GetMock(vaccinationCentersData.AsQueryable());
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.VaccinationCenters).Returns(vaccinationCenterMockSet.Object);
-            var controller = new DefaultController(mockContext.Object);
+            var controller = new DefaultController(mockContext.Object, null);
 
             // Act
 
@@ -393,7 +405,7 @@ namespace VaccinationSystem.UnitTests
             var vaccinationCenterMockSet = GetMock(vaccinationCentersData.AsQueryable());
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.VaccinationCenters).Returns(vaccinationCenterMockSet.Object);
-            var controller = new DefaultController(mockContext.Object);
+            var controller = new DefaultController(mockContext.Object, null);
 
             // Act
 
@@ -433,7 +445,7 @@ namespace VaccinationSystem.UnitTests
             var vaccinationCenterMockSet = GetMock(vaccinationCentersData.AsQueryable());
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.VaccinationCenters).Returns(vaccinationCenterMockSet.Object);
-            var controller = new DefaultController(mockContext.Object);
+            var controller = new DefaultController(mockContext.Object, null);
 
             // Act
 

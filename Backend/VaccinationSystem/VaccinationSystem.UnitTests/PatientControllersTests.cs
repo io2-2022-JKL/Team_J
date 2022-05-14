@@ -1,8 +1,6 @@
-﻿using System;
-using Xunit;
+﻿using Xunit;
 using Moq;
 using VaccinationSystem.Models;
-using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using VaccinationSystem.Config;
