@@ -129,6 +129,13 @@ namespace VaccinationSystem
 
             });
 
+            services.AddCors(options => options.AddPolicy("Cors", builder =>
+            {
+                builder.AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader();
+            }));
+
             services.AddHttpClient();
 
             var connectionString = Configuration.GetConnectionString("AppDb");
@@ -162,6 +169,7 @@ namespace VaccinationSystem
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseCors("Cors");
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

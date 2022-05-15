@@ -71,13 +71,6 @@ namespace IdentityServer
                 .EnableInMemoryCaching();
             //.ProtectKeysWithDataProtection();
 
-            services.AddCors(options => options.AddPolicy("Cors", builder =>
-            {
-                builder.AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader();
-            }));
-
             services.AddScoped<IProfileService, ProfileService>();
 
             services.AddHttpClient();
@@ -102,7 +95,6 @@ namespace IdentityServer
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
-            app.UseCors("Cors");
             //app.UseAuthorization();
             /*app.UseEndpoints(endpoints =>
             {
