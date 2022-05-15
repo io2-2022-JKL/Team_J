@@ -78,7 +78,7 @@ export async function addVaccine(company, name, numberOfDoses, minDaysBetweenDos
             },
             timeout: 2000
         });
-        console.log(response)
+        //console.log(response)
         return err;
 
     } catch (error) {
