@@ -57,6 +57,27 @@ export async function getVaccinesData() {
         return [response, error.code];
     }
 }
+
+export async function getDoctorsData() {
+    let response;
+    let errCode = '200';
+    try {
+        response = await axios({
+            method: 'get',
+            url: SYSTEM_SZCZEPIEN_URL + '/admin/doctors',
+            timeout: 2000
+        });
+        console.log('udało się pobrać dane')
+        return [response.data, errCode];
+
+    } catch (error) {
+        console.error(error.message);
+        if (error.response != null)
+            return [response, error.response.status.toString()];
+        return [response, error.code];
+    }
+}
+
 export async function addVaccine(company, name, numberOfDoses, minDaysBetweenDoses, maxDaysBetweenDoses, virus, minPatientAge, maxPatientAge, active) {
     let response;
     let err = '200';
@@ -156,7 +177,28 @@ export async function editPatient(id, pesel, firstName, lastName, mail, dateOfBi
     }
 }
 
-export async function addDoctor(doctorId, vaccinationCenterId) {
+export async function deletePatient(patientId) {
+    let response;
+    let err = '200';
+    try {
+        response = await axios({
+            method: 'delete',
+            url: SYSTEM_SZCZEPIEN_URL + '/admin/doctors/deleteDoctor/' + patientId,
+            timeout: 2000
+        });
+        console.log(response)
+        return err;
+
+    } catch (error) {
+        console.error(error.message);
+        console.error(error.code);
+        if (error.response == null)
+            return error.code;
+        return error.response.status.toString();
+    }
+}
+
+export async function addDoctor(patientId, vaccinationCenterId) {
     let response;
     let err = '200';
     try {
@@ -165,7 +207,7 @@ export async function addDoctor(doctorId, vaccinationCenterId) {
             url: SYSTEM_SZCZEPIEN_URL + '/admin/doctors/addDoctor',
             data:
             {
-                doctorId: doctorId,
+                patientId: patientId,
                 vaccinationCenterId: vaccinationCenterId
             },
             timeout: 2000
@@ -211,5 +253,46 @@ export async function editDoctor(doctorId, pesel, firstName, lastName, mail, dat
         if (error.response == null)
             return error.code;
         return error.response.status.toString();
+    }
+}
+
+export async function deleteDoctor(doctorId) {
+    let response;
+    let err = '200';
+    try {
+        response = await axios({
+            method: 'delete',
+            url: SYSTEM_SZCZEPIEN_URL + '/admin/doctors/deleteDoctor/' + doctorId,
+            timeout: 2000
+        });
+        console.log(response)
+        return err;
+
+    } catch (error) {
+        console.error(error.message);
+        console.error(error.code);
+        if (error.response == null)
+            return error.code;
+        return error.response.status.toString();
+    }
+}
+
+export async function getVaccinationCenters() {
+    let response;
+    let errCode = '200';
+    try {
+        response = await axios({
+            method: 'get',
+            url: SYSTEM_SZCZEPIEN_URL + '/admin/vaccinationCenters',
+            timeout: 2000
+        });
+        console.log('udało się pobrać dane')
+        return [response.data, errCode];
+
+    } catch (error) {
+        console.error(error.message);
+        if (error.response != null)
+            return [response, error.response.status.toString()];
+        return [response, error.code];
     }
 }

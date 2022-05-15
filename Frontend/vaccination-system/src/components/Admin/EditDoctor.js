@@ -9,12 +9,9 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useLocation, useNavigate } from "react-router-dom";
-import { addVaccine, editPatient, editVaccine } from './AdminApi';
 import ValidationHelpers from '../../tools/ValidationHelpers';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
-import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 const theme = createTheme();
 
@@ -22,10 +19,8 @@ const Alert = React.forwardRef(function Alert(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
-export default function EditPatient() {
+export default function EditDoctor(action) {
     const navigate = useNavigate();
-    const location = useLocation();
-
     const [peselError, setPeselError] = useState('')
     const [peselErrorState, setPeselErrorState] = useState(false)
     const [firstNameError, setFirstNameError] = useState('')
@@ -39,28 +34,37 @@ export default function EditPatient() {
     const [dateOfBirthErrorState, setDateOfBirthErrorState] = useState(false)
     const [phoneNumberError, setPhoneNumberError] = useState('')
     const [phoneNumberErrorState, setPhoneNumberErrorState] = useState(false)
+
     const [operationError, setOperationError] = useState('');
     const [operationErrorState, setOperationErrorState] = useState(false);
-    const [activeOption, setActiveOption] = React.useState(location.state != null ? location.state.active ? 'aktywny' : 'nieaktywny' : '');
     const [success, setSuccess] = useState(false);
+    const location = useLocation();
 
     const handleSubmit = async (event) => {
+
         event.preventDefault();
         const data = new FormData(event.currentTarget);
 
-        console.log(data.get('dateOfBirth'))
-        let error;// = await editPatient(location.state.id, data.get('pesel'), data.get('firstName'), data.get('lastName'),
-        //    data.get('mail'), data.get('dateOfBirth'), data.get('phoneNumber'), data.get('active'));
+        let error;
+        /*if (action === "add")
+            error = await addVaccine(data.get('company'), data.get('name'), Number.parseInt(data.get('numberOfDoses')),
+                Number.parseInt(data.get('minDaysBetweenDoses')), Number.parseInt(data.get('maxDaysBetweenDoses')),
+                data.get('virus'), Number.parseInt(data.get('minPatientAge')), Number.parseInt(data.get('maxPatientAge')),
+                data.get('active'));
+        else if (action === "edit")
+            //editVaccine    
+            error = await editVaccine(location.state.id, data.get('company'), data.get('name'), Number.parseInt(data.get('numberOfDoses')),
+                Number.parseInt(data.get('minDaysBetweenDoses')), Number.parseInt(data.get('maxDaysBetweenDoses')),
+                data.get('virus'), Number.parseInt(data.get('minPatientAge')), Number.parseInt(data.get('maxPatientAge')),
+                data.get('active'));*/
         setOperationError(error);
         if (error != '200')
             setOperationErrorState(true);
         else
             setSuccess(true);
-
-        console.log(location.state.dateOfBirth)
-        console.log('po replace:')
-        console.log(location.state.dateOfBirth.replaceAll('-', '/'))
     };
+
+    const [activeOption, setActiveOption] = React.useState(location.state != null ? location.state.active ? 'aktywny' : 'nieaktywny' : '');
 
     const handleChange = (event) => {
         setActiveOption(event.target.value);
@@ -118,7 +122,7 @@ export default function EditPatient() {
                     }}
                 >
                     <Typography component="h1" variant="h5">
-                        Wpisz dane pacjenta
+                        Wpisz dane lekarza
                     </Typography>
                     <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
                         <Grid container spacing={2}>
@@ -269,7 +273,7 @@ export default function EditPatient() {
                         fullWidth
                         variant="contained"
                         sx={{ mt: 3, mb: 2 }}
-                        onClick={() => { navigate("/admin/patients") }}
+                        onClick={() => { navigate("/admin/doctors") }}
                     >
                         Powrót
                     </Button>

@@ -9,7 +9,7 @@ import VaccinationCentersPage from './Admin/VaccinationCentersPage';
 import VaccinesPage from './Admin/VaccinesPage';
 import PrivateRoute from './PrivateRoute';
 import DoctorMainPage from './Doctor/DoctorMainPage';
-import AddOrEditDoctor from './Admin/AddOrEditDoctor';
+import EditDoctor from './Admin/EditDoctor';
 import FilterTimeSlots from './Patient/FIlterTimeSlots';
 import FormerAppointment from './Patient/FormerAppointments';
 import IncomingAppointment from './Patient/IncomingAppointments';
@@ -34,7 +34,7 @@ function App() {
           <Route exact path='/admin/patients' element={<PatientsPage />} />
           <Route exact path='/admin/patients/editPatient' element={<EditPatient />} />
           <Route exact path='/admin/doctors' element={<DoctorsPage />} />
-          <Route exact path='/admin/doctors/addDoctor' element={< AddOrEditDoctor />} />
+          <Route exact path='/admin/doctors/editDoctor' element={< EditDoctor />} />
           <Route exact path='/admin/vaccinationCenters' element={<VaccinationCentersPage />} />
           <Route exact path='/admin/vaccines' element={<VaccinesPage />} />
           <Route exact path='/admin/vaccines/addVaccine' element={<AddOrEditVaccine />} />

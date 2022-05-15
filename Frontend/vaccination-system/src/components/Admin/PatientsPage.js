@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Button from '@mui/material/Button';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { Container, CssBaseline, TextField } from '@mui/material';
+import { Container, CssBaseline, Snackbar, TextField } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import { useNavigate } from "react-router-dom";
@@ -13,13 +13,21 @@ import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
 import Avatar from '@mui/material/Avatar';
 import { confirm } from "react-confirm-box";
 import DataDisplayArray from '../DataDisplayArray';
-import { getPatientsData, getRandomPatientData } from './AdminApi';
+import { addDoctor, getPatientsData, getRandomPatientData, getVaccinationCenters } from './AdminApi';
 import FilteringHelepers from '../../tools/FilteringHelepers';
 import Autocomplete from '@mui/material/Autocomplete';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 
 const theme = createTheme();
 
-export default function PatientsPage() {
+export default function PatientsPage(addingDoctor = false) {
 
     const navigate = useNavigate();
 
@@ -103,6 +111,7 @@ export default function PatientsPage() {
 
     const [rows, setRows] = React.useState([]);
 
+
     React.useEffect(() => {
 
         const fetchData = async () => {
@@ -133,19 +142,49 @@ export default function PatientsPage() {
         [],
     );
 
+    const [openCentersDialog, setOpenCentersDialog] = React.useState(false)
+    const [vaccinationCenters, setVaccinationCenters] = React.useState()
+    const [openSnackBar, setOpenSnackBar] = React.useState(false)
+    const [snackBarMessage, setSnackBarMessage] = React.useState('')
+
+    const [selectedRow, setSelectedRow] = React.useState();
+    const [selectedCenter, setSelectedCenter] = React.useState();
+
     function handleRowClick(row) {
-        navigate('/admin/patients/editPatient', {
-            state: {
-                id: row.id, pesel: row.pesel, firstName: row.firstName, lastName: row.lastName, mail: row.mail,
-                dateOfBirth: row.dateOfBirth, phoneNumber: row.phoneNumber, active: row.active
+        if (addingDoctor) {
+            setSelectedRow(row)
+            const [response, err] = getVaccinationCenters()
+            if (err != '200') {
+                setOpenSnackBar(true)
+                setSnackBarMessage('Nie udało się pobrac danych')
             }
-        })
+            else {
+                setOpenCentersDialog(true)
+                setVaccinationCenters(response.data)
+            }
+        }
+        else
+            navigate('/admin/patients/editPatient', {
+                state: {
+                    id: row.id, pesel: row.pesel, firstName: row.firstName, lastName: row.lastName, mail: row.mail,
+                    dateOfBirth: row.dateOfBirth, phoneNumber: row.phoneNumber, active: row.active
+                }
+            })
     }
 
-    const confirmOptionsInPolish = {
-        labels: {
-            confirmable: "Tak",
-            cancellable: "Nie"
+    const handleCenterChange = (e) => {
+        setSelectedCenter(e.target.value)
+    }
+
+    const handleDialogClose = () => {
+        setOpenCentersDialog(false)
+    }
+
+    const handleCenterChoice = async () => {
+        const err = addDoctor(selectedRow.id, selectedCenter)
+        if (err != '200') {
+            setOpenSnackBar(true)
+            setSnackBarMessage('Nie udało się dodać lekarza')
         }
     }
 
@@ -164,10 +203,6 @@ export default function PatientsPage() {
         setFilteredRows(result);
     };
 
-
-    const top100Films = [
-        'aktywny', 'niekatywny'
-    ]
 
     const [currency, setCurrency] = React.useState('');
 
@@ -313,6 +348,48 @@ export default function PatientsPage() {
                             Powrót
                         </Button>
                     </Box>
+
+                    <Dialog
+                        fullWidth
+                        open={openCentersDialog}
+                    >
+                        <DialogTitle>Wybierz Centrum Szczepień</DialogTitle>
+                        <DialogContent>
+                            <Box
+                                noValidate
+                                component="form"
+                                sx={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    m: 'auto',
+                                    width: 'fit-content',
+                                }}
+                            >
+                                {openCentersDialog && <FormControl sx={{ mt: 2, minWidth: 120 }}>
+                                    <InputLabel htmlFor="max-width">Wybierz</InputLabel>
+                                    <Select
+                                        value={vaccinationCenters[0]}
+                                        autoFocus
+                                        onChange={handleCenterChange}
+                                        label="maxWidth"
+                                    >
+                                        {vaccinationCenters && vaccinationCenters.map(center =>
+                                            <MenuItem value={center}>{center.name + ",  " + center.city}</MenuItem>)}
+                                    </Select>
+                                </FormControl>}
+                            </Box>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={handleDialogClose}>Wróc</Button>
+                            <Button onClick={handleCenterChoice}>Wybierz</Button>
+                        </DialogActions>
+                    </Dialog>
+                    <Snackbar
+                        open={openSnackBar}
+                        autoHideDuration={6000}
+                        onClose={() => { setOpenSnackBar(false) }}
+                        message={snackBarMessage}
+                    />
                 </CssBaseline>
             </Container >
         </ThemeProvider >
