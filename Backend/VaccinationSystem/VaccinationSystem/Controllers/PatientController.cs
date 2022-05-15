@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using VaccinationSystem.Config;
 using VaccinationSystem.DTO;
@@ -27,6 +28,11 @@ namespace VaccinationSystem.Controllers
             _context = context;
         }
 
+        [ProducesResponseType(typeof(IEnumerable<PatientInfoResponseDTO>), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
         [HttpGet("info/{patientId}")]
         public ActionResult<PatientInfoResponseDTO> GetPatientInfo(string patientId)
         {
@@ -70,7 +76,11 @@ namespace VaccinationSystem.Controllers
             };
             return result;
         }
-
+        [ProducesResponseType(typeof(IEnumerable<TimeSlotFilterResponseDTO>), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
         [HttpGet("timeSlots/filter")]
         public ActionResult<IEnumerable<TimeSlotFilterResponseDTO>> FilterTimeSlots(string city, string dateFrom, string dateTo, string virus)
         {
@@ -78,7 +88,9 @@ namespace VaccinationSystem.Controllers
             IEnumerable<TimeSlotFilterResponseDTO> result;
             try
             {
-                result = fetchFilteredTimeSlots(city, dateFrom, dateTo, virus);
+                string patId = User.FindFirst("sub")?.Value;
+                if (patId == null) return Unauthorized();
+                result = fetchFilteredTimeSlots(city, dateFrom, dateTo, virus, patId);
             }
             catch (BadRequestException)
             {
@@ -87,15 +99,17 @@ namespace VaccinationSystem.Controllers
             if (result == null || result.Count() == 0) return NotFound();
             return Ok(result);
         }
-        private IEnumerable<TimeSlotFilterResponseDTO> fetchFilteredTimeSlots(string city, string dateFrom, string dateTo, string virus)
+        public IEnumerable<TimeSlotFilterResponseDTO> fetchFilteredTimeSlots(string city, string dateFrom, string dateTo, string virus, string patId)
         {
             List<TimeSlotFilterResponseDTO> result = new List<TimeSlotFilterResponseDTO>();
+            Guid patientId;
             DateTime From, To;
             try
             {
                 From = DateTime.ParseExact(dateFrom, _dateFormat, null).Date;
                 To = DateTime.ParseExact(dateTo, _dateFormat, null).Date;
                 To = To.AddDays(1);
+                patientId = Guid.Parse(patId);
             }
             catch (FormatException)
             {
@@ -108,15 +122,14 @@ namespace VaccinationSystem.Controllers
             if (city == null || virus == null) throw new BadRequestException();
             List<TimeSlot> timeSlots;
             // Check if the patient already has a booked visit for this virus
-            /*var booked = _context.Appointments.Include(ap => ap.Vaccine).Where(ap => ap.Vaccine.Virus.ToString() == virus &&
+            var booked = _context.Appointments.Include(ap => ap.Vaccine).Where(ap => ap.PatientId == patientId && ap.Vaccine.Virus.ToString() == virus &&
                 ap.State == AppointmentState.Planned).FirstOrDefault();
             if (booked != null) return null; // Patient already has a planned visit for this virus, he can't order a new one
-
             // Check if the patient was already vaccinated with a dose of a vaccine
             var vaccinated = _context.Appointments.Include(ap => ap.Vaccine).Include(ap => ap.TimeSlot).
-                Where(ap => ap.Vaccine.Virus.ToString() == virus && ap.State == AppointmentState.Finished).ToList();
+                Where(ap => ap.PatientId == patientId && ap.Vaccine.Virus.ToString() == virus && ap.State == AppointmentState.Finished).ToList();
             Vaccine vaccineToBeUsed = null;
-            if (vaccinated != null || vaccinated.Count != 0) // He did, new time slots must be only for that type of vaccine
+            if (vaccinated != null && vaccinated.Count > 0) // He did, new time slots must be only for that type of vaccine
             {
                 // get last date when patient can be vaccinated
                 vaccinated.OrderBy(a => a.TimeSlot.To);
@@ -133,10 +146,10 @@ namespace VaccinationSystem.Controllers
                     .Include(timeSlot => timeSlot.Doctor).ToList();
             }
             else
-            {*/
+            {
             timeSlots = _context.TimeSlots.Where(timeSlot => timeSlot.Active == true && timeSlot.IsFree == true &&
                 timeSlot.From >= From && timeSlot.To <= To).Include(timeSlot => timeSlot.Doctor).ToList();
-            //}
+            }
             foreach (TimeSlot timeSlot in timeSlots)
             {
                 Patient patientAccount = _context.Patients.Where(patient => patient.Id == timeSlot.Doctor.PatientId).SingleOrDefault();
@@ -149,12 +162,16 @@ namespace VaccinationSystem.Controllers
                 {
                     openingHours = _context.OpeningHours.Where(oh => oh.VaccinationCenterId == vaccinationCenter.Id).ToList();
                     if (openingHours.Count == 0) continue;
-                    /*if (vaccineToBeUsed != null) vaccineIDs = _context.VaccinesInVaccinationCenter.Where
+                    if (vaccineToBeUsed != null)
+                    {
+                        vaccineIDs = _context.VaccinesInVaccinationCenter.Where
                             (vivc => vivc.VaccinationCenterId == vaccinationCenter.Id && vivc.VaccineId == vaccineToBeUsed.Id).ToList();
-                    else vaccineIDs = _context.VaccinesInVaccinationCenter
-                    .Where(vivc => vivc.VaccinationCenterId == vaccinationCenter.Id).ToList();*/
-                    vaccineIDs = _context.VaccinesInVaccinationCenter
-                        .Where(vivc => vivc.VaccinationCenterId == vaccinationCenter.Id).ToList();
+                    }
+                    else
+                    {
+                        vaccineIDs = _context.VaccinesInVaccinationCenter
+                            .Where(vivc => vivc.VaccinationCenterId == vaccinationCenter.Id).ToList();
+                    }
                 }
                 catch(ArgumentNullException)
                 {
@@ -165,6 +182,7 @@ namespace VaccinationSystem.Controllers
                 bool foundVirus = false;
                 foreach(VaccinesInVaccinationCenter vaccineID in vaccineIDs)
                 {
+                    if (vaccineToBeUsed != null && vaccineToBeUsed.Id != vaccineID.VaccineId) continue;
                     var vaccine = _context.Vaccines.Where(vac => vac.Id == vaccineID.VaccineId && vac.Active == true).SingleOrDefault();
                     if (vaccine == null) continue;
                     vaccines.Add(new SimplifiedVaccineDTO()
@@ -208,8 +226,12 @@ namespace VaccinationSystem.Controllers
             }
             return result;
         }
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
         [HttpPost("timeSlots/book/{patientId}/{timeSlotId}/{vaccineId}")]
-
         public IActionResult BookVisit(string patientId, string timeSlotId, string vaccineId)
         {
             // TODO: Token verification for 401 and 403 error codes
@@ -271,8 +293,12 @@ namespace VaccinationSystem.Controllers
             _context.SaveChanges();
             return true;
         }
+        [ProducesResponseType(typeof(IEnumerable<FutureAppointmentDTO>), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
         [HttpGet("appointments/incomingAppointments/{patientId}")]
-
         public ActionResult<IEnumerable<FutureAppointmentDTO>> GetIncomingVisits(string patientId)
         {
             // TODO: Token verification for 401 and 403 error codes
@@ -333,7 +359,11 @@ namespace VaccinationSystem.Controllers
             }
             return result;
         }
-
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
         [HttpDelete("appointments/incomingAppointments/cancelAppointments/{patientId}/{appointmentId}")]
         public IActionResult CancelVisit(string appointmentId, string patientId)
         {
@@ -379,7 +409,11 @@ namespace VaccinationSystem.Controllers
             this._context.SaveChanges();
             return true;
         }
-
+        [ProducesResponseType(typeof(IEnumerable<FormerAppointmentDTO>), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
         [HttpGet("appointments/formerAppointments/{patientId}")]
         public ActionResult<IEnumerable<FormerAppointmentDTO>> GetFormerVisits(string patientId)
         {
@@ -449,7 +483,11 @@ namespace VaccinationSystem.Controllers
             }
             return result;
         }
-
+        [ProducesResponseType(typeof(IEnumerable<BasicCertificateInfoDTO>), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
         [HttpGet("certificates/{patientId}")]
         public ActionResult<IEnumerable<BasicCertificateInfoDTO>> GetCertificates(string patientId)
         {
