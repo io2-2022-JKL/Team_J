@@ -69,10 +69,6 @@ export default function LoginPage() {
                 }
 
             });
-            console.log({
-                response
-            })
-
         } catch (error) {
             console.error(error.message);
             setEmailError("Logowanie nie powiodło się")
@@ -83,7 +79,9 @@ export default function LoginPage() {
         }
 
         localStorage.setItem('userID', response.data.userId)
-
+        
+        axios.defaults.headers.common['authorization'] = 'Bearer ' + response.headers.authorization
+        
         setLoading(false);
 
         switch (response.data.userType) {

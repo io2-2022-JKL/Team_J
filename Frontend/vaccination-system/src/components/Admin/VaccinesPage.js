@@ -134,6 +134,7 @@ export default function DoctorsPage() {
                 setError(err);
                 setErrorState(true);
             }
+            console.log(err)
             setLoading(false);
         }
         fetchData();
@@ -221,6 +222,8 @@ export default function DoctorsPage() {
                 return 'Użytkownikowi zabroniono pobierania szczepionek'
             case '404':
                 return 'Nie znaleziono szczepionek'
+            case 'ECONNABORTED':
+                return 'Przekroczono limit połączenia'
             default:
                 return 'Wystąpił błąd!';
         }

@@ -45,6 +45,8 @@ function renderError(param) {
             return 'Użytkownikowi zabroniono uzyskiwania certyfikatów'
         case '404':
             return 'Nie znaleziono certyfikatów'
+        case 'ECONNABORTED':
+            return 'Przekroczono limit połączenia'
         default:
             return 'Wystąpił błąd!';
     }

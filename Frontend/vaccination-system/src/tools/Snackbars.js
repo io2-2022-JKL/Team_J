@@ -7,22 +7,22 @@ const Alert = React.forwardRef(function Alert(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
-export default function Snackbars(error,errorState,setErrorState,success,setSuccess) {
-    
+export default function Snackbars(error, errorState, setErrorState, success, setSuccess) {
+
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {
             return;
         }
         setErrorState(false);
     };
-    
+
     const handleClose2 = (event, reason) => {
         if (reason === 'clickaway') {
             return;
         }
         setSuccess(false);
     };
-    
+
     function renderError(param) {
         switch (param) {
             case '400':
@@ -33,6 +33,8 @@ export default function Snackbars(error,errorState,setErrorState,success,setSucc
                 return 'Użytkownikowi zabroniono dodawania szczepionki'
             case '404':
                 return 'Nie znaleziono szczepionki do dodania'
+            case 'ECONNABORTED':
+                return 'Przekroczono limit połączenia'
             default:
                 return 'Wystąpił błąd!';
         }

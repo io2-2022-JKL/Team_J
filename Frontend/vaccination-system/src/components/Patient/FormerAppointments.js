@@ -39,6 +39,8 @@ function renderError(param) {
             return 'Użytkownikowi zabroniono uzyskiwania historii szczepień'
         case '404':
             return 'Nie znaleziono historii szczepień'
+        case 'ECONNABORTED':
+            return 'Przekroczono limit połączenia'
         default:
             return 'Wystąpił błąd!';
     }

@@ -8,6 +8,7 @@ import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import { useNavigate } from "react-router-dom";
 import { getPatientInfo } from './PatientApi';
+import LoginHelpers from '../../tools/LoginHelpers';
 
 const theme = createTheme();
 
@@ -15,7 +16,8 @@ export default function PatientMainPage() {
     const navigate = useNavigate();
     const [patientData, setPatientData] = React.useState();
 
-    /*React.useEffect(() => {
+    React.useEffect(() => {
+        /*
         const fetchData = async () => {
             let userID = localStorage.getItem('userID');
             let [data, err] = await getPatientInfo(userID);
@@ -24,7 +26,9 @@ export default function PatientMainPage() {
             }
         }
         fetchData();
-    }, []);*/
+        */
+       LoginHelpers.preventGoingBack();
+    }, []);
 
     return (
         <ThemeProvider theme={theme}>
@@ -98,7 +102,10 @@ export default function PatientMainPage() {
                             fullWidth
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
-                            onClick={() => { navigate("/signin") }}
+                            onClick={() => { 
+                                LoginHelpers.logOut()
+                                navigate("/signin") }
+                            }
                         >
                             Wyloguj się
                         </Button>

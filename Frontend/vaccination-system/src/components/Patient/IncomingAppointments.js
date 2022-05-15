@@ -32,6 +32,8 @@ function renderError(param) {
             return 'Użytkownikowi zabroniono uzyskiwania przyszłych szczepień'
         case '404':
             return 'Nie znaleziono przyszłych szczepień'
+        case 'ECONNABORTED':
+            return 'Przekroczono limit połączenia'
         default:
             return 'Wystąpił błąd!';
     }
