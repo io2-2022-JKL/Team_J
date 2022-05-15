@@ -28,6 +28,11 @@ namespace VaccinationSystem.Controllers
         {
             _context = context;
         }
+        [ProducesResponseType(typeof(IEnumerable<GetDoctorInfoResponse>), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
         [HttpGet("info/{doctorId}")]
         public ActionResult<GetDoctorInfoResponse> GetDoctorInfo(string doctorId)
         {
@@ -72,6 +77,11 @@ namespace VaccinationSystem.Controllers
             };
             return result;
         }
+        [ProducesResponseType(typeof(IEnumerable<ExistingTimeSlotDTO>), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
         [HttpGet("timeSlots/{doctorId}")]
         public ActionResult<IEnumerable<ExistingTimeSlotDTO>> GetExistingTimeSlots(string doctorId)
         {
@@ -118,6 +128,10 @@ namespace VaccinationSystem.Controllers
             }
             return result;
         }
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
         [HttpPost("timeSlots/create/{doctorId}")]
         public IActionResult CreateTimeSlots(string doctorId, CreateNewVisitsRequestDTO createNewVisitsRequestDTO)
         {
@@ -190,6 +204,11 @@ namespace VaccinationSystem.Controllers
             return false;
         }
 
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
         [HttpPost("timeSlots/delete/{doctorId}")]
         public IActionResult DeleteTimeSlot(string doctorId, IEnumerable<string> ids)
         {
@@ -248,7 +267,11 @@ namespace VaccinationSystem.Controllers
             }
             return changedTimeSlots > 0;
         }
-
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
         [HttpPost("timeSlots/modify/{doctorId}/{timeSlotId}")]
         public IActionResult ModifyAppointment(string doctorId, string timeSlotId, ModifyTimeSlotRequestDTO modifyVisitRequestDTO)
         {
@@ -306,6 +329,11 @@ namespace VaccinationSystem.Controllers
             _context.SaveChanges();
             return true;
         }
+        [ProducesResponseType(typeof(IEnumerable<DoctorFormerAppointmentDTO>), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
         [HttpGet("formerAppointments/{doctorId}")]
         public ActionResult<IEnumerable<DoctorFormerAppointmentDTO>> GetFormerAppointments(string doctorId)
         {
@@ -382,6 +410,11 @@ namespace VaccinationSystem.Controllers
             }
             return result;
         }
+        [ProducesResponseType(typeof(IEnumerable<DoctorIncomingAppointmentDTO>), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
         [HttpGet("incomingAppointments/{doctorId}")]
         public ActionResult<IEnumerable<DoctorIncomingAppointmentDTO>> GetIncomingAppointments(string doctorId)
         {
@@ -454,7 +487,11 @@ namespace VaccinationSystem.Controllers
             }
             return result.AsEnumerable();
         }
-
+        [ProducesResponseType(typeof(IEnumerable<DoctorMarkedAppointmentResponseDTO>), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
         [HttpGet("vaccinate/{doctorId}/{appointmentId}")]
         public ActionResult<DoctorMarkedAppointmentResponseDTO> GetIncomingAppointment(string doctorId, string appointmentId)
         {
@@ -515,7 +552,11 @@ namespace VaccinationSystem.Controllers
             };
             return result;
         }
-
+        [ProducesResponseType(typeof(IEnumerable<DoctorConfirmVaccinationResponseDTO>), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
         [HttpPost("vaccinate/confirmVaccination/{doctorId}/{appointmentId}/{batchId}")]
         public ActionResult<DoctorConfirmVaccinationResponseDTO> ConfirmVaccination(string doctorId, string appointmentId, string batchId)
         {
@@ -571,7 +612,11 @@ namespace VaccinationSystem.Controllers
             _context.SaveChanges();
             return result;
         }
-
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
         [HttpPost("vaccinate/vaccinationDidNotHappen/{doctorId}/{appointmentId}")]
         public IActionResult VaccinationDidNotHappen(string doctorId, string appointmentId)
         {
@@ -614,7 +659,11 @@ namespace VaccinationSystem.Controllers
             _context.SaveChanges();
             return true;
         }
-
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
         [HttpPost("vaccinate/certify/{doctorId}/{appointmentId}")]
         public IActionResult Certify(string doctorId, string appointmentId)
         {

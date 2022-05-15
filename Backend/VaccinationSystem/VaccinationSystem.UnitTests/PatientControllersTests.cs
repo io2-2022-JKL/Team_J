@@ -8,6 +8,7 @@ using VaccinationSystem.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using VaccinationSystem.DTO;
 using VaccinationSystem.DTO.PatientDTOs;
+using VaccinationSystem.DTO.Errors;
 
 namespace VaccinationSystem.UnitTests
 {
@@ -76,9 +77,9 @@ namespace VaccinationSystem.UnitTests
         }
 
         [Theory]
-        [InlineData("Warszawa", "01-03-2022", "01-03-2022", "Koronawirus", 1)]
-        [InlineData("Kraków", "01-03-2022", "01-03-2022", "Koronawirus", 1)]
-        public void FilterTimeSlotsTest(string city, string DateFrom, string dateTo, string Virus, int timeSlotCount)
+        [InlineData("Warszawa", "01-03-2022", "01-03-2022", "Koronawirus", 1, "00000000-0000-0000-0000-000000000000")]
+        [InlineData("Kraków", "01-03-2022", "01-03-2022", "Koronawirus", 1, "00000000-0000-0000-0000-000000000000")]
+        public void FilterTimeSlotsTest(string city, string DateFrom, string dateTo, string Virus, int timeSlotCount, string patientId)
         {
             // Arrange
             var timeSlotData = GetTimeSlotsData().ToList();
@@ -95,6 +96,8 @@ namespace VaccinationSystem.UnitTests
             var vaccinesInVaccinationCentersMockSet = GetMock(vaccinesInVaccinationCentersData.AsQueryable());
             var openingHoursData = GetOpeningHoursData().ToList();
             var openingHoursMockSet = GetMock(openingHoursData.AsQueryable());
+            var appointmentsData = GetAppointmentsData().ToList();
+            var appointmentsMockSet = GetMock(appointmentsData.AsQueryable());
 
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.TimeSlots).Returns(timeSlotMockSet.Object);
@@ -104,27 +107,24 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.VaccinationCenters).Returns(vaccinationCenterMockSet.Object);
             mockContext.Setup(c => c.VaccinesInVaccinationCenter).Returns(vaccinesInVaccinationCentersMockSet.Object);
             mockContext.Setup(c => c.OpeningHours).Returns(openingHoursMockSet.Object);
+            mockContext.Setup(c => c.Appointments).Returns(appointmentsMockSet.Object);
 
             var controller = new PatientController(mockContext.Object);
 
             // Act
-            var result = controller.FilterTimeSlots(city, DateFrom, dateTo, Virus);
+            var result = controller.fetchFilteredTimeSlots(city, DateFrom, dateTo, Virus, patientId);
 
             // Assert
-            Assert.IsType<OkObjectResult>(result.Result);
+            Assert.IsType<List<TimeSlotFilterResponseDTO>>(result);
 
-            var list = result.Result as OkObjectResult;
-            Assert.IsType<List<TimeSlotFilterResponseDTO>>(list.Value);
-
-            var timeSlots = list.Value as List<TimeSlotFilterResponseDTO>;
-            Assert.Equal(timeSlotCount, timeSlots.Count());
+            Assert.Equal(timeSlotCount, result.Count());
         }
         [Theory]
-        [InlineData("Warszawa", "01-03-2022", "01-03-2022", "Koronawirus")]
-        [InlineData("Warszawa", "01-03-2022", "01-03-2022", "KoronawirusFake")]
-        [InlineData("Niewłaściwe Miasto", "01-03-2022", "01-03-2022", "Koronawirus")]
-        [InlineData("Kraków", "01-03-2022", "01-03-2022", "Koronawirus")]
-        public void FilterTimeSlotsEmptyTest(string city, string DateFrom, string dateTo, string Virus)
+        [InlineData("Warszawa", "01-03-2022", "01-03-2022", "Koronawirus", "00000000-0000-0000-0000-000000000000")]
+        [InlineData("Warszawa", "01-03-2022", "01-03-2022", "KoronawirusFake", "00000000-0000-0000-0000-000000000000")]
+        [InlineData("Niewłaściwe Miasto", "01-03-2022", "01-03-2022", "Koronawirus", "00000000-0000-0000-0000-000000000000")]
+        [InlineData("Kraków", "01-03-2022", "01-03-2022", "Koronawirus", "00000000-0000-0000-0000-000000000000")]
+        public void FilterTimeSlotsEmptyTest(string city, string DateFrom, string dateTo, string Virus, string patientId)
         {
             // Arrange
             var timeSlotData = GetTimeSlotsData().ToList();
@@ -154,19 +154,21 @@ namespace VaccinationSystem.UnitTests
             var controller = new PatientController(mockContext.Object);
 
             // Act
-            var result = controller.FilterTimeSlots(city, DateFrom, dateTo, Virus);
+            var result = controller.fetchFilteredTimeSlots(city, DateFrom, dateTo, Virus, patientId);
 
             // Assert
-            Assert.IsType<NotFoundResult>(result.Result);
+            Assert.Empty(result);
         }
         [Theory]
-        [InlineData(null, "01-03-2022", "01-03-2022", "Koronawirus")]
-        [InlineData("Warszawa", null, "01-03-2022", "Koronawirus")]
-        [InlineData("Warszawa", "01-03-2022", null, "Koronawirus")]
-        [InlineData("Warszawa", "01-03-2022", "01-03-2022", null)]
-        [InlineData("Warszawa", "01-03-2022 10:00", "01-03-2022", "Koronawirus")]
-        [InlineData("Warszawa", "01-03-2022", "01-03-2022 11:00", "Koronawirus")]
-        public void FilterTimeSlotsBadFormatTest(string city, string DateFrom, string dateTo, string Virus)
+        [InlineData(null, "01-03-2022", "01-03-2022", "Koronawirus", "00000000-0000-0000-0000-000000000000")]
+        [InlineData("Warszawa", null, "01-03-2022", "Koronawirus", "00000000-0000-0000-0000-000000000000")]
+        [InlineData("Warszawa", "01-03-2022", null, "Koronawirus", "00000000-0000-0000-0000-000000000000")]
+        [InlineData("Warszawa", "01-03-2022", "01-03-2022", null, "00000000-0000-0000-0000-000000000000")]
+        [InlineData("Warszawa", "01-03-2022 10:00", "01-03-2022", "Koronawirus", "00000000-0000-0000-0000-000000000000")]
+        [InlineData("Warszawa", "01-03-2022", "01-03-2022 11:00", "Koronawirus", "00000000-0000-0000-0000-000000000000")]
+        [InlineData("Warszawa", "01-03-2022", "01-03-2022", "Koronawirus", "BadFormat")]
+        [InlineData("Warszawa", "01-03-2022", "01-03-2022", "Koronawirus", null)]
+        public void FilterTimeSlotsBadFormatTest(string city, string DateFrom, string dateTo, string Virus, string patientId)
         {
             // Arrange
             var timeSlotData = GetTimeSlotsData().ToList();
@@ -196,10 +198,16 @@ namespace VaccinationSystem.UnitTests
             var controller = new PatientController(mockContext.Object);
 
             // Act
-            var result = controller.FilterTimeSlots(city, DateFrom, dateTo, Virus);
-
+            try
+            {
+                var result = controller.fetchFilteredTimeSlots(city, DateFrom, dateTo, Virus, patientId);
+                Assert.False(1 == 1);
+            }
+            catch (BadRequestException)
+            {
+                Assert.True(1 == 1);
+            }
             // Assert
-            Assert.IsType<BadRequestResult>(result.Result);
         }
         [Theory]
         [InlineData("00000000-0000-0000-0000-000000000000", "a0780125-a945-4e20-b2ab-02bcf0ce8f3b", "e0d50915-5548-4993-aaaa-edddab4e1df1", 1)]
