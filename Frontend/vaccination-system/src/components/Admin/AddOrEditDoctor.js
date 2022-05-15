@@ -15,7 +15,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 const theme = createTheme();
 
-export default function AddNewDoctor() {
+export default function AddOrEditDoctor() {
     const navigate = useNavigate();
     return (
         <ThemeProvider theme={theme}>
@@ -30,7 +30,7 @@ export default function AddNewDoctor() {
                     }}
                 >
                     <Typography component="h1" variant="h5">
-                        Wpisz dane nowego lekarza
+                        Wpisz dane lekarza
                     </Typography>
                     <Box component="form" noValidate sx={{ mt: 3 }}>
                         <Grid container spacing={2}>
@@ -114,7 +114,7 @@ export default function AddNewDoctor() {
                         sx={{ mt: 3, mb: 2 }}
                         onClick={() => { navigate("/admin/doctors") }}
                     >
-                        Dodaj lekarza
+                        Zatwierdź
                     </Button>
                     <Button
                         type="submit"

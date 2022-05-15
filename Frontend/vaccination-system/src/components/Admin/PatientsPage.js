@@ -30,6 +30,7 @@ export default function PatientsPage() {
         },
         {
             field: 'pesel',
+            headerName: 'PESEL',
             minWidth: 110,
             flex: 0.5,
             editable: true
@@ -132,28 +133,13 @@ export default function PatientsPage() {
         [],
     );
 
-    const editCell = async (params, event) => {
-        /*const result = await confirm("Czy na pewno chcesz edytować pacjenta?", confirmOptionsInPolish);
-        if (result) {
-            console.log("You click yes!");
-            rows[params.id] = params.value;
-            filteredRows[params.id] = params.value;
-            setRows(rows);
-            setFilteredRows(filteredRows);
-            return;
-        }
-        else {
-            rows[params.id] = params.value;
-            filteredRows[params.id] = params.value;
-            setFilteredRows(filteredRows);
-        }
-        setFilteredRows(filteredRows);
-        console.log("You click No!");
-    
-        if (!event.ctrlKey) {
-            event.defaultMuiPrevented = true;
-        }
-        console.log(params.row.PESEL);*/
+    function handleRowClick(row) {
+        navigate('/admin/patients/editPatient', {
+            state: {
+                id: row.id, pesel: row.pesel, firstName: row.firstName, lastName: row.lastName, mail: row.mail,
+                dateOfBirth: row.dateOfBirth, phoneNumber: row.phoneNumber, active: row.active
+            }
+        })
     }
 
     const confirmOptionsInPolish = {
@@ -313,7 +299,7 @@ export default function PatientsPage() {
                         </Box>
                         <DataDisplayArray
                             loading={loading}
-                            editCell={editCell}
+                            onRowClick={handleRowClick}
                             columns={columns}
                             filteredRows={filteredRows}
                         />
