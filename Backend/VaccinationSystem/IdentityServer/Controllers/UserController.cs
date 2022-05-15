@@ -83,7 +83,7 @@ namespace IdentityServer.Controllers
                 var userStore = new UserStore<ApplicationUser>(_context);
                 userStore.CreateAsync(user).Wait();
 
-                AssignRole(_serviceProvider, user.Email, Role.Patient).Wait();
+                AssignRole(_serviceProvider, user.Email, registerDTO.role).Wait();
 
                 return Ok();
             }
@@ -284,6 +284,69 @@ namespace IdentityServer.Controllers
             }
 
             return Ok();
+        }
+
+        [HttpPost("edit")]
+        public IActionResult EditUser(RegisterInIdentityServerDTO editDTO)
+        {
+            var result = FindAndEditUser(editDTO).Result;
+            return result;
+        }
+
+        private async Task<IActionResult> FindAndEditUser(RegisterInIdentityServerDTO editDTO)
+        {
+            if (editDTO == null || editDTO.email == null || !new EmailAddressAttribute().IsValid(editDTO.email) || editDTO.userId == null || !Guid.TryParse(editDTO.userId, out _) || editDTO.phoneNumber == null || !IsPhoneNumber(new string(editDTO.phoneNumber.ToCharArray().Where(c => !Char.IsWhiteSpace(c)).ToArray())) || editDTO.role == null || editDTO.password == null || editDTO.password.Length == 0)
+            {
+                return BadRequest();
+            }
+            if (!Role.IsRole(editDTO.role))
+            {
+                return BadRequest();
+            }
+
+            var user = _context.Users.FirstOrDefault(u => u.Id == editDTO.userId);
+
+            if(user == null)
+            {
+                return NotFound();
+            }
+            if (_context.Users.Any(u => u.Id != editDTO.userId && u.UserName == editDTO.email))
+            {
+                return BadRequest();
+            }
+
+            var rolesForUser = await _userManager.GetRolesAsync(user);
+
+            using (var transaction = _context.Database.BeginTransaction())
+            {
+                await _persisteGrantsService.RemoveAllGrantsAsync(user.Id);
+
+                if (rolesForUser.Count() > 0)
+                {
+                    foreach (var role in rolesForUser.ToList())
+                    {
+                        await _userManager.RemoveFromRoleAsync(user, role);
+                    }
+                }
+
+                await _userManager.DeleteAsync(user);
+
+                user.UserName = editDTO.email;
+                user.NormalizedUserName = editDTO.email.ToUpper();
+                user.Email = editDTO.email;
+                user.NormalizedEmail = editDTO.email.ToUpper();
+                user.PhoneNumber = editDTO.phoneNumber;
+
+                var userStore = new UserStore<ApplicationUser>(_context);
+                userStore.CreateAsync(user).Wait();
+
+                AssignRole(_serviceProvider, user.Email, editDTO.role).Wait();
+
+                transaction.Commit();
+            }
+
+            return Ok();
+
         }
     }
 }
