@@ -62,6 +62,8 @@ export default function FilterTimeSlots() {
                 return 'Użytkownikowi zabroniono wyszukiwania'
             case '404':
                 return 'Nie znaleziono dostępnych terminów dla tych danych'
+            case 'ECONNABORTED':
+                return 'Przekroczono limit połączenia'
             default:
                 return 'Wystąpił błąd!';
         }
@@ -78,6 +80,8 @@ export default function FilterTimeSlots() {
                 return 'Użytkownikowi zabroniono zapisać się na to szczepienie'
             case '404':
                 return 'Nie udało się zapisać na szczepienie'
+            case 'ECONNABORTED':
+                return 'Przekroczono limit połączenia'
             default:
                 return 'Wystąpił błąd!';
         }

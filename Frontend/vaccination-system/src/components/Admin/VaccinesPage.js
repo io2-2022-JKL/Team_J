@@ -125,7 +125,9 @@ export default function DoctorsPage() {
     React.useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
-            let [data, err] = await getVaccinesData();
+            let auth_token = localStorage.getItem('auth_token')
+            console.log(auth_token)
+            let [data, err] = await getVaccinesData(auth_token);
             if (data != null) {
                 setRows(data);
                 setFilteredRows(data)
@@ -134,6 +136,7 @@ export default function DoctorsPage() {
                 setError(err);
                 setErrorState(true);
             }
+            console.log(err)
             setLoading(false);
         }
         fetchData();
@@ -221,6 +224,8 @@ export default function DoctorsPage() {
                 return 'Użytkownikowi zabroniono pobierania szczepionek'
             case '404':
                 return 'Nie znaleziono szczepionek'
+            case 'ECONNABORTED':
+                return 'Przekroczono limit połączenia'
             default:
                 return 'Wystąpił błąd!';
         }

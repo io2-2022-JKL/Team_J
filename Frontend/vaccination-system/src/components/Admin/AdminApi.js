@@ -17,7 +17,7 @@ export async function getPatientsData() {
 
     } catch (error) {
         console.error(error.message);
-        if (response != null)
+        if (error.response != null)
             return [response, error.response.status.toString()];
         return [response, error.code];
     }
@@ -30,7 +30,7 @@ export async function getVaccinesData() {
         response = await axios({
             method: 'get',
             url: SYSTEM_SZCZEPIEN_URL + '/admin/vaccines',
-            timeout: 2000
+            timeout: 2000,
         });
         console.log('udało się pobrac dane')
         const result = response.data.map(obj => {
@@ -52,7 +52,7 @@ export async function getVaccinesData() {
 
     } catch (error) {
         console.error(error.message);
-        if (response != null)
+        if (error.response != null)
             return [response, error.response.status.toString()];
         return [response, error.code];
     }
@@ -84,7 +84,7 @@ export async function addVaccine(company, name, numberOfDoses, minDaysBetweenDos
     } catch (error) {
         console.error(error.message);
         console.error(error.code);
-        if (response == null)
+        if (error.response == null)
             return error.code;
         return error.response.status.toString();
     }
@@ -117,7 +117,7 @@ export async function editVaccine(company, name, numberOfDoses, minDaysBetweenDo
     } catch (error) {
         console.error(error.message);
         console.error(error.code);
-        if (response == null)
+        if (error.response == null)
             return error.code;
         return error.response.status.toString();
     }

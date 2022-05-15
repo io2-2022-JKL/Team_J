@@ -31,7 +31,9 @@ export async function getFreeTimeSlots(city, dateFrom, dateTo, virus) {
         return [response.data, errCode];
     } catch (error) {
         console.error(error.message);
-        return [response, error.response.status.toString()];
+        if (error.response != null)
+            return [response, error.response.status.toString()];
+        return [response, error.code];
     }
 
     //return response;
@@ -55,7 +57,9 @@ export async function bookTimeSlot(timeSlot, vaccine) {
         return [errCode];
     } catch (error) {
         console.error(error.message);
-        return [error.response.status.toString()];
+        if (error.response != null)
+            return error.response.status.toString();
+        return error.code;
     }
 }
 
@@ -76,7 +80,9 @@ export async function getFormerAppointments(patientId) {
         return [response.data, err];
     } catch (error) {
         console.error(error.message);
-        return [response, error.response.status.toString()];
+        if (error.response != null)
+            return [response, error.response.status.toString()];
+        return [response, error.code];
     }
 }
 
@@ -94,10 +100,12 @@ export async function getIncomingAppointments(patientId) {
             data: response.data,
         })
         */
-        return [response.data, err];//[response,err];
+        return [response.data, err];
     } catch (error) {
         console.error(error.message);
-        return [response, error.response.status.toString()];
+        if (error.response != null)
+            return [response, error.response.status.toString()];
+        return [response, error.code];
     }
 }
 
@@ -108,14 +116,12 @@ export async function cancelAppointment(patientId, appointmentId) {
             method: 'delete',
             url: SYSTEM_SZCZEPIEN_URL + '/patient/appointments/incomingAppointments/cancelAppointments/' + patientId + '/' + appointmentId,
         });
-
-        //console.log({
-        //    response,
-        //})
         return err;
     } catch (error) {
         console.error(error.message);
-        return error.response.status.toString();
+        if (error.response != null)
+            return error.response.status.toString();
+        return error.code;
     }
 
 }
@@ -129,16 +135,12 @@ export async function getCertificates(patientId) {
             method: 'get',
             url: SYSTEM_SZCZEPIEN_URL + '/patient/certificates/' + patientId,
         });
-        /*
-        console.log({
-            data: response.data,
-        })
-        */
-        return [response.data, error];//[response,err];
-
+        return [response.data, error];
     } catch (error) {
         console.error(error.message);
-        return [response, error.response.status.toString()];
+        if (error.response != null)
+            return [response, error.response.status.toString()];
+        return [response, error.code];
     }
 }
 
@@ -151,9 +153,10 @@ export async function getPatientInfo(patientId) {
             url: SYSTEM_SZCZEPIEN_URL + '/patient/info/' + patientId,
         });
         return [response.data, errCode];
-
     } catch (error) {
         console.error(error.message);
-        return [response, error.response.status.toString()];
+        if (error.response != null)
+            return [response, error.response.status.toString()];
+        return [response, error.code];
     }
 }

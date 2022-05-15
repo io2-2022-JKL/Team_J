@@ -7,12 +7,16 @@ import Typography from '@mui/material/Typography';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import { useNavigate } from "react-router-dom";
+import LoginHelpers from '../../tools/LoginHelpers';
 
 const theme = createTheme();
 
 export default function DoctorMainPage() {
     const name = "Jan", surname = "Kowalski";
     const navigate = useNavigate();
+    React.useEffect(()=>{
+        LoginHelpers.preventGoingBack();
+    },[])
     return (
         <ThemeProvider theme={theme}>
             <Container component="main" maxWidth="xs">
@@ -83,7 +87,10 @@ export default function DoctorMainPage() {
                             fullWidth
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
-                            onClick={() => { navigate("/signin") }}
+                            onClick={() => { 
+                                LoginHelpers.logOut()
+                                navigate("/signin") }
+                            }
                         >
                             Wyloguj się
                         </Button>
