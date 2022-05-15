@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Linq;
+using IdentityServer4.KeyManagement.EntityFramework;
 
 namespace IdentityServer.Configuration
 {
@@ -13,6 +14,8 @@ namespace IdentityServer.Configuration
         {
             using var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope();
             serviceScope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>().Database.Migrate();
+
+            serviceScope.ServiceProvider.GetRequiredService<KeyManagementDbContext>().Database.Migrate();
 
             var context = serviceScope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
 
