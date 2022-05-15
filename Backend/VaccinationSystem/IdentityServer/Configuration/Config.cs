@@ -32,7 +32,7 @@ namespace IdentityServer.Configuration
                 //{
                 //    "http://localhost:3006",
                 //},
-                AccessTokenLifetime = 86400
+                AccessTokenLifetime = 60 * 60
             }
         };
 
@@ -42,7 +42,7 @@ namespace IdentityServer.Configuration
             {
                 Name = "vaccination-system-api",
                 DisplayName = "Vaccination System API",
-                UserClaims = new[] {JwtClaimTypes.Profile, JwtClaimTypes.Role},
+                UserClaims = new[] {JwtClaimTypes.Profile, JwtClaimTypes.Role}
             }
         };
 

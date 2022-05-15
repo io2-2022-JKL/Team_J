@@ -15,6 +15,7 @@ using System.IO;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.OpenApi.Models;
+using System;
 
 namespace VaccinationSystem
 {
@@ -48,9 +49,24 @@ namespace VaccinationSystem
                     options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
                     {
                         ValidateAudience = false,
-
+                        ValidateLifetime = true,
+                        ValidateIssuer = true,
+                        ValidIssuers = new List<string>() { "https://localhost:6001" },
+                        ClockSkew = TimeSpan.Zero
                     };
                 });
+            
+
+            /*
+            services.AddAuthentication("token")
+                .AddOAuth2Introspection("token", options =>
+                {
+                    options.Authority = "https://localhost:6001";
+
+                    options.ClientId = "vaccination-system-api";
+                    options.ClientSecret = "secret";
+                });
+            */
 
             services.AddAuthorization(options =>
             {
