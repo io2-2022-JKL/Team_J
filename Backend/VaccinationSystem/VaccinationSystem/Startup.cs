@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.OpenApi.Models;
 using System;
+using Microsoft.Net.Http.Headers;
 
 namespace VaccinationSystem
 {
@@ -133,7 +134,7 @@ namespace VaccinationSystem
             {
                 builder.AllowAnyOrigin()
                 .AllowAnyMethod()
-                .AllowAnyHeader();
+                .WithExposedHeaders(HeaderNames.Authorization);
             }));
 
             services.AddHttpClient();
