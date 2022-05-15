@@ -17,6 +17,7 @@ import DataDisplayArray from '../DataDisplayArray';
 import { getVaccinesData } from './AdminApi';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
+import LoginHelpers from '../../tools/LoginHelpers';
 
 const theme = createTheme();
 
@@ -132,7 +133,7 @@ export default function DoctorsPage() {
             }
             else {
                 setError(err);
-                setErrorState(true);
+                setErrorState(true);  
             }
             console.log(err)
             setLoading(false);
@@ -190,28 +191,38 @@ export default function DoctorsPage() {
         if (reason === 'clickaway') {
             return;
         }
+        if (errorState) {
+            if (error === '401' || error === '403')
+            {
+                LoginHelpers.logOut();
+                navigate('/signin');
+            }
+                
+        }
         setErrorState(false);
     };
 
     function handleRowClick(row) {
         console.log('kliknięto row')
         console.log({
-            action: "edit", 
-            id: row.id, 
-            company: row.company, 
-            name: row.name, 
+            action: "edit",
+            id: row.id,
+            company: row.company,
+            name: row.name,
             numberOfDoses: row.numberOfDoses,
-            minDaysBetweenDoses: row.minDaysBetweenDoses, 
-            maxDaysBetweenDoses: row.maxDaysBetweenDoses, 
-            virusName: row.virus, 
-            minPatientAge: row.minPatientAge, 
+            minDaysBetweenDoses: row.minDaysBetweenDoses,
+            maxDaysBetweenDoses: row.maxDaysBetweenDoses,
+            virusName: row.virus,
+            minPatientAge: row.minPatientAge,
             maxPatientAge: row.maxPatientAge,
             active: row.active
         })
-        navigate('/admin/vaccines/editVaccine', {state: {
-            action: "edit", id: row.id, company: row.company, name: row.name, numberOfDoses: row.numberOfDoses,
-            minDaysBetweenDoses: row.minDaysBetweenDoses, maxDaysBetweenDoses: row.maxDaysBetweenDoses, virusName: row.virus, minPatientAge: row.minPatientAge, maxPatientAge: row.maxPatientAge, active: row.active
-        }})
+        navigate('/admin/vaccines/editVaccine', {
+            state: {
+                action: "edit", id: row.id, company: row.company, name: row.name, numberOfDoses: row.numberOfDoses,
+                minDaysBetweenDoses: row.minDaysBetweenDoses, maxDaysBetweenDoses: row.maxDaysBetweenDoses, virusName: row.virus, minPatientAge: row.minPatientAge, maxPatientAge: row.maxPatientAge, active: row.active
+            }
+        })
     }
 
     function renderError(param) {
@@ -343,7 +354,7 @@ export default function DoctorsPage() {
                                     </TextField>
                                 </Grid>
                             </Grid>
-                            <Button variant='outlined' onClick={() => { navigate("/admin/vaccines/addVaccine", { action: "add" }) }}>
+                            <Button variant='outlined' onClick={() => { navigate("/admin/vaccines/addVaccine", { state: { action: "add" }}) }}>
                                 Dodaj nową szczepionkę
                             </Button>
                         </Box>
@@ -362,7 +373,7 @@ export default function DoctorsPage() {
                         >
                             Powrót
                         </Button>
-                        <Snackbar open={errorState} autoHideDuration={6000} onClose={handleClose}>
+                        <Snackbar open={errorState} autoHideDuration={2000} onClose={handleClose}>
                             <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
                                 {renderError(error)}
                             </Alert>

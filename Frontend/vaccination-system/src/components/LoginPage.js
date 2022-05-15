@@ -11,7 +11,6 @@ import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState } from 'react';
-import validator from 'validator';
 import axios from 'axios';
 import CircularProgress from '@mui/material/CircularProgress';
 import { blue } from '@mui/material/colors';

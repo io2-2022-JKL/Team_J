@@ -14,6 +14,7 @@ import ValidationHelpers from '../../tools/ValidationHelpers';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import Snackbars from '../../tools/Snackbars';
+import LoginHelpers from '../../tools/LoginHelpers'
 
 const theme = createTheme();
 
@@ -21,7 +22,7 @@ const Alert = React.forwardRef(function Alert(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
-export default function AddOrEditVaccine(action) {
+export default function AddOrEditVaccine() {
     const navigate = useNavigate();
     const [nODErrorState, setNODErrorState] = useState(false);
     const [nODError, setNODError] = useState('');
@@ -45,8 +46,8 @@ export default function AddOrEditVaccine(action) {
     const [maxDBD, setMaxDBD] = useState(0);
     const [minPA, setMinPA] = useState(0);
     const [maxPA, setMaxPA] = useState(0);
-    const [addError, setError] = useState('');
-    const [addErrorState, setErrorState] = useState(false);
+    const [addError, setAddError] = useState('');
+    const [addErrorState, setAddErrorState] = useState(false);
     const [success, setSuccess] = useState(false);
     const location = useLocation();
 
@@ -81,13 +82,14 @@ export default function AddOrEditVaccine(action) {
 
     const handleSubmit = async (event) => {
         if (minPAErrorState || minPAErrorState2 || minDBDErrorState || minDBDErrorState2 || maxPAErrorState || maxPAErrorState2 || maxDBDErrorState || maxDBDErrorState2 || nODErrorState) {
-            setError("Błąd walidacji pól")
-            setErrorState(true)
+            setAddError("Błąd walidacji pól")
+            setAddErrorState(true)
             return
         }
 
         event.preventDefault();
         const data = new FormData(event.currentTarget);
+        /*
         console.log({
             company: data.get('company'),
             name: data.get('name'),
@@ -99,22 +101,24 @@ export default function AddOrEditVaccine(action) {
             maxPA: Number.parseInt(data.get('maxPatientAge')),
             active: data.get('active')
         });
-
+        */
         let error;
-        if (action === "add")
+        console.log(location.state.action)
+
+        if (location.state.action === "add")
             error = await addVaccine(data.get('company'), data.get('name'), Number.parseInt(data.get('numberOfDoses')),
                 Number.parseInt(data.get('minDaysBetweenDoses')), Number.parseInt(data.get('maxDaysBetweenDoses')),
                 data.get('virus'), Number.parseInt(data.get('minPatientAge')), Number.parseInt(data.get('maxPatientAge')),
                 data.get('active'));
-        else if (action === "edit")
+        else if (location.state.action === "edit")
             //editVaccine    
             error = await editVaccine(data.get('company'), data.get('name'), Number.parseInt(data.get('numberOfDoses')),
                 Number.parseInt(data.get('minDaysBetweenDoses')), Number.parseInt(data.get('maxDaysBetweenDoses')),
                 data.get('virus'), Number.parseInt(data.get('minPatientAge')), Number.parseInt(data.get('maxPatientAge')),
                 data.get('active'));
-        setError(error);
+        setAddError(error);
         if (error != '200')
-            setErrorState(true);
+            setAddErrorState(true);
         else
             setSuccess(true);
     };
@@ -140,7 +144,13 @@ export default function AddOrEditVaccine(action) {
         if (reason === 'clickaway') {
             return;
         }
-        setErrorState(false);
+        if (addErrorState) {
+            if (addError === '401' || addError === '403') {
+                LoginHelpers.logOut();
+                navigate('/signin');
+            }
+        }
+        setAddErrorState(false);
     };
 
     const handleClose2 = (event, reason) => {
@@ -160,6 +170,8 @@ export default function AddOrEditVaccine(action) {
                 return 'Użytkownikowi zabroniono dodawania szczepionki'
             case '404':
                 return 'Nie znaleziono szczepionki do dodania'
+            case 'ECONNABORTED':
+                return 'Przekroczono limit połączenia'
             default:
                 return 'Wystąpił błąd!';
         }
@@ -327,12 +339,12 @@ export default function AddOrEditVaccine(action) {
                     >
                         Powrót
                     </Button>
-                    <Snackbar open={addErrorState} autoHideDuration={6000} onClose={handleClose}>
+                    <Snackbar open={addErrorState} autoHideDuration={2000} onClose={handleClose}>
                         <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
                             {renderError(addError)}
                         </Alert>
                     </Snackbar>
-                    <Snackbar open={success} autoHideDuration={6000} onClose={handleClose2}>
+                    <Snackbar open={success} autoHideDuration={2000} onClose={handleClose2}>
                         <Alert onClose={handleClose2} severity="success" sx={{ width: '100%' }}>
                             Pomyślnie dodano szczepionkę
                         </Alert>
