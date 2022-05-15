@@ -125,9 +125,7 @@ export default function DoctorsPage() {
     React.useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
-            let auth_token = localStorage.getItem('auth_token')
-            console.log(auth_token)
-            let [data, err] = await getVaccinesData(auth_token);
+            let [data, err] = await getVaccinesData();
             if (data != null) {
                 setRows(data);
                 setFilteredRows(data)
