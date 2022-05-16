@@ -138,11 +138,11 @@ namespace VaccinationSystem.Controllers
             return Ok();
         }
 
-        private bool ContainsSymbol(string s)
+        public static bool ContainsSymbol(string s)
         {
             return s.IndexOfAny("!@#$%^&*()_+=[{]};:\"\\|<>,./".ToCharArray()) != -1;
         }
-        private bool IsPhoneNumber(string s)
+        public static bool IsPhoneNumber(string s)
         {
             
             if (s.Length > 15)

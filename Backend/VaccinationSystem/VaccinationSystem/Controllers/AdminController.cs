@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Net.Http;
 using System.IO;
 using System.Net.Http.Headers;
+using System.Text.Json;
 
 namespace VaccinationSystem.Controllers
 {
@@ -98,6 +99,199 @@ namespace VaccinationSystem.Controllers
         [ProducesResponseType(404)]
         public IActionResult EditPatient(PatientDTO patientDTO)
         {
+            var result = FindAndEditPatient(patientDTO).Result;
+            return result;
+        }
+
+        private async Task<IActionResult> FindAndEditPatient(PatientDTO patientDTO)
+        {
+            if(patientDTO.id == null || !Guid.TryParse(patientDTO.id, out _))
+            {
+                return BadRequest();
+            }
+
+            Guid id = Guid.Parse(patientDTO.id);
+            Patient patient = _context.Patients.SingleOrDefault(p => p.Id == id);
+
+            if(patient != null)
+            {
+                DateTime dateOfBirth;
+                string phoneNumber;
+
+                if (patientDTO.PESEL == null || patientDTO.PESEL.Length != 11 || !ulong.TryParse(patientDTO.PESEL, out _))
+                {
+                    return BadRequest();
+                }
+                if(patientDTO.firstName == null || patientDTO.firstName.Length == 0 || DefaultController.ContainsSymbol(patientDTO.firstName))
+                {
+                    return BadRequest();
+                }
+                if(patientDTO.lastName == null || patientDTO.lastName.Length == 0 || DefaultController.ContainsSymbol(patientDTO.lastName))
+                {
+                    return BadRequest();
+                }
+                try
+                {
+                    dateOfBirth = DateTime.ParseExact(patientDTO.dateOfBirth, _dateFormat, null);
+                }
+                catch(FormatException)
+                {
+                    return BadRequest();
+                }
+                catch(ArgumentNullException)
+                {
+                    return BadRequest();
+                }
+                if(patientDTO.mail == null || !new EmailAddressAttribute().IsValid(patientDTO.mail))
+                {
+                    return BadRequest();
+                }
+                if(patientDTO.phoneNumber == null)
+                {
+                    return BadRequest();
+                }
+                phoneNumber = new string(patientDTO.phoneNumber.ToCharArray().Where(c => !Char.IsWhiteSpace(c)).ToArray());
+                if(phoneNumber.Length == 0 || !DefaultController.IsPhoneNumber(phoneNumber))
+                {
+                    return BadRequest();
+                }
+
+                patient.FirstName = patientDTO.firstName;
+                patient.LastName = patientDTO.lastName;
+                patient.DateOfBirth = dateOfBirth;
+
+                var httpClient = _httpClientFactory.CreateClient();
+
+                if (patientDTO.active)
+                {
+                    if (_context.Patients.Any(p => p.Id != id && p.PESEL == patientDTO.PESEL && p.Active == true))
+                    {
+                        return BadRequest();
+                    }
+                    if( _context.Patients.Any(p => p.Id != id && p.Mail == patientDTO.mail && p.Active == true))
+                    {
+                        return BadRequest();
+                    }
+
+                    if (patient.Active)
+                    {
+                        if(patient.PhoneNumber != phoneNumber || patient.Mail != patientDTO.mail)
+                        {
+                            // zmiana danych 
+
+                            string userId;
+                            string role;
+                            Doctor doctor = _context.Doctors.FirstOrDefault(d => d.PatientId == patient.Id && d.Active == true);
+                            if (doctor == null)
+                            {
+                                userId = patientDTO.id;
+                                role = Role.Patient;
+                            }
+                            else
+                            {
+                                userId = doctor.Id.ToString();
+                                role = Role.Doctor;
+                            }
+
+                            var registerISDTO = new RegisterInIdentityServerDTO()
+                            {
+                                userId = userId,
+                                email = patientDTO.mail,
+                                phoneNumber = phoneNumber,
+                                role = role,
+                                password = patient.Password,
+                            };
+                            var registerJSON = JsonSerializer.Serialize(registerISDTO);
+
+                            var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, "user/edit");
+                            httpRequestMessage.Headers.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+                            httpRequestMessage.Content = new StringContent(registerJSON, System.Text.Encoding.UTF8);
+                            httpRequestMessage.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+                            httpClient.BaseAddress = new Uri(_baseUri);
+
+                            var httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
+                            if (!httpResponseMessage.IsSuccessStatusCode)
+                                return BadRequest();
+
+                        }
+                    }
+                    else
+                    {
+                        var registerISDTO = new RegisterInIdentityServerDTO()
+                        {
+                            userId = patient.Id.ToString(),
+                            email = patientDTO.mail,
+                            phoneNumber = phoneNumber,
+                            role = Role.Patient,
+                            password = patient.Password,
+                        };
+                        var registerJSON = JsonSerializer.Serialize(registerISDTO);
+
+                        var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, "user/register");
+                        httpRequestMessage.Headers.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+                        httpRequestMessage.Content = new StringContent(registerJSON, System.Text.Encoding.UTF8);
+                        httpRequestMessage.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+                        httpClient.BaseAddress = new Uri(_baseUri);
+
+                        var httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
+                        if (!httpResponseMessage.IsSuccessStatusCode)
+                            return BadRequest();
+                    }
+                }
+                else
+                {
+                    if (patient.Active)
+                    {
+                        string userId;
+                        Doctor doctor = _context.Doctors.FirstOrDefault(d => d.PatientId == patient.Id && d.Active == true);
+                        if(doctor == null)
+                        {
+                            userId = patientDTO.id;
+                        }
+                        else
+                        {
+                            userId = doctor.Id.ToString();
+
+                            foreach (var appointment in _context.Appointments.Include("TimeSlots").Where(a => a.TimeSlot.DoctorId == doctor.Id && a.State == AppointmentState.Planned).ToList())
+                            {
+                                appointment.State = AppointmentState.Cancelled; // powiadomić pacjentów
+                                var timeSlot = _context.TimeSlots.SingleOrDefault(ts => ts.Id == appointment.TimeSlotId);
+                                if (timeSlot == null)
+                                {
+                                    return BadRequest();
+                                }
+                                appointment.TimeSlot = timeSlot;
+                                appointment.TimeSlot.Active = false;
+                            }
+                            _context.TimeSlots.Where(slot => slot.DoctorId == doctor.Id && slot.Active == true).ToList().ForEach(slot => { slot.Active = false; });
+
+                            doctor.Active = false;
+                        }
+
+                        var uri = Path.Combine("user/deletePatient", userId);
+                        var request = new HttpRequestMessage(HttpMethod.Delete, uri);
+                        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                        httpClient.BaseAddress = new Uri(_baseUri);
+
+                        var response = await httpClient.SendAsync(request);
+                        if (!response.IsSuccessStatusCode)
+                            return BadRequest();
+                    }
+                }
+                patient.PESEL = patientDTO.PESEL;
+                patient.Mail = patientDTO.mail;
+                patient.PhoneNumber = phoneNumber;
+                patient.Active = patientDTO.active;
+
+                _context.SaveChanges();
+
+                return Ok();
+
+            }
+
             return NotFound();
         }
 
@@ -261,7 +455,228 @@ namespace VaccinationSystem.Controllers
         [ProducesResponseType(404)]
         public IActionResult EditDoctor([FromBody, Required] EditDoctorRequestDTO editDoctorRequestDTO)
         {
-            return NotFound();
+            var result = FindAndEditDoctor(editDoctorRequestDTO).Result;
+            return result;
+        }
+
+        private async Task<IActionResult> FindAndEditDoctor(EditDoctorRequestDTO doctorDTO)
+        {
+            if (doctorDTO.doctorId == null || !Guid.TryParse(doctorDTO.doctorId, out _))
+            {
+                return BadRequest();
+            }
+
+            if(doctorDTO.vaccinationCenterId == null || !Guid.TryParse(doctorDTO.vaccinationCenterId, out _))
+            {
+                return BadRequest();
+            }
+
+            Guid id = Guid.Parse(doctorDTO.doctorId);
+            Doctor doctor = _context.Doctors.SingleOrDefault(d => d.Id == id);
+            if(doctor == null)
+            {
+                return NotFound();
+            }
+            Patient patient = _context.Patients.SingleOrDefault(p => p.Id == doctor.PatientId);
+            if(patient == null)
+            {
+                return BadRequest(); // nie powinno nigdy wystąpić
+            }
+            if(!_context.VaccinationCenters.Any(vc => vc.Id == doctor.VaccinationCenterId))
+            {
+                return BadRequest(); // nie powinno nigdy wystąpić
+            }
+            Guid vaccinationCenterId = Guid.Parse(doctorDTO.vaccinationCenterId);
+            VaccinationCenter vaccinationCenter = _context.VaccinationCenters.SingleOrDefault(vc => vc.Id == vaccinationCenterId);
+
+            if(vaccinationCenter == null)
+            {
+                return BadRequest();
+            }
+
+            DateTime dateOfBirth;
+            string phoneNumber;
+
+            if (doctorDTO.PESEL == null || doctorDTO.PESEL.Length != 11 || !ulong.TryParse(doctorDTO.PESEL, out _))
+            {
+                return BadRequest();
+            }
+            if (doctorDTO.firstName == null || doctorDTO.firstName.Length == 0 || DefaultController.ContainsSymbol(doctorDTO.firstName))
+            {
+                return BadRequest();
+            }
+            if (doctorDTO.lastName == null || doctorDTO.lastName.Length == 0 || DefaultController.ContainsSymbol(doctorDTO.lastName))
+            {
+                return BadRequest();
+            }
+            try
+            {
+                dateOfBirth = DateTime.ParseExact(doctorDTO.dateOfBirth, _dateFormat, null);
+            }
+            catch (FormatException)
+            {
+                return BadRequest();
+            }
+            catch (ArgumentNullException)
+            {
+                return BadRequest();
+            }
+            if (doctorDTO.mail == null || !new EmailAddressAttribute().IsValid(doctorDTO.mail))
+            {
+                return BadRequest();
+            }
+            if (doctorDTO.phoneNumber == null)
+            {
+                return BadRequest();
+            }
+            phoneNumber = new string(doctorDTO.phoneNumber.ToCharArray().Where(c => !Char.IsWhiteSpace(c)).ToArray());
+            if (phoneNumber.Length == 0 || !DefaultController.IsPhoneNumber(phoneNumber))
+            {
+                return BadRequest();
+            }
+
+            patient.FirstName = doctorDTO.firstName;
+            patient.LastName = doctorDTO.lastName;
+            patient.DateOfBirth = dateOfBirth;
+
+            var httpClient = _httpClientFactory.CreateClient();
+            httpClient.BaseAddress = new Uri(_baseUri);
+
+            if (doctorDTO.active)
+            {
+                if(!patient.Active)
+                {
+                    return BadRequest();
+                }
+                if (_context.Doctors.Any(d => d.Id != id && d.PatientId == patient.Id && d.Active == true))
+                {
+                    return BadRequest();
+                }
+                if (_context.Patients.Any(p => p.Id != patient.Id && p.PESEL == doctorDTO.PESEL && p.Active == true)) 
+                {
+                    return BadRequest();
+                }
+                if (_context.Patients.Any(p => p.Id != patient.Id && p.Mail == doctorDTO.mail && p.Active == true))
+                {
+                    return BadRequest();
+                }
+                if(!vaccinationCenter.Active)
+                {
+                    return BadRequest();
+                }
+
+                if (doctor.Active)
+                {
+                    if (patient.PhoneNumber != phoneNumber || patient.Mail != doctorDTO.mail)
+                    {
+                        // zmiana danych 
+
+                        var registerISDTO = new RegisterInIdentityServerDTO()
+                        {
+                            userId = doctorDTO.doctorId,
+                            email = doctorDTO.mail,
+                            phoneNumber = phoneNumber,
+                            role = Role.Doctor,
+                            password = patient.Password,
+                        };
+                        var registerJSON = JsonSerializer.Serialize(registerISDTO);
+
+                        var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, "user/edit");
+                        httpRequestMessage.Headers.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+                        httpRequestMessage.Content = new StringContent(registerJSON, System.Text.Encoding.UTF8);
+                        httpRequestMessage.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+                        var httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
+                        if (!httpResponseMessage.IsSuccessStatusCode)
+                            return BadRequest();
+
+                    }
+                }
+                else
+                {
+                    var uri = Path.Combine("user/addDoctor", doctor.PatientId.ToString(), doctor.Id.ToString());
+                    var request = new HttpRequestMessage(HttpMethod.Get, uri);
+                    request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                    var response = await httpClient.SendAsync(request);
+                    if (!response.IsSuccessStatusCode)
+                        return BadRequest();
+
+                    var registerISDTO = new RegisterInIdentityServerDTO()
+                    {
+                        userId = doctorDTO.doctorId,
+                        email = doctorDTO.mail,
+                        phoneNumber = phoneNumber,
+                        role = Role.Doctor,
+                        password = patient.Password,
+                    };
+                    var registerJSON = JsonSerializer.Serialize(registerISDTO);
+
+                    var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, "user/edit");
+                    httpRequestMessage.Headers.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+                    httpRequestMessage.Content = new StringContent(registerJSON, System.Text.Encoding.UTF8);
+                    httpRequestMessage.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+                    var httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
+                    if (!httpResponseMessage.IsSuccessStatusCode)
+                        return BadRequest();
+                }
+            }
+            else
+            {
+                if (doctor.Active)
+                {
+                    var uri = Path.Combine("user/deleteDoctor", doctor.Id.ToString(), doctor.PatientId.ToString());
+                    var request = new HttpRequestMessage(HttpMethod.Get, uri);
+                    request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                    var response = await httpClient.SendAsync(request);
+                    if (!response.IsSuccessStatusCode)
+                        return BadRequest();
+
+                    var registerISDTO = new RegisterInIdentityServerDTO()
+                    {
+                        userId = doctor.PatientId.ToString(),
+                        email = doctorDTO.mail,
+                        phoneNumber = phoneNumber,
+                        role = Role.Patient,
+                        password = patient.Password,
+                    };
+                    var registerJSON = JsonSerializer.Serialize(registerISDTO);
+
+                    var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, "user/edit");
+                    httpRequestMessage.Headers.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+                    httpRequestMessage.Content = new StringContent(registerJSON, System.Text.Encoding.UTF8);
+                    httpRequestMessage.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+                    var httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
+                    if (!httpResponseMessage.IsSuccessStatusCode)
+                        return BadRequest();
+
+                    foreach (var appointment in _context.Appointments.Include("TimeSlots").Where(a => a.TimeSlot.DoctorId == doctor.Id && a.State == AppointmentState.Planned).ToList())
+                    {
+                        appointment.State = AppointmentState.Cancelled; // powiadomić pacjentów
+                        var timeSlot = _context.TimeSlots.SingleOrDefault(ts => ts.Id == appointment.TimeSlotId);
+                        if (timeSlot == null)
+                        {
+                            return BadRequest();
+                        }
+                        appointment.TimeSlot = timeSlot;
+                        appointment.TimeSlot.Active = false;
+                    }
+                    _context.TimeSlots.Where(slot => slot.DoctorId == doctor.Id && slot.Active == true).ToList().ForEach(slot => { slot.Active = false; });
+
+                }
+            }
+            doctor.Active = doctorDTO.active;
+            patient.PESEL = doctorDTO.PESEL;
+            patient.Mail = doctorDTO.mail;
+            patient.PhoneNumber = phoneNumber;
+            doctor.VaccinationCenterId = vaccinationCenterId;
+
+            _context.SaveChanges();
+
+            return Ok();
         }
 
         /// <remarks>Adds a new doctor</remarks>
@@ -585,7 +1000,8 @@ namespace VaccinationSystem.Controllers
                     vaccineDTO.name = vaccine.Vaccine.Name;
                     vaccineDTO.companyName = vaccine.Vaccine.Company;
                     vaccineDTO.virus = vaccine.Vaccine.Virus.ToString();
-                    vaccines.Add(vaccineDTO);
+                    if(vaccineObject.Active)
+                        vaccines.Add(vaccineDTO);
                 }
                 centerDTO.vaccines = vaccines;
                 List<OpeningHoursDayDTO> openingHours = new List<OpeningHoursDayDTO>();
@@ -653,6 +1069,10 @@ namespace VaccinationSystem.Controllers
         {
             VaccinationCenter vaccinationCenter = new VaccinationCenter();
             vaccinationCenter.Id = Guid.NewGuid();
+            if(addVaccinationCenterRequestDTO == null || addVaccinationCenterRequestDTO.name == null || addVaccinationCenterRequestDTO.city == null || addVaccinationCenterRequestDTO.street == null)
+            {
+                return BadRequest();
+            }
             vaccinationCenter.Name = addVaccinationCenterRequestDTO.name;
             vaccinationCenter.City = addVaccinationCenterRequestDTO.city;
             vaccinationCenter.Address = addVaccinationCenterRequestDTO.street;
@@ -676,7 +1096,7 @@ namespace VaccinationSystem.Controllers
                     return BadRequest();
                 }
                 Vaccine vaccine;
-                if((vaccine = _context.Vaccines.Where(vac => vac.Active == true && vac.Id == id).FirstOrDefault()) != null)
+                if((vaccine = _context.Vaccines.Where(vac => vac.Id == id).FirstOrDefault()) != null)
                 {
                     VaccinesInVaccinationCenter vivc = new VaccinesInVaccinationCenter();
                     vivc.VaccinationCenterId = vaccinationCenter.Id;
@@ -740,6 +1160,145 @@ namespace VaccinationSystem.Controllers
         [ProducesResponseType(404)]
         public IActionResult EditVaccinationCenter([FromBody, Required] EditVaccinationCenterRequestDTO editVaccinationCenterRequestDTO)
         {
+            var result = FindAndEditVaccinationCenter(editVaccinationCenterRequestDTO).Result;
+            return result;
+        }
+
+        private async Task<IActionResult> FindAndEditVaccinationCenter(EditVaccinationCenterRequestDTO vaccinationCenterDTO)
+        {
+            if(vaccinationCenterDTO == null)
+            {
+                return BadRequest();
+            }
+            if(vaccinationCenterDTO.id == null || !Guid.TryParse(vaccinationCenterDTO.id, out _))
+            {
+                return BadRequest();
+            }
+            if(vaccinationCenterDTO.vaccineIds == null)
+            {
+                return BadRequest();
+            }
+            if(vaccinationCenterDTO.openingHoursDays == null || vaccinationCenterDTO.openingHoursDays.Count() != 7)
+            {
+                return BadRequest();
+            }
+            if(vaccinationCenterDTO.city == null || vaccinationCenterDTO.street == null || vaccinationCenterDTO.name == null)
+            {
+                return BadRequest();
+            }
+
+            var id = Guid.Parse(vaccinationCenterDTO.id);
+
+            VaccinationCenter vaccinationCenter = _context.VaccinationCenters.FirstOrDefault(vc => vc.Id == id);
+
+            if(vaccinationCenter != null)
+            {
+                for (int i = 0; i < vaccinationCenterDTO.openingHoursDays.Count(); i++)
+                {
+                    OpeningHours oh = _context.OpeningHours.FirstOrDefault(oh => oh.VaccinationCenterId == id && oh.WeekDay == (WeekDay)i);
+                    if(oh == null)
+                    {
+                        return BadRequest();
+                    }
+                    try
+                    {
+                        oh.From = TimeSpan.ParseExact(vaccinationCenterDTO.openingHoursDays[i].from, _timeSpanFormat, null);
+                        oh.To = TimeSpan.ParseExact(vaccinationCenterDTO.openingHoursDays[i].to, _timeSpanFormat, null);
+                    }
+                    catch (FormatException)
+                    {
+                        return BadRequest();
+                    }
+                }
+                foreach (var vivc in _context.VaccinesInVaccinationCenter.Where(v => v.VaccinationCenterId == id).ToList())
+                    _context.VaccinesInVaccinationCenter.Remove(vivc);
+
+                foreach(string vaccineIdString in vaccinationCenterDTO.vaccineIds)
+                {
+                    Guid vaccineId;
+                    try
+                    {
+                        vaccineId = Guid.Parse(vaccineIdString);
+                    }
+                    catch (FormatException)
+                    {
+                        return BadRequest();
+                    }
+                    catch (ArgumentNullException)
+                    {
+                        return BadRequest();
+                    }
+                    Vaccine vaccine;
+                    if ((vaccine = _context.Vaccines.Where(vac => vac.Id == vaccineId).FirstOrDefault()) != null)
+                    {
+                        VaccinesInVaccinationCenter vivc = new VaccinesInVaccinationCenter();
+                        vivc.VaccinationCenterId = vaccinationCenter.Id;
+                        vivc.VaccinationCenter = vaccinationCenter;
+                        vivc.VaccineId = vaccine.Id;
+                        vivc.Vaccine = vaccine;
+                        _context.VaccinesInVaccinationCenter.Add(vivc);
+                    }
+                    else
+                    {
+                        return NotFound();
+                    }
+                }
+                vaccinationCenter.Name = vaccinationCenterDTO.name;
+                vaccinationCenter.City = vaccinationCenterDTO.city;
+                vaccinationCenter.Address = vaccinationCenterDTO.street;
+
+                if(!vaccinationCenterDTO.active && vaccinationCenter.Active)
+                {
+                    // zamiana danych lekarzy
+
+                    foreach(var doc in _context.Doctors.Where(d => d.VaccinationCenterId == id && d.Active == true).ToList())
+                    {
+                        var uri = Path.Combine("user/deleteDoctor", doc.Id.ToString(), doc.PatientId.ToString());
+                        var request = new HttpRequestMessage(HttpMethod.Get, uri);
+                        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                        var httpClient = _httpClientFactory.CreateClient();
+                        httpClient.BaseAddress = new Uri(_baseUri);
+
+                        var response = await httpClient.SendAsync(request);
+                        if (!response.IsSuccessStatusCode)
+                            return BadRequest();
+
+                        /*foreach (var appointment in _context.Appointments.Include("TimeSlots").Where(a => a.TimeSlot.DoctorId == doc.Id && a.State == AppointmentState.Planned).ToList())
+                        {
+                            appointment.State = AppointmentState.Cancelled; // powiadomić pacjentów
+                            var timeSlot = _context.TimeSlots.SingleOrDefault(ts => ts.Id == appointment.TimeSlotId);
+                            if (timeSlot == null)
+                            {
+                                return BadRequest();
+                            }
+                            appointment.TimeSlot = timeSlot;
+                            appointment.TimeSlot.Active = false;
+                        }
+                        _context.TimeSlots.Where(slot => slot.DoctorId == doc.Id && slot.Active == true).ToList().ForEach(slot => { slot.Active = false; });
+                        */
+
+                        foreach (var timeSlot in _context.TimeSlots.Where(ts => ts.DoctorId == doc.Id && ts.Active == true).ToList())
+                        {
+                            var appointment = _context.Appointments.SingleOrDefault(a => a.TimeSlotId == timeSlot.Id && a.State == AppointmentState.Planned);
+                            if (appointment != null)
+                            {
+                                appointment.State = AppointmentState.Cancelled; // powiadomić pacjentów
+                            }
+                            timeSlot.Active = false;
+                        }
+
+                        doc.Active = false;
+                    }
+                }
+
+                vaccinationCenter.Active = vaccinationCenterDTO.active;
+
+                _context.SaveChanges();
+                return Ok();
+
+            }
+
             return NotFound();
         }
 
@@ -793,7 +1352,7 @@ namespace VaccinationSystem.Controllers
                     if (!response.IsSuccessStatusCode)
                         return BadRequest();
 
-                    foreach (var appointment in _context.Appointments.Include("TimeSlots").Where(a => a.TimeSlot.DoctorId == doctor.Id && a.State == AppointmentState.Planned).ToList())
+                    /*foreach (var appointment in _context.Appointments.Include("TimeSlots").Where(a => a.TimeSlot.DoctorId == doctor.Id && a.State == AppointmentState.Planned).ToList())
                     {
                         appointment.State = AppointmentState.Cancelled;
                         var timeSlot = _context.TimeSlots.SingleOrDefault(ts => ts.Id == appointment.TimeSlotId);
@@ -804,7 +1363,18 @@ namespace VaccinationSystem.Controllers
                         appointment.TimeSlot = timeSlot;
                         appointment.TimeSlot.Active = false;
                     }
-                    _context.TimeSlots.Where(slot => slot.DoctorId == doctor.Id && slot.Active == true).ToList().ForEach(ts => ts.Active = false);
+                    _context.TimeSlots.Where(slot => slot.DoctorId == doctor.Id && slot.Active == true).ToList().ForEach(ts => ts.Active = false);*/
+
+                    foreach (var timeSlot in _context.TimeSlots.Where(ts => ts.DoctorId == doctor.Id && ts.Active == true).ToList())
+                    {
+                        var appointment = _context.Appointments.SingleOrDefault(a => a.TimeSlotId == timeSlot.Id && a.State == AppointmentState.Planned);
+                        if (appointment != null)
+                        {
+                            appointment.State = AppointmentState.Cancelled; // powiadomić pacjentów
+                        }
+                        timeSlot.Active = false;
+                    }
+
                     doctor.Active = false;
                 }
                 vaccinationCenter.Active = false;
@@ -929,8 +1499,88 @@ namespace VaccinationSystem.Controllers
         [ProducesResponseType(404)]
         public IActionResult EditVaccine([FromBody, Required] EditVaccineRequestDTO editVaccineRequestDTO)
         {
-            return NotFound();
+            var result = FindAndEditVaccine(editVaccineRequestDTO);
+            return result;
         }
+
+        private IActionResult FindAndEditVaccine(EditVaccineRequestDTO vaccineDTO)
+        {
+            if (vaccineDTO == null || vaccineDTO.vaccineId == null || vaccineDTO.company == null || vaccineDTO.name == null || vaccineDTO.virus == null)
+            {
+                return BadRequest();
+            }
+
+            Guid id;
+            try
+            {
+                id = Guid.Parse(vaccineDTO.vaccineId);
+            }
+            catch (FormatException)
+            {
+                return BadRequest();
+            }
+            catch (ArgumentNullException)
+            {
+                return BadRequest();
+            }
+
+            var vaccine = _context.Vaccines.FirstOrDefault(v => v.Id == id);
+
+            if(vaccine == null)
+            {
+                return NotFound();
+            }
+
+            vaccine.Company = vaccineDTO.company;
+            vaccine.Name = vaccineDTO.name;
+
+            try
+            {
+                vaccine.Virus = (Virus)Enum.Parse(typeof(Virus), vaccineDTO.virus);
+            }
+            catch (ArgumentNullException)
+            {
+                return BadRequest();
+            }
+            catch (ArgumentException)
+            {
+                return NotFound();
+            }
+            catch (OverflowException)
+            {
+                return BadRequest();
+            }
+
+            if(vaccineDTO.numberOfDoses < 1)
+            {
+                return BadRequest();
+            }
+
+            vaccine.NumberOfDoses = vaccineDTO.numberOfDoses;
+
+            if (vaccineDTO.minDaysBetweenDoses >= 0 && vaccineDTO.maxDaysBetweenDoses >= 0 && vaccineDTO.maxDaysBetweenDoses < vaccineDTO.minDaysBetweenDoses)
+            {
+                return BadRequest();
+            }
+
+            vaccine.MinDaysBetweenDoses = vaccineDTO.minDaysBetweenDoses;
+            vaccine.MaxDaysBetweenDoses = vaccineDTO.maxDaysBetweenDoses;
+
+            if (vaccineDTO.minPatientAge >= 0 && vaccineDTO.maxPatientAge >= 0 && vaccineDTO.maxPatientAge < vaccineDTO.minPatientAge)
+            {
+                return BadRequest();
+            }
+
+            vaccine.MaxPatientAge = vaccineDTO.maxPatientAge;
+            vaccine.MinPatientAge = vaccineDTO.minPatientAge;
+
+            vaccine.Active = vaccineDTO.active;
+
+            _context.SaveChanges();
+            return Ok();
+        }
+
+
 
         /// <remarks>Deletes a vaccine from system</remarks>
         /// <param name="vaccineId" example="31d9b4bf-5c1c-4f2d-b997-f6096758eac9"></param>
