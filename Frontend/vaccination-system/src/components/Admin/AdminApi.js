@@ -149,19 +149,6 @@ export async function editPatient(id, pesel, firstName, lastName, mail, dateOfBi
     let response;
     let err = '200';
 
-    console.log(
-        {
-            id: id,
-            PESEL: pesel,
-            firstName: firstName,
-            lastName: lastName,
-            mail: mail,
-            dateOfBirth: dateOfBirth,
-            phoneNumber: phoneNumber,
-            active: active === 'aktywny' ? true : false
-        },
-    )
-
     try {
         response = await axios({
             method: 'post',
@@ -215,6 +202,7 @@ export async function deletePatient(patientId) {
 export async function addDoctor(patientId, vaccinationCenterId) {
     let response;
     let err = '200';
+
     try {
         response = await axios({
             method: 'post',
@@ -241,6 +229,7 @@ export async function addDoctor(patientId, vaccinationCenterId) {
 export async function editDoctor(doctorId, pesel, firstName, lastName, mail, dateOfBirth, phoneNumber, vaccinationCenterId) {
     let response;
     let err = '200';
+
     try {
         response = await axios({
             method: 'post',
@@ -248,7 +237,7 @@ export async function editDoctor(doctorId, pesel, firstName, lastName, mail, dat
             data:
             {
                 doctorId: doctorId,
-                pesel: pesel,
+                PESEL: pesel,
                 firstName: firstName,
                 lastName: lastName,
                 mail: mail,

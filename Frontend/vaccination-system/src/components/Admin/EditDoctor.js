@@ -46,17 +46,8 @@ export default function EditDoctor() {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
 
-        let error;
-        //if (action === "add")
-        // doctorId, pesel, firstName, lastName, mail, dateOfBirth, phoneNumber, vaccinationCenterId
-        error = await editDoctor(location.state.id, data.get('pesel'), data.get('firstName'), data.get('lastName'), data.get('mail'),
-            data.get('dateOfBirth'), data.get('phoneNumber'), data.get('vaccinationCenterId'), data.get('active'));
-        //else if (action === "edit")
-        //editVaccine    
-        //    error = await editVaccine(location.state.id, data.get('company'), data.get('name'), Number.parseInt(data.get('numberOfDoses')),
-        //        Number.parseInt(data.get('minDaysBetweenDoses')), Number.parseInt(data.get('maxDaysBetweenDoses')),
-        //        data.get('virus'), Number.parseInt(data.get('minPatientAge')), Number.parseInt(data.get('maxPatientAge')),
-        //        data.get('active'));
+        let error = await editDoctor(location.state.id, data.get('pesel'), data.get('firstName'), data.get('lastName'), data.get('mail'),
+            data.get('dateOfBirth'), data.get('phoneNumber'), location.state.vaccinationCenterId, data.get('active'));
         setOperationError(error);
         if (error != '200')
             setOperationErrorState(true);
@@ -148,9 +139,9 @@ export default function EditDoctor() {
                                     defaultValue={location.state != null ? location.state.firstName : null}
                                     required
                                     fullWidth
-                                    name="firtsName"
+                                    name="firstName"
                                     label="Imię"
-                                    id="firtsName"
+                                    id="firstName"
                                     onChange={(e) => {
                                         ValidationHelpers.validateFirstName(e, setFirstNameError, setFirstNameErrorState)
                                     }}
