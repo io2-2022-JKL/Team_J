@@ -181,9 +181,9 @@ export default function PatientsPage() {
             return center.name === e.target.value
         })[0])
 
-        console.log(vaccinationCenters.filter(center => {
-            return center.name === e.target.value
-        })[0])
+        //console.log(vaccinationCenters.filter(center => {
+        //    return center.name === e.target.value
+        //})[0])
     }
 
     const handleDialogClose = () => {
@@ -191,7 +191,8 @@ export default function PatientsPage() {
     }
 
     const handleCenterChoice = async () => {
-        const err = addDoctor(selectedRow.id, selectedCenter)
+        //console.log(selectedCenter)
+        const err = await addDoctor(selectedRow.id, selectedCenter.id)
         if (err != '200') {
             setSnackBarMessage('Nie udało się dodać lekarza')
             setOpenSnackBar(true)

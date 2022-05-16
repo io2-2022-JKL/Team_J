@@ -115,7 +115,7 @@ export default function DoctorsPage() {
                 <GridActionsCellItem
                     icon={<DeleteIcon color='error' />}
                     label="Delete"
-                    onClick={deleteUser(params.id)}
+                    onClick={deactivateDoctor(params.id)}
                 />,
             ],
         },
@@ -144,7 +144,7 @@ export default function DoctorsPage() {
 
     const [filteredRows, setFilteredRows] = React.useState(rows);
 
-    const deleteUser = React.useCallback(
+    const deactivateDoctor = React.useCallback(
         (id) => () => {
             setTimeout(() => {
                 setRows((prevRows) => prevRows.filter((row) => row.id !== id));
@@ -158,13 +158,9 @@ export default function DoctorsPage() {
         navigate('/admin/doctors/editDoctor', {
             state: {
                 id: row.id, pesel: row.PESEL, firstName: row.firstName, lastName: row.lastName, mail: row.mail,
-                dateOfBirth: row.dateOfBirth, phoneNumber: row.phoneNumber, active: row.active
+                dateOfBirth: row.dateOfBirth, phoneNumber: row.phoneNumber, active: row.active, vaccinationCenterId: row.vaccinationCenterId
             },
         })
-        /*console.log({
-            id: row.id, pesel: row.PESEL, firstName: row.firstName, lastName: row.lastName, mail: row.mail,
-            dateOfBirth: row.dateOfBirth, phoneNumber: row.phoneNumber, active: row.active
-        })*/
     }
 
     const handleSubmit = (event) => {
