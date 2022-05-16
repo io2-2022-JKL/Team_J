@@ -1,10 +1,10 @@
 import * as React from 'react';
 import Button from '@mui/material/Button';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { Container, CssBaseline, TextField } from '@mui/material';
+import { Container, CssBaseline, Snackbar, TextField } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import { useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Grid from "@material-ui/core/Grid";
 import { GridActionsCellItem } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -13,15 +13,24 @@ import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
 import Avatar from '@mui/material/Avatar';
 import { confirm } from "react-confirm-box";
 import DataDisplayArray from '../DataDisplayArray';
-import { getPatientsData, getRandomPatientData } from './AdminApi';
+import { addDoctor, getPatientsData, getRandomPatientData, getVaccinationCenters } from './AdminApi';
 import FilteringHelepers from '../../tools/FilteringHelepers';
 import Autocomplete from '@mui/material/Autocomplete';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 
 const theme = createTheme();
 
 export default function PatientsPage() {
 
     const navigate = useNavigate();
+    const location = useLocation();
 
     const columns = [
         {
@@ -29,7 +38,8 @@ export default function PatientsPage() {
             flex: 2
         },
         {
-            field: 'pesel',
+            field: 'PESEL',
+            headerName: 'PESEL',
             minWidth: 110,
             flex: 0.5,
             editable: true
@@ -102,6 +112,7 @@ export default function PatientsPage() {
 
     const [rows, setRows] = React.useState([]);
 
+
     React.useEffect(() => {
 
         const fetchData = async () => {
@@ -132,35 +143,64 @@ export default function PatientsPage() {
         [],
     );
 
-    const editCell = async (params, event) => {
-        /*const result = await confirm("Czy na pewno chcesz edytować pacjenta?", confirmOptionsInPolish);
-        if (result) {
-            console.log("You click yes!");
-            rows[params.id] = params.value;
-            filteredRows[params.id] = params.value;
-            setRows(rows);
-            setFilteredRows(filteredRows);
-            return;
+    const [openCentersDialog, setOpenCentersDialog] = React.useState(false)
+    const [vaccinationCenters, setVaccinationCenters] = React.useState()
+    const [openSnackBar, setOpenSnackBar] = React.useState(false)
+    const [snackBarMessage, setSnackBarMessage] = React.useState('')
+
+    const [selectedRow, setSelectedRow] = React.useState();
+    const [selectedCenter, setSelectedCenter] = React.useState();
+
+    async function handleRowClick(row) {
+        if (location.state == true) {
+            setSelectedRow(row)
+            const [data, err] = await getVaccinationCenters()
+            if (err != '200') {
+                setOpenSnackBar(true)
+                setSnackBarMessage('Nie udało się pobrac danych')
+            }
+            else {
+                setVaccinationCenters(data)
+                console.log(data)
+                setOpenCentersDialog(true)
+            }
         }
-        else {
-            rows[params.id] = params.value;
-            filteredRows[params.id] = params.value;
-            setFilteredRows(filteredRows);
-        }
-        setFilteredRows(filteredRows);
-        console.log("You click No!");
-    
-        if (!event.ctrlKey) {
-            event.defaultMuiPrevented = true;
-        }
-        console.log(params.row.PESEL);*/
+        else
+            navigate('/admin/patients/editPatient', {
+                state: {
+                    id: row.id, pesel: row.PESEL, firstName: row.firstName, lastName: row.lastName, mail: row.mail,
+                    dateOfBirth: row.dateOfBirth, phoneNumber: row.phoneNumber, active: row.active
+                }
+            })
     }
 
-    const confirmOptionsInPolish = {
-        labels: {
-            confirmable: "Tak",
-            cancellable: "Nie"
+    const handleCenterChange = (e) => {
+        setSelectedCenter(vaccinationCenters.filter(center => {
+            //console.log(e.target.value)
+            //console.log(center.name)
+            return center.name === e.target.value
+        })[0])
+
+        console.log(vaccinationCenters.filter(center => {
+            return center.name === e.target.value
+        })[0])
+    }
+
+    const handleDialogClose = () => {
+        setOpenCentersDialog(false)
+    }
+
+    const handleCenterChoice = async () => {
+        const err = addDoctor(selectedRow.id, selectedCenter)
+        if (err != '200') {
+            setSnackBarMessage('Nie udało się dodać lekarza')
+            setOpenSnackBar(true)
         }
+        else {
+            setSnackBarMessage('Dodano lekarza lekarza')
+            setOpenSnackBar(true)
+        }
+        setOpenCentersDialog(false)
     }
 
     const handleSubmit = (event) => {
@@ -178,10 +218,6 @@ export default function PatientsPage() {
         setFilteredRows(result);
     };
 
-
-    const top100Films = [
-        'aktywny', 'niekatywny'
-    ]
 
     const [currency, setCurrency] = React.useState('');
 
@@ -313,7 +349,7 @@ export default function PatientsPage() {
                         </Box>
                         <DataDisplayArray
                             loading={loading}
-                            editCell={editCell}
+                            onRowClick={handleRowClick}
                             columns={columns}
                             filteredRows={filteredRows}
                         />
@@ -327,6 +363,48 @@ export default function PatientsPage() {
                             Powrót
                         </Button>
                     </Box>
+
+                    <Dialog
+                        fullWidth
+                        open={openCentersDialog}
+                    >
+                        <DialogTitle>Wybierz Centrum Szczepień</DialogTitle>
+                        <DialogContent>
+                            <Box
+                                noValidate
+                                component="form"
+                                sx={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    m: 'auto',
+                                    width: 'fit-content',
+                                }}
+                            >
+                                {openCentersDialog && <FormControl sx={{ mt: 2, minWidth: 120 }}>
+                                    <InputLabel htmlFor="max-width">Wybierz</InputLabel>
+                                    <Select
+                                        value={vaccinationCenters[0].name}
+                                        autoFocus
+                                        onChange={handleCenterChange}
+                                        label="maxWidth"
+                                    >
+                                        {vaccinationCenters && vaccinationCenters.map(center =>
+                                            <MenuItem value={center.name}>{center.name + ",  " + center.city}</MenuItem>)}
+                                    </Select>
+                                </FormControl>}
+                            </Box>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={handleDialogClose}>Wróc</Button>
+                            <Button onClick={handleCenterChoice}>Wybierz</Button>
+                        </DialogActions>
+                    </Dialog>
+                    <Snackbar
+                        open={openSnackBar}
+                        autoHideDuration={6000}
+                        onClose={() => { setOpenSnackBar(false) }}
+                        message={snackBarMessage}
+                    />
                 </CssBaseline>
             </Container >
         </ThemeProvider >

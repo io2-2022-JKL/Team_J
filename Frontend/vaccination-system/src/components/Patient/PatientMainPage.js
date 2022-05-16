@@ -17,7 +17,7 @@ export default function PatientMainPage() {
     const [patientData, setPatientData] = React.useState();
 
     React.useEffect(() => {
-        /*
+
         const fetchData = async () => {
             let userID = localStorage.getItem('userID');
             let [data, err] = await getPatientInfo(userID);
@@ -26,8 +26,8 @@ export default function PatientMainPage() {
             }
         }
         fetchData();
-        */
-       LoginHelpers.preventGoingBack();
+
+        LoginHelpers.preventGoingBack();
     }, []);
 
     return (
@@ -46,7 +46,7 @@ export default function PatientMainPage() {
                             <AccountBoxRoundedIcon />
                         </Avatar>
                         <Typography component="h1" variant="h4">
-                            Witaj {patientData != null ? patientData.firtsName : ''} {patientData != null ? patientData.lastName : ''}
+                            Witaj {patientData != null && (patientData.firstName + ' ' + patientData.lastName)}
                         </Typography>
                         <Typography component="h1" variant="h6">
                             Pacjent
@@ -102,9 +102,10 @@ export default function PatientMainPage() {
                             fullWidth
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
-                            onClick={() => { 
+                            onClick={() => {
                                 LoginHelpers.logOut()
-                                navigate("/signin") }
+                                navigate("/signin")
+                            }
                             }
                         >
                             Wyloguj się

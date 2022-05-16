@@ -102,12 +102,25 @@ export default class ValidationHelpers {
     }
     static validateNumberOfDoses(e, setError, setErrorState) {
         var integer = e.target.value;
-        if (validator.isNumeric(integer) && Number.parseInt(integer)>0) {
+        if (validator.isNumeric(integer) && Number.parseInt(integer) > 0) {
             setError('');
             setErrorState(false);
         }
         else {
             setError("Minimalna dawka wynosi 1!");
+            setErrorState(true);
+        }
+    }
+
+    static validateDate(e, setError, setErrorState) {
+        var date = e.target.value;
+        var regEx = /[0-9][0-9]-[0-9][0-9]-[0-9][0-9][0-9][0-9]/
+        if (regEx.test(date)) {
+            setError('');
+            setErrorState(false);
+        }
+        else {
+            setError('Niepoprawny format daty! Oczekiwany format: dd-MM-yyyy');
             setErrorState(true);
         }
     }
