@@ -29,7 +29,7 @@ export default function DoctorsPage() {
             flex: 2
         },
         {
-            field: 'pesel',
+            field: 'PESEL',
             headerName: 'PESEL',
             minWidth: 110,
             flex: 0.5,
@@ -157,10 +157,14 @@ export default function DoctorsPage() {
     function handleRowClick(row) {
         navigate('/admin/doctors/editDoctor', {
             state: {
-                id: row.id, pesel: row.pesel, firstName: row.firstName, lastName: row.lastName, mail: row.mail,
+                id: row.id, pesel: row.PESEL, firstName: row.firstName, lastName: row.lastName, mail: row.mail,
                 dateOfBirth: row.dateOfBirth, phoneNumber: row.phoneNumber, active: row.active
-            }
+            },
         })
+        /*console.log({
+            id: row.id, pesel: row.PESEL, firstName: row.firstName, lastName: row.lastName, mail: row.mail,
+            dateOfBirth: row.dateOfBirth, phoneNumber: row.phoneNumber, active: row.active
+        })*/
     }
 
     const handleSubmit = (event) => {
@@ -354,7 +358,7 @@ export default function DoctorsPage() {
                             fullWidth
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
-                            onClick={async () => { navigate("/admin/patients", { addingDoctor: true }) }}
+                            onClick={async () => { navigate("/admin/patients", { state: true }) }}
                         >
                             Dodaj lekarza
                         </Button>

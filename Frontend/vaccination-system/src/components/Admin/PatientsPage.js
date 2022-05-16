@@ -4,7 +4,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Container, CssBaseline, Snackbar, TextField } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import { useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Grid from "@material-ui/core/Grid";
 import { GridActionsCellItem } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -27,9 +27,10 @@ import Select from '@mui/material/Select';
 
 const theme = createTheme();
 
-export default function PatientsPage(addingDoctor = false) {
+export default function PatientsPage() {
 
     const navigate = useNavigate();
+    const location = useLocation();
 
     const columns = [
         {
@@ -37,7 +38,7 @@ export default function PatientsPage(addingDoctor = false) {
             flex: 2
         },
         {
-            field: 'pesel',
+            field: 'PESEL',
             headerName: 'PESEL',
             minWidth: 110,
             flex: 0.5,
@@ -150,30 +151,39 @@ export default function PatientsPage(addingDoctor = false) {
     const [selectedRow, setSelectedRow] = React.useState();
     const [selectedCenter, setSelectedCenter] = React.useState();
 
-    function handleRowClick(row) {
-        if (addingDoctor) {
+    async function handleRowClick(row) {
+        if (location.state == true) {
             setSelectedRow(row)
-            const [response, err] = getVaccinationCenters()
+            const [data, err] = await getVaccinationCenters()
             if (err != '200') {
                 setOpenSnackBar(true)
                 setSnackBarMessage('Nie udało się pobrac danych')
             }
             else {
+                setVaccinationCenters(data)
+                console.log(data)
                 setOpenCentersDialog(true)
-                setVaccinationCenters(response.data)
             }
         }
         else
             navigate('/admin/patients/editPatient', {
                 state: {
-                    id: row.id, pesel: row.pesel, firstName: row.firstName, lastName: row.lastName, mail: row.mail,
+                    id: row.id, pesel: row.PESEL, firstName: row.firstName, lastName: row.lastName, mail: row.mail,
                     dateOfBirth: row.dateOfBirth, phoneNumber: row.phoneNumber, active: row.active
                 }
             })
     }
 
     const handleCenterChange = (e) => {
-        setSelectedCenter(e.target.value)
+        setSelectedCenter(vaccinationCenters.filter(center => {
+            //console.log(e.target.value)
+            //console.log(center.name)
+            return center.name === e.target.value
+        })[0])
+
+        console.log(vaccinationCenters.filter(center => {
+            return center.name === e.target.value
+        })[0])
     }
 
     const handleDialogClose = () => {
@@ -183,9 +193,14 @@ export default function PatientsPage(addingDoctor = false) {
     const handleCenterChoice = async () => {
         const err = addDoctor(selectedRow.id, selectedCenter)
         if (err != '200') {
-            setOpenSnackBar(true)
             setSnackBarMessage('Nie udało się dodać lekarza')
+            setOpenSnackBar(true)
         }
+        else {
+            setSnackBarMessage('Dodano lekarza lekarza')
+            setOpenSnackBar(true)
+        }
+        setOpenCentersDialog(false)
     }
 
     const handleSubmit = (event) => {
@@ -368,13 +383,13 @@ export default function PatientsPage(addingDoctor = false) {
                                 {openCentersDialog && <FormControl sx={{ mt: 2, minWidth: 120 }}>
                                     <InputLabel htmlFor="max-width">Wybierz</InputLabel>
                                     <Select
-                                        value={vaccinationCenters[0]}
+                                        value={vaccinationCenters[0].name}
                                         autoFocus
                                         onChange={handleCenterChange}
                                         label="maxWidth"
                                     >
                                         {vaccinationCenters && vaccinationCenters.map(center =>
-                                            <MenuItem value={center}>{center.name + ",  " + center.city}</MenuItem>)}
+                                            <MenuItem value={center.name}>{center.name + ",  " + center.city}</MenuItem>)}
                                     </Select>
                                 </FormControl>}
                             </Box>

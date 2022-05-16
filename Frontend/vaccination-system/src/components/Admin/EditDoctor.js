@@ -12,6 +12,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import ValidationHelpers from '../../tools/ValidationHelpers';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
+import { editDoctor } from './AdminApi';
 
 const theme = createTheme();
 
@@ -19,7 +20,7 @@ const Alert = React.forwardRef(function Alert(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
-export default function EditDoctor(action) {
+export default function EditDoctor() {
     const navigate = useNavigate();
     const [peselError, setPeselError] = useState('')
     const [peselErrorState, setPeselErrorState] = useState(false)
@@ -46,22 +47,23 @@ export default function EditDoctor(action) {
         const data = new FormData(event.currentTarget);
 
         let error;
-        /*if (action === "add")
-            error = await addVaccine(data.get('company'), data.get('name'), Number.parseInt(data.get('numberOfDoses')),
-                Number.parseInt(data.get('minDaysBetweenDoses')), Number.parseInt(data.get('maxDaysBetweenDoses')),
-                data.get('virus'), Number.parseInt(data.get('minPatientAge')), Number.parseInt(data.get('maxPatientAge')),
-                data.get('active'));
-        else if (action === "edit")
-            //editVaccine    
-            error = await editVaccine(location.state.id, data.get('company'), data.get('name'), Number.parseInt(data.get('numberOfDoses')),
-                Number.parseInt(data.get('minDaysBetweenDoses')), Number.parseInt(data.get('maxDaysBetweenDoses')),
-                data.get('virus'), Number.parseInt(data.get('minPatientAge')), Number.parseInt(data.get('maxPatientAge')),
-                data.get('active'));*/
+        //if (action === "add")
+        // doctorId, pesel, firstName, lastName, mail, dateOfBirth, phoneNumber, vaccinationCenterId
+        error = await editDoctor(location.state.id, data.get('pesel'), data.get('firstName'), data.get('lastName'), data.get('mail'),
+            data.get('dateOfBirth'), data.get('phoneNumber'), data.get('vaccinationCenterId'), data.get('active'));
+        //else if (action === "edit")
+        //editVaccine    
+        //    error = await editVaccine(location.state.id, data.get('company'), data.get('name'), Number.parseInt(data.get('numberOfDoses')),
+        //        Number.parseInt(data.get('minDaysBetweenDoses')), Number.parseInt(data.get('maxDaysBetweenDoses')),
+        //        data.get('virus'), Number.parseInt(data.get('minPatientAge')), Number.parseInt(data.get('maxPatientAge')),
+        //        data.get('active'));
         setOperationError(error);
         if (error != '200')
             setOperationErrorState(true);
         else
             setSuccess(true);
+
+        console.log(location.state)
     };
 
     const [activeOption, setActiveOption] = React.useState(location.state != null ? location.state.active ? 'aktywny' : 'nieaktywny' : '');
@@ -98,13 +100,13 @@ export default function EditDoctor(action) {
     function renderError(param) {
         switch (param) {
             case '400':
-                return 'Złe dane. Czyżbyś próbował dodać nieistniejącego wirusa?';
+                return 'Nieprawidłowe dane.';
             case '401':
-                return 'Użytkownik nieuprawniony do dodania szczepionki'
+                return 'Użytkownik nieuprawniony.'
             case '403':
-                return 'Użytkownikowi zabroniono dodawania szczepionki'
+                return 'Użytkownikowi zabroniono wykonania tej akcji.'
             case '404':
-                return 'Nie znaleziono szczepionki do dodania'
+                return 'Nie znaleziono takich danych.'
             default:
                 return 'Wystąpił błąd!';
         }

@@ -148,6 +148,20 @@ export async function editVaccine(id, company, name, numberOfDoses, minDaysBetwe
 export async function editPatient(id, pesel, firstName, lastName, mail, dateOfBirth, phoneNumber, active) {
     let response;
     let err = '200';
+
+    console.log(
+        {
+            id: id,
+            PESEL: pesel,
+            firstName: firstName,
+            lastName: lastName,
+            mail: mail,
+            dateOfBirth: dateOfBirth,
+            phoneNumber: phoneNumber,
+            active: active === 'aktywny' ? true : false
+        },
+    )
+
     try {
         response = await axios({
             method: 'post',
@@ -155,7 +169,7 @@ export async function editPatient(id, pesel, firstName, lastName, mail, dateOfBi
             data:
             {
                 id: id,
-                pesel: pesel,
+                PESEL: pesel,
                 firstName: firstName,
                 lastName: lastName,
                 mail: mail,
@@ -286,7 +300,7 @@ export async function getVaccinationCenters() {
             url: SYSTEM_SZCZEPIEN_URL + '/admin/vaccinationCenters',
             timeout: 2000
         });
-        console.log('udało się pobrać dane')
+        console.log('udało się pobrac dane')
         return [response.data, errCode];
 
     } catch (error) {

@@ -48,9 +48,9 @@ export default function EditPatient() {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
 
-        console.log(data.get('dateOfBirth'))
-        let error;// = await editPatient(location.state.id, data.get('pesel'), data.get('firstName'), data.get('lastName'),
-        //    data.get('mail'), data.get('dateOfBirth'), data.get('phoneNumber'), data.get('active'));
+        console.log(data.get('firstName'))
+        let error = await editPatient(location.state.id, data.get('pesel'), data.get('firstName'), data.get('lastName'),
+            data.get('mail'), data.get('dateOfBirth'), data.get('phoneNumber'), data.get('active'));
         setOperationError(error);
         if (error != '200')
             setOperationErrorState(true);
@@ -94,13 +94,13 @@ export default function EditPatient() {
     function renderError(param) {
         switch (param) {
             case '400':
-                return 'Złe dane. Czyżbyś próbował dodać nieistniejącego wirusa?';
+                return 'Nieprawidłowe dane.';
             case '401':
-                return 'Użytkownik nieuprawniony do dodania szczepionki'
+                return 'Użytkownik nie posiada uprawnień do wykonania tej operacji'
             case '403':
-                return 'Użytkownikowi zabroniono dodawania szczepionki'
+                return 'Użytkownikowi zabroniono wykonania tej operacji'
             case '404':
-                return 'Nie znaleziono szczepionki do dodania'
+                return 'Nie znaleziono takiego pacjenta'
             default:
                 return 'Wystąpił błąd!';
         }
@@ -142,9 +142,9 @@ export default function EditPatient() {
                                     defaultValue={location.state != null ? location.state.firstName : null}
                                     required
                                     fullWidth
-                                    name="firtsName"
+                                    name="firstName"
                                     label="Imię"
-                                    id="firtsName"
+                                    id="firstName"
                                     onChange={(e) => {
                                         ValidationHelpers.validateFirstName(e, setFirstNameError, setFirstNameErrorState)
                                     }}
