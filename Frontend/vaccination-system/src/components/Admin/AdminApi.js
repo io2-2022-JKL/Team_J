@@ -122,3 +122,23 @@ export async function editVaccine(company, name, numberOfDoses, minDaysBetweenDo
         return error.response.status.toString();
     }
 }
+
+export async function getVaccinationCentersData() {
+    let response;
+    let errCode = '200';
+    try {
+        response = await axios({
+            method: 'get',
+            url: SYSTEM_SZCZEPIEN_URL + '/admin/vaccinationCenters',
+            timeout: 2000
+        });
+        console.log('udało się pobrac dane')
+        return [response.data, errCode];
+
+    } catch (error) {
+        console.error(error.message);
+        if (error.response != null)
+            return [response, error.response.status.toString()];
+        return [response, error.code];
+    }
+}

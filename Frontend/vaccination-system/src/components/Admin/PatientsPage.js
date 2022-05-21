@@ -316,6 +316,7 @@ export default function PatientsPage() {
                             editCell={editCell}
                             columns={columns}
                             filteredRows={filteredRows}
+                            density="compact"
                         />
                         <Button
                             type="submit"

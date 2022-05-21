@@ -1,8 +1,15 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
-import { DataGrid } from '@mui/x-data-grid';
+import { DataGrid, GridToolbarContainer, GridToolbarDensitySelector, } from '@mui/x-data-grid';
 import LinearProgress from '@mui/material/LinearProgress';
 
+function CustomToolbar() {
+    return (
+        <GridToolbarContainer>
+            <GridToolbarDensitySelector />
+        </GridToolbarContainer>
+    );
+}
 export default function DataDisplayArray(
     props
 ) {
@@ -27,6 +34,14 @@ export default function DataDisplayArray(
             }}
         >
             <DataGrid
+                getRowHeight={({ id, densityFactor }) => {
+                    return 125 * densityFactor;
+                }}
+                components={{
+                    Toolbar: CustomToolbar,
+                    LoadingOverlay: LinearProgress,
+                }}
+                density={props.density}
                 onRowClick={(dataRow) => props.onRowClick(dataRow.row)}
                 disableColumnFilter
                 autoHeight
@@ -34,9 +49,6 @@ export default function DataDisplayArray(
                 onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
                 rowsPerPageOptions={[5, 10, 15, 20]}
                 pagination
-                components={{
-                    LoadingOverlay: LinearProgress,
-                }}
                 loading={props.loading}
                 columns={props.columns}
                 rows={props.filteredRows}
