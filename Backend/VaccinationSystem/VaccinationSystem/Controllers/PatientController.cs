@@ -99,6 +99,8 @@ namespace VaccinationSystem.Controllers
             if (result == null || result.Count() == 0) return NotFound();
             return Ok(result);
         }
+
+        [NonAction]
         public IEnumerable<TimeSlotFilterResponseDTO> fetchFilteredTimeSlots(string city, string dateFrom, string dateTo, string virus, string patId)
         {
             List<TimeSlotFilterResponseDTO> result = new List<TimeSlotFilterResponseDTO>();

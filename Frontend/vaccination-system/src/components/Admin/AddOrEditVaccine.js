@@ -46,8 +46,8 @@ export default function AddOrEditVaccine() {
     const [maxDBD, setMaxDBD] = useState(0);
     const [minPA, setMinPA] = useState(0);
     const [maxPA, setMaxPA] = useState(0);
-    const [addError, setAddError] = useState('');
-    const [addErrorState, setAddErrorState] = useState(false);
+    const [operationError, setOperationError] = useState('');
+    const [operationErrorState, setOperationErrorState] = useState(false);
     const [success, setSuccess] = useState(false);
     const location = useLocation();
 
@@ -82,26 +82,13 @@ export default function AddOrEditVaccine() {
 
     const handleSubmit = async (event) => {
         if (minPAErrorState || minPAErrorState2 || minDBDErrorState || minDBDErrorState2 || maxPAErrorState || maxPAErrorState2 || maxDBDErrorState || maxDBDErrorState2 || nODErrorState) {
-            setAddError("Błąd walidacji pól")
-            setAddErrorState(true)
+            setOperationError("Błąd walidacji pól")
+            setOperationErrorState(true)
             return
         }
 
         event.preventDefault();
         const data = new FormData(event.currentTarget);
-        /*
-        console.log({
-            company: data.get('company'),
-            name: data.get('name'),
-            numberOfDoses: Number.parseInt(data.get('numberOfDoses')),
-            minDBD: Number.parseInt(data.get('minDaysBetweenDoses')),
-            maxDBD: Number.parseInt(data.get('maxDaysBetweenDoses')),
-            virus: data.get('virus'),
-            minPA: Number.parseInt(data.get('minPatientAge')),
-            maxPA: Number.parseInt(data.get('maxPatientAge')),
-            active: data.get('active')
-        });
-        */
         let error;
         console.log(location.state.action)
 
@@ -112,13 +99,13 @@ export default function AddOrEditVaccine() {
                 data.get('active'));
         else if (location.state.action === "edit")
             //editVaccine    
-            error = await editVaccine(data.get('company'), data.get('name'), Number.parseInt(data.get('numberOfDoses')),
+            error = await editVaccine(location.state.id, data.get('company'), data.get('name'), Number.parseInt(data.get('numberOfDoses')),
                 Number.parseInt(data.get('minDaysBetweenDoses')), Number.parseInt(data.get('maxDaysBetweenDoses')),
                 data.get('virus'), Number.parseInt(data.get('minPatientAge')), Number.parseInt(data.get('maxPatientAge')),
                 data.get('active'));
-        setAddError(error);
+        setOperationError(error);
         if (error != '200')
-            setAddErrorState(true);
+            setOperationErrorState(true);
         else
             setSuccess(true);
     };
@@ -144,13 +131,13 @@ export default function AddOrEditVaccine() {
         if (reason === 'clickaway') {
             return;
         }
-        if (addErrorState) {
-            if (addError === '401' || addError === '403') {
+        if (operationErrorState) {
+            if (operationError === '401' || operationError === '403') {
                 LoginHelpers.logOut();
                 navigate('/signin');
             }
         }
-        setAddErrorState(false);
+        setOperationErrorState(false);
     };
 
     const handleClose2 = (event, reason) => {
@@ -339,14 +326,14 @@ export default function AddOrEditVaccine() {
                     >
                         Powrót
                     </Button>
-                    <Snackbar open={addErrorState} autoHideDuration={2000} onClose={handleClose}>
+                    <Snackbar open={operationErrorState} autoHideDuration={2000} onClose={handleClose}>
                         <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
-                            {renderError(addError)}
+                            {renderError(operationError)}
                         </Alert>
                     </Snackbar>
                     <Snackbar open={success} autoHideDuration={2000} onClose={handleClose2}>
                         <Alert onClose={handleClose2} severity="success" sx={{ width: '100%' }}>
-                            Pomyślnie dodano szczepionkę
+                            Akcja wykonana pomyślnie
                         </Alert>
                     </Snackbar>
                 </Box>

@@ -9,12 +9,13 @@ import VaccinationCentersPage from './Admin/VaccinationCentersPage';
 import VaccinesPage from './Admin/VaccinesPage';
 import PrivateRoute from './PrivateRoute';
 import DoctorMainPage from './Doctor/DoctorMainPage';
-import AddNewDoctor from './Admin/AddDoctor';
+import EditDoctor from './Admin/EditDoctor';
 import FilterTimeSlots from './Patient/FIlterTimeSlots';
 import FormerAppointment from './Patient/FormerAppointments';
 import IncomingAppointment from './Patient/IncomingAppointments';
 import Certificate from './Patient/Certificates';
 import AddOrEditVaccine from './Admin/AddOrEditVaccine';
+import EditPatient from './Admin/EditPatient';
 
 
 function App() {
@@ -31,8 +32,9 @@ function App() {
           <Route exact path='/doctor' element={<DoctorMainPage />} />
           <Route exact path='/admin' element={<AdminMainPage />} />
           <Route exact path='/admin/patients' element={<PatientsPage />} />
+          <Route exact path='/admin/patients/editPatient' element={<EditPatient />} />
           <Route exact path='/admin/doctors' element={<DoctorsPage />} />
-          <Route exact path='/admin/doctors/addDoctor' element={< AddNewDoctor />} />
+          <Route exact path='/admin/doctors/editDoctor' element={< EditDoctor />} />
           <Route exact path='/admin/vaccinationCenters' element={<VaccinationCentersPage />} />
           <Route exact path='/admin/vaccines' element={<VaccinesPage />} />
           <Route exact path='/admin/vaccines/addVaccine' element={<AddOrEditVaccine />} />

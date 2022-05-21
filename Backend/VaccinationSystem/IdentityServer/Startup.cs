@@ -85,7 +85,7 @@ namespace IdentityServer
                 app.UseDeveloperExceptionPage();
             }
 
-            context.Database.Migrate();
+            //context.Database.Migrate();
 
             DBInitializer.PopulateIdentityServer(app);
 
