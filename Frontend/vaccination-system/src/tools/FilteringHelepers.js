@@ -79,4 +79,13 @@ export default class FilteringHelepers {
             return item.maxPatientAge == filter
         });
     };
+    static filterCity = (array, filter) => {
+        return array.filter((item) => item.city.includes(filter));
+    };
+    static filterStreet = (array, filter) => {
+        return array.filter((item) => item.street.includes(filter));
+    };
+    static filterVirus2 = (array, filter) => {
+        return array.map(e => e.vaccines).filter((item) => item.virus.includes(filter));
+    };
 }

@@ -353,6 +353,7 @@ export default function PatientsPage() {
                             onRowClick={handleRowClick}
                             columns={columns}
                             filteredRows={filteredRows}
+                            density="compact"
                         />
                         <Button
                             type="submit"

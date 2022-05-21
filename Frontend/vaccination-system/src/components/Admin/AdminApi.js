@@ -280,7 +280,7 @@ export async function deleteDoctor(doctorId) {
     }
 }
 
-export async function getVaccinationCenters() {
+export async function getVaccinationCentersData() {
     let response;
     let errCode = '200';
     try {
