@@ -153,7 +153,7 @@ export default function SignUp() {
                   id="firstName"
                   label="Imię"
                   autoFocus
-                  onChange={(e) => ValidationHelpers.validateFirstName(e, setFirstNameError, setFirstNameErrorState)}
+                  onChange={(e) => ValidationHelpers.validateName(e, setFirstNameError, setFirstNameErrorState)}
                   helperText={firstNameError}
                   error={firstNameErrorState}
                 />

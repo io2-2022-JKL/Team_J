@@ -136,7 +136,7 @@ export default function EditPatient() {
                                     label="Imię"
                                     id="firstName"
                                     onChange={(e) => {
-                                        ValidationHelpers.validateFirstName(e, setFirstNameError, setFirstNameErrorState)
+                                        ValidationHelpers.validateName(e, setFirstNameError, setFirstNameErrorState)
                                     }}
                                     helperText={firstNameError}
                                     error={firstNameErrorSate}

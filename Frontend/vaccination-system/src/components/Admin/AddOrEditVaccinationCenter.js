@@ -9,12 +9,23 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { addVaccine, editVaccine } from './AdminApi';
+import { addVaccine, editVaccine, getVaccinesData } from './AdminApi';
 import ValidationHelpers from '../../tools/ValidationHelpers';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import Snackbars from '../../tools/Snackbars';
 import LoginHelpers from '../../tools/LoginHelpers'
+import { activeOptions } from '../../tools/ActiveOptions';
+import WeekDays from '../../tools/WeekDays';
+import CheckboxList from './DialogChooseVaccines';
+import { Dialog } from '@material-ui/core';
+import { DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Checkbox from '@mui/material/Checkbox';
 
 const theme = createTheme();
 
@@ -23,72 +34,48 @@ const Alert = React.forwardRef(function Alert(props, ref) {
 });
 
 export default function AddOrEditVaccinationCenter() {
-    /*const navigate = useNavigate();
-    const [nODErrorState, setNODErrorState] = useState(false);
-    const [nODError, setNODError] = useState('');
-    const [minDBDErrorState, setMinDBDErrorState] = useState(false);
-    const [minDBDError, setMinDBDError] = useState('');
-    const [maxDBDErrorState, setMaxDBDErrorState] = useState(false);
-    const [maxDBDError, setMaxDBDError] = useState('');
-    const [minDBDErrorState2, setMinDBDErrorState2] = useState(false);
-    const [minDBDError2, setMinDBDError2] = useState('');
-    const [maxDBDErrorState2, setMaxDBDErrorState2] = useState(false);
-    const [maxDBDError2, setMaxDBDError2] = useState('');
-    const [minPAErrorState, setMinPAErrorState] = useState(false);
-    const [minPAError, setMinPAError] = useState('');
-    const [maxPAErrorState, setMaxPAErrorState] = useState(false);
-    const [maxPAError, setMaxPAError] = useState('');
-    const [minPAErrorState2, setMinPAErrorState2] = useState(false);
-    const [minPAError2, setMinPAError2] = useState('');
-    const [maxPAErrorState2, setMaxPAErrorState2] = useState(false);
-    const [maxPAError2, setMaxPAError2] = useState('');
-    const [minDBD, setMinDBD] = useState(0);
-    const [maxDBD, setMaxDBD] = useState(0);
-    const [minPA, setMinPA] = useState(0);
-    const [maxPA, setMaxPA] = useState(0);
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    const [nameError, setNameError] = useState();
+    const [nameErrorState, setNameErrorState] = useState(false);
+    const [cityError, setCityError] = useState();
+    const [cityErrorState, setCityErrorState] = useState(false);
+    const [streetError, setStreetError] = useState();
+    const [streetErrorState, setStreetErrorState] = useState(false);
+    const [activeOption, setActiveOption] = React.useState(location.state != null ? location.state.active ? 'aktywny' : 'nieaktywny' : '');
+    const [openingHoursError, setOpeningHoursError] = useState();
+    const [openingHoursErrorState, setOpeningHoursErrorState] = useState();
+
+    const [chooseVaccinesDialogOpen, setChooseVaccinesDialogOpen] = useState();
+
     const [operationError, setOperationError] = useState('');
     const [operationErrorState, setOperationErrorState] = useState(false);
     const [success, setSuccess] = useState(false);
-    const location = useLocation();
 
     React.useEffect(() => {
-        if (maxDBD >= 0 && maxDBD < minDBD) {
-            setMinDBDErrorState2(true);
-            setMaxDBDErrorState2(true);
-            setMaxDBDError2("Wartość maksymalna jest mniejsza od minimalnej!");
-            setMinDBDError2("Wartość minimalna jest większa od maksymalnej!");
-        }
-        else {
-            setMinDBDErrorState2(false);
-            setMaxDBDErrorState2(false);
-            setMaxDBDError2("");
-            setMinDBDError2("");
-        }
-
-        if (maxPA >= 0 && maxPA < minPA) {
-            setMinPAErrorState2(true);
-            setMaxPAErrorState2(true);
-            setMaxPAError2("Wartość maksymalna jest mniejsza od minimalnej!");
-            setMinPAError2("Wartość minimalna jest większa od maksymalnej!");
-        }
-        else {
-            setMinPAErrorState2(false);
-            setMaxPAErrorState2(false);
-            setMaxPAError2("");
-            setMinPAError2("");
-        }
-
-    }, [minDBD, maxDBD, minPA, maxPA]);
+    }, []);
 
     const handleSubmit = async (event) => {
-        if (minPAErrorState || minPAErrorState2 || minDBDErrorState || minDBDErrorState2 || maxPAErrorState || maxPAErrorState2 || maxDBDErrorState || maxDBDErrorState2 || nODErrorState) {
+        /*if (minPAErrorState || minPAErrorState2 || minDBDErrorState || minDBDErrorState2 || maxPAErrorState || maxPAErrorState2 || maxDBDErrorState || maxDBDErrorState2 || nODErrorState) {
             setOperationError("Błąd walidacji pól")
             setOperationErrorState(true)
             return
-        }
-
+        }*/
         event.preventDefault();
         const data = new FormData(event.currentTarget);
+
+        console.log({
+            name: data.get('name'),
+            city: data.get('city'),
+            street: data.get('street'),
+            vaccineIds: checkedVaccines.map(vaccine => vaccine.name),
+            openingHoursDays: [data.get('0hours'), data.get('1hours'), data.get('2hours'),
+            data.get('3hours'), data.get('4hours'), data.get('5hours'), data.get('6hours'),],
+            active: data.get('active')
+        })
+
+        return
         let error;
         console.log(location.state.action)
 
@@ -110,22 +97,26 @@ export default function AddOrEditVaccinationCenter() {
             setSuccess(true);
     };
 
-    const [activeOption, setActiveOption] = React.useState(location.state != null ? location.state.active ? 'aktywny' : 'nieaktywny' : '');
-
-    const handleChange = (event) => {
-        setActiveOption(event.target.value);
-    };
-
-    const activeOptions = [
-        {
-            value: 'aktywny',
-            label: 'aktywny',
-        },
-        {
-            value: 'nieaktywny',
-            label: 'nieaktywny',
-        },
-    ];
+    function openingHoursTextField(dayNum) {
+        return (
+            <Grid item xs={12}>
+                <TextField
+                    defaultValue={location.state != null ?
+                        location.state.openingHours[dayNum].from + " - " + location.state.openingHours[0].to : "08:00 - 20:00"}
+                    required
+                    fullWidth
+                    name={dayNum + "hours"}
+                    label={"Godziny otwarcia - " + WeekDays[dayNum]}
+                    id={dayNum + "hours"}
+                    onChange={(e) => {
+                        ValidationHelpers.validateOpeningHours(e, setOpeningHoursError, setOpeningHoursErrorState)
+                    }}
+                    helperText={openingHoursError}
+                    error={openingHoursErrorState}
+                />
+            </Grid>
+        )
+    }
 
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {
@@ -145,6 +136,39 @@ export default function AddOrEditVaccinationCenter() {
             return;
         }
         setSuccess(false);
+    };
+
+    const [vaccines, setVaccines] = useState()
+
+    async function renderVaccinesDialog() {
+        const fetchData = async () => {
+            let [data, err] = await getVaccinesData();
+            if (data != null) {
+                setVaccines(data);
+            }
+            else {
+                //setError(err);
+                //setErrorState(true);
+            }
+            console.log(err)
+        }
+        await fetchData();
+        setChooseVaccinesDialogOpen(true)
+    }
+
+    const [checkedVaccines, setCheckedVaccines] = React.useState([0]);
+
+    const handleToggle = (value) => () => {
+        const currentIndex = checkedVaccines.indexOf(value);
+        const newChecked = [...checkedVaccines];
+
+        if (currentIndex === -1) {
+            newChecked.push(value);
+        } else {
+            newChecked.splice(currentIndex, 1);
+        }
+
+        setCheckedVaccines(newChecked);
     };
 
     function renderError(param) {
@@ -182,92 +206,47 @@ export default function AddOrEditVaccinationCenter() {
                         <Grid container spacing={2}>
                             <Grid item xs={12}>
                                 <TextField
-                                    defaultValue={location.state != null ? location.state.pesel : null}
+                                    defaultValue={location.state != null ? location.state.name : null}
                                     required
                                     fullWidth
                                     name="name"
                                     label="Nazwa"
                                     id="name"
                                     onChange={(e) => {
-                                        ValidationHelpers.validatePESEL(e, setPeselError, setPeselErrorState)
+                                        ValidationHelpers.validateName(e, setNameError, setNameErrorState)
                                     }}
-                                    helperText={peselError}
-                                    error={peselErrorState}
+                                    helperText={nameError}
+                                    error={nameErrorState}
                                 />
                             </Grid>
                             <Grid item xs={12}>
                                 <TextField
-                                    defaultValue={location.state != null ? location.state.firstName : null}
+                                    defaultValue={location.state != null ? location.state.city : null}
                                     required
                                     fullWidth
-                                    name="firstName"
-                                    label="Imię"
-                                    id="firstName"
+                                    name="city"
+                                    label="Miasto"
+                                    id="city"
                                     onChange={(e) => {
-                                        ValidationHelpers.validateFirstName(e, setFirstNameError, setFirstNameErrorState)
+                                        ValidationHelpers.validateName(e, setCityError, setCityErrorState)
                                     }}
-                                    helperText={firstNameError}
-                                    error={firstNameErrorSate}
+                                    helperText={cityError}
+                                    error={cityErrorState}
                                 />
                             </Grid>
                             <Grid item xs={12}>
                                 <TextField
-                                    defaultValue={location.state != null ? location.state.lastName : null}
+                                    defaultValue={location.state != null ? location.state.street : null}
                                     required
                                     fullWidth
-                                    name="lastName"
-                                    label="Nazwisko"
-                                    id="lastName"
+                                    name="street"
+                                    label="Ulica"
+                                    id="street"
                                     onChange={(e) => {
-                                        ValidationHelpers.validateLastName(e, setLastNameError, setLastNameErrorState)
+                                        ValidationHelpers.validateName(e, setStreetError, setStreetErrorState)
                                     }}
-                                    helperText={lastNameError}
-                                    error={lastNameErrorState}
-                                />
-                            </Grid>
-                            <Grid item xs={12}>
-                                <TextField
-                                    defaultValue={location.state != null ? location.state.mail : null}
-                                    required
-                                    fullWidth
-                                    name="mail"
-                                    label="E-Mail"
-                                    id="mail"
-                                    onChange={(e) => {
-                                        ValidationHelpers.validateEmail(e, setMailError, setMailErrorState)
-                                    }}
-                                    helperText={mailError}
-                                    error={mailErrorState}
-                                />
-                            </Grid>
-                            <Grid item xs={12}>
-                                <TextField
-                                    defaultValue={location.state != null ? location.state.dateOfBirth : null}
-                                    required
-                                    fullWidth
-                                    name="dateOfBirth"
-                                    label="Data urodzenia"
-                                    id="dateOfBirth"
-                                    onChange={(e) => {
-                                        ValidationHelpers.validateDate(e, setDateOfBirthError, setDateOfBirthErrorState)
-                                    }}
-                                    helperText={dateOfBirthError}
-                                    error={dateOfBirthErrorState}
-                                />
-                            </Grid>
-                            <Grid item xs={12}>
-                                <TextField
-                                    defaultValue={location.state != null ? location.state.phoneNumber : null}
-                                    required
-                                    fullWidth
-                                    name="phoneNumber"
-                                    label="Numer telefonu"
-                                    id="phoneNumber"
-                                    onChange={(e) => {
-                                        ValidationHelpers.validatePhoneNumber(e, setPhoneNumberError, setPhoneNumberErrorState)
-                                    }}
-                                    helperText={phoneNumberError}
-                                    error={phoneNumberErrorState}
+                                    helperText={streetError}
+                                    error={streetErrorState}
                                 />
                             </Grid>
                             <Grid item xs={12}>
@@ -275,10 +254,10 @@ export default function AddOrEditVaccinationCenter() {
                                     fullWidth
                                     id="active"
                                     select
-                                    label="Aktywny"
+                                    label="Aktywne"
                                     name="active"
                                     value={activeOption}
-                                    onChange={handleChange}
+                                    onChange={(event) => setActiveOption(event.target.value)}
                                     SelectProps={{
                                         native: true,
                                     }}
@@ -290,7 +269,22 @@ export default function AddOrEditVaccinationCenter() {
                                     ))}
                                 </TextField>
                             </Grid>
+                            {openingHoursTextField(0)}
+                            {openingHoursTextField(1)}
+                            {openingHoursTextField(2)}
+                            {openingHoursTextField(3)}
+                            {openingHoursTextField(4)}
+                            {openingHoursTextField(5)}
+                            {openingHoursTextField(6)}
                         </Grid>
+                        <Button
+                            fullWidth
+                            variant="outlined"
+                            sx={{ mt: 3, mb: 2 }}
+                            onClick={() => renderVaccinesDialog()}
+                        >
+                            Wybierz szczepionki
+                        </Button>
                         <Button
                             type="submit"
                             fullWidth
@@ -305,7 +299,7 @@ export default function AddOrEditVaccinationCenter() {
                         fullWidth
                         variant="contained"
                         sx={{ mt: 3, mb: 2 }}
-                        onClick={() => { navigate("/admin/patients") }}
+                        onClick={() => { navigate("/admin/vaccinationCenters") }}
                     >
                         Powrót
                     </Button>
@@ -320,8 +314,46 @@ export default function AddOrEditVaccinationCenter() {
                         </Alert>
                     </Snackbar>
                 </Box>
+
+                <Dialog
+                    fullWidth
+                    open={chooseVaccinesDialogOpen}
+                >
+                    <DialogTitle>Wybierz szczepionki</DialogTitle>
+                    <DialogContent>
+                        <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
+                            {vaccines && vaccines.map((vaccine) => {
+                                const labelId = `checkbox-list-label-${vaccine}`;
+                                return (
+                                    <ListItem
+                                        key={vaccine}
+                                        disablePadding
+                                    >
+                                        <ListItemButton role={undefined} onClick={handleToggle(vaccine)} dense>
+                                            <ListItemIcon>
+                                                <Checkbox
+                                                    edge="start"
+                                                    checked={checkedVaccines.indexOf(vaccine) !== -1}
+                                                    tabIndex={-1}
+                                                    disableRipple
+                                                    inputProps={{ 'aria-labelledby': labelId }}
+                                                />
+                                            </ListItemIcon>
+                                            <ListItemText id={labelId} primary={vaccine.name + ", producent: " + vaccine.company} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                );
+                            })}
+                        </List>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setChooseVaccinesDialogOpen(false)}>Wróć</Button>
+                        <Button onClick={() => setChooseVaccinesDialogOpen(false)}>Wybierz</Button>
+                    </DialogActions>
+                </Dialog>
+
             </Container>
         </ThemeProvider>
 
-    )*/
+    )
 }

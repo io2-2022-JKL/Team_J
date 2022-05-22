@@ -187,14 +187,12 @@ export default function VaccinationCentersPage() {
     };
 
     function handleRowClick(row) {
-        /*
-        navigate('/admin/vaccines/editVaccine', {
+        navigate('/admin/vaccinationCenters/editVaccinationCenter', {
             state: {
-                action: "edit", id: row.id, company: row.company, name: row.name, numberOfDoses: row.numberOfDoses,
-                minDaysBetweenDoses: row.minDaysBetweenDoses, maxDaysBetweenDoses: row.maxDaysBetweenDoses, virusName: row.virus, minPatientAge: row.minPatientAge, maxPatientAge: row.maxPatientAge, active: row.active
+                action: "edit", id: row.id, name: row.name, city: row.city, street: row.street,
+                active: row.active, openingHours: row.openingHoursDays, vaccines: row.vacciens
             }
         })
-        */
     }
 
     function renderError(param) {
@@ -290,7 +288,7 @@ export default function VaccinationCentersPage() {
                                     </TextField>
                                 </Grid>
                             </Grid>
-                            <Button variant='outlined' onClick={() => { /*navigate("/admin/vaccines/addVaccine", { state: { action: "add" } })*/ }}>
+                            <Button variant='outlined' onClick={() => { navigate("/admin/vaccinationCenters/addVaccinationCenter", { state: { action: "add" } }) }}>
                                 Dodaj nowe centrum szczepień
                             </Button>
                         </Box>
