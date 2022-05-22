@@ -78,10 +78,12 @@ export default function LoginPage() {
         }
 
         localStorage.setItem('userID', response.data.userId)
-        
+
         axios.defaults.headers.common['authorization'] = 'Bearer ' + response.headers.authorization
-        
+
         setLoading(false);
+
+        localStorage.setItem('isDoctor', false)
 
         switch (response.data.userType) {
             case "admin":
@@ -91,7 +93,11 @@ export default function LoginPage() {
                 navigate("/patient", { state: { name: "Jan", surname: "Kowalski" } });
                 break;
             case "doctor":
-                navigate("/patient", { state: { name: "Jan", surname: "Kowalski" } });
+                localStorage.setItem('isDoctor', true)
+                navigate("/doctor/redirection");
+                break;
+            default:
+                break;
         }
     }
 

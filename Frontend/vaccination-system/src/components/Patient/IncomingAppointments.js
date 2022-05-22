@@ -15,6 +15,7 @@ import SummarizeIcon from '@mui/icons-material/Summarize';
 import Avatar from '@mui/material/Avatar';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
+import { handleBack } from './General';
 
 const theme = createTheme();
 
@@ -170,7 +171,7 @@ export default function IncomingAppointment() {
                             type="submit"
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
-                            onClick={() => { navigate("/patient") }}
+                            onClick={() => { /*handleBack(navigate())*/ navigate('/patient') }}
                         >
                             Powrót
                         </Button>
