@@ -133,7 +133,7 @@ export default function DoctorsPage() {
             }
             else {
                 setError(err);
-                setErrorState(true);  
+                setErrorState(true);
             }
             console.log(err)
             setLoading(false);
@@ -192,12 +192,11 @@ export default function DoctorsPage() {
             return;
         }
         if (errorState) {
-            if (error === '401' || error === '403')
-            {
+            if (error === '401' || error === '403') {
                 LoginHelpers.logOut();
                 navigate('/signin');
             }
-                
+
         }
         setErrorState(false);
     };
@@ -340,7 +339,7 @@ export default function DoctorsPage() {
                                     </TextField>
                                 </Grid>
                             </Grid>
-                            <Button variant='outlined' onClick={() => { navigate("/admin/vaccines/addVaccine", { state: { action: "add" }}) }}>
+                            <Button variant='outlined' onClick={() => { navigate("/admin/vaccines/addVaccine", { state: { action: "add" } }) }}>
                                 Dodaj nową szczepionkę
                             </Button>
                         </Box>

@@ -13,6 +13,7 @@ import ValidationHelpers from '../../tools/ValidationHelpers';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import { editDoctor } from './AdminApi';
+import { activeOptions } from '../../tools/ActiveOptions';
 
 const theme = createTheme();
 
@@ -62,17 +63,6 @@ export default function EditDoctor() {
     const handleChange = (event) => {
         setActiveOption(event.target.value);
     };
-
-    const activeOptions = [
-        {
-            value: 'aktywny',
-            label: 'aktywny',
-        },
-        {
-            value: 'nieaktywny',
-            label: 'nieaktywny',
-        },
-    ];
 
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {

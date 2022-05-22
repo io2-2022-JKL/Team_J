@@ -16,6 +16,7 @@ import IncomingAppointment from './Patient/IncomingAppointments';
 import Certificate from './Patient/Certificates';
 import AddOrEditVaccine from './Admin/AddOrEditVaccine';
 import EditPatient from './Admin/EditPatient';
+import AddOrEditVaccinationCenter from './Admin/AddOrEditVaccinationCenter';
 
 
 function App() {
@@ -36,6 +37,8 @@ function App() {
           <Route exact path='/admin/doctors' element={<DoctorsPage />} />
           <Route exact path='/admin/doctors/editDoctor' element={< EditDoctor />} />
           <Route exact path='/admin/vaccinationCenters' element={<VaccinationCentersPage />} />
+          <Route exact path='/admin/vaccinationCenters/addVaccinationCenter' element={<AddOrEditVaccinationCenter />} />
+          <Route exact path='/admin/vaccinationCenters/editVaccinationCenter' element={<AddOrEditVaccinationCenter />} />
           <Route exact path='/admin/vaccines' element={<VaccinesPage />} />
           <Route exact path='/admin/vaccines/addVaccine' element={<AddOrEditVaccine />} />
           <Route exact path='/admin/vaccines/editVaccine' element={<AddOrEditVaccine />} />

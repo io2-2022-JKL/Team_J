@@ -18,6 +18,7 @@ import { getVaccinationCentersData } from './AdminApi';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import LoginHelpers from '../../tools/LoginHelpers';
+import { activeOptionsEmptyPossible } from '../../tools/ActiveOptions';
 
 const theme = createTheme();
 
@@ -25,7 +26,7 @@ const Alert = React.forwardRef(function Alert(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
-const daysOfTheWeek = ["pon","wt","śr","czw","pt","sob","niedz"]
+const daysOfTheWeek = ["pon", "wt", "śr", "czw", "pt", "sob", "niedz"]
 
 export default function VaccinationCentersPage() {
 
@@ -87,7 +88,7 @@ export default function VaccinationCentersPage() {
                     ))}
                 </ul>
             ),
-            
+
         },
         {
             field: 'active',
@@ -129,7 +130,7 @@ export default function VaccinationCentersPage() {
             setLoading(true);
             let [data, err] = await getVaccinationCentersData();
             if (data != null) {
-                console.log(data.find((e)=>e.vaccines))
+                console.log(data.find((e) => e.vaccines))
                 setRows(data);
                 setFilteredRows(data)
             }
@@ -161,7 +162,6 @@ export default function VaccinationCentersPage() {
         result = FilteringHelepers.filterName(result, data.get('nameFilter'));
         result = FilteringHelepers.filterCity(result, data.get('cityFilter'));
         result = FilteringHelepers.filterActive(result, data.get('activeFilter'));
-        //result = FilteringHelepers.filterVirus2(result, data.get('virusFilter'));
         result = FilteringHelepers.filterStreet(result, data.get('streetFilter'));
         console.log(result);
         setFilteredRows(result);
@@ -172,20 +172,6 @@ export default function VaccinationCentersPage() {
         setCurrency(event.target.value);
     };
 
-    const currencies = [
-        {
-            value: 'aktywny',
-            label: 'aktywny',
-        },
-        {
-            value: 'nieaktywny',
-            label: 'nieaktywny',
-        },
-        {
-            value: '',
-            label: '',
-        }
-    ];
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {
             return;
@@ -248,7 +234,6 @@ export default function VaccinationCentersPage() {
                             component='form'
                             noValidate
                             onChange={handleSubmit}
-                            //onSubmit={handleSubmit}
                             sx={{
                                 marginTop: 2,
                                 marginBottom: 2,
@@ -284,36 +269,6 @@ export default function VaccinationCentersPage() {
                                         name="streetFilter"
                                     />
                                 </Grid>
-                                {/*
-                                <Grid item>
-                                    <TextField
-                                        id="vaccineFilter"
-                                        label="Nazwa szczepionki"
-                                        name="vaccineFilter"
-                                    />
-                                </Grid>
-                                <Grid item>
-                                    <TextField
-                                        id="virusFilter"
-                                        label="Nazwa wirusa"
-                                        name="virusFilter"
-                                    />
-                                </Grid>
-                                <Grid item>
-                                    <TextField
-                                        id="fromFilter"
-                                        label="Otwarte od"
-                                        name="fromFilter"
-                                    />
-                                </Grid>
-                                <Grid item>
-                                    <TextField
-                                        id="toFilter"
-                                        label="Otwarte do"
-                                        name="toFilter"
-                                    />
-                                </Grid>
-                                */}
                                 <Grid item >
                                     <TextField
                                         fullWidth
@@ -327,7 +282,7 @@ export default function VaccinationCentersPage() {
                                             native: true,
                                         }}
                                     >
-                                        {currencies.map((option) => (
+                                        {activeOptionsEmptyPossible.map((option) => (
                                             <option key={option.value} value={option.value}>
                                                 {option.label}
                                             </option>
@@ -335,7 +290,7 @@ export default function VaccinationCentersPage() {
                                     </TextField>
                                 </Grid>
                             </Grid>
-                            <Button variant='outlined' onClick={() => { /*navigate("/admin/vaccines/addVaccine", { state: { action: "add" } })*/}}>
+                            <Button variant='outlined' onClick={() => { /*navigate("/admin/vaccines/addVaccine", { state: { action: "add" } })*/ }}>
                                 Dodaj nowe centrum szczepień
                             </Button>
                         </Box>
@@ -365,11 +320,4 @@ export default function VaccinationCentersPage() {
             </Container >
         </ThemeProvider >
     );
-}
-
-const confirmOptionsInPolish = {
-    labels: {
-        confirmable: "Tak",
-        cancellable: "Nie"
-    }
 }

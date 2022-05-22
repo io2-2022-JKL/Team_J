@@ -8,14 +8,13 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { useLocation, useNavigate } from "react-router-dom";
-import { addVaccine, editPatient, editVaccine } from './AdminApi';
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { addVaccine, editVaccine } from './AdminApi';
 import ValidationHelpers from '../../tools/ValidationHelpers';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
-import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { activeOptions } from '../../tools/ActiveOptions';
+import Snackbars from '../../tools/Snackbars';
+import LoginHelpers from '../../tools/LoginHelpers'
 
 const theme = createTheme();
 
@@ -23,53 +22,120 @@ const Alert = React.forwardRef(function Alert(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
-export default function EditPatient() {
-    const navigate = useNavigate();
-    const location = useLocation();
-
-    const [peselError, setPeselError] = useState('')
-    const [peselErrorState, setPeselErrorState] = useState(false)
-    const [firstNameError, setFirstNameError] = useState('')
-    const [firstNameErrorSate, setFirstNameErrorState] = useState(false)
-    const [lastNameError, setLastNameError] = useState('')
-    const [lastNameErrorState, setLastNameErrorState] = useState(false)
-    const [mailError, setMailError] = useState('')
-    const [mailErrorState, setMailErrorState] = useState(false)
-    //const [dateOfBirth, setDateOfBirth] = useState(location.state != null ? location.state.dateOfBirth ? location.state.dateOfBirth.replaceAll('-', '/') : '' : '')
-    const [dateOfBirthError, setDateOfBirthError] = useState('')
-    const [dateOfBirthErrorState, setDateOfBirthErrorState] = useState(false)
-    const [phoneNumberError, setPhoneNumberError] = useState('')
-    const [phoneNumberErrorState, setPhoneNumberErrorState] = useState(false)
+export default function AddOrEditVaccinationCenter() {
+    /*const navigate = useNavigate();
+    const [nODErrorState, setNODErrorState] = useState(false);
+    const [nODError, setNODError] = useState('');
+    const [minDBDErrorState, setMinDBDErrorState] = useState(false);
+    const [minDBDError, setMinDBDError] = useState('');
+    const [maxDBDErrorState, setMaxDBDErrorState] = useState(false);
+    const [maxDBDError, setMaxDBDError] = useState('');
+    const [minDBDErrorState2, setMinDBDErrorState2] = useState(false);
+    const [minDBDError2, setMinDBDError2] = useState('');
+    const [maxDBDErrorState2, setMaxDBDErrorState2] = useState(false);
+    const [maxDBDError2, setMaxDBDError2] = useState('');
+    const [minPAErrorState, setMinPAErrorState] = useState(false);
+    const [minPAError, setMinPAError] = useState('');
+    const [maxPAErrorState, setMaxPAErrorState] = useState(false);
+    const [maxPAError, setMaxPAError] = useState('');
+    const [minPAErrorState2, setMinPAErrorState2] = useState(false);
+    const [minPAError2, setMinPAError2] = useState('');
+    const [maxPAErrorState2, setMaxPAErrorState2] = useState(false);
+    const [maxPAError2, setMaxPAError2] = useState('');
+    const [minDBD, setMinDBD] = useState(0);
+    const [maxDBD, setMaxDBD] = useState(0);
+    const [minPA, setMinPA] = useState(0);
+    const [maxPA, setMaxPA] = useState(0);
     const [operationError, setOperationError] = useState('');
     const [operationErrorState, setOperationErrorState] = useState(false);
-    const [activeOption, setActiveOption] = React.useState(location.state != null ? location.state.active ? 'aktywny' : 'nieaktywny' : '');
     const [success, setSuccess] = useState(false);
+    const location = useLocation();
+
+    React.useEffect(() => {
+        if (maxDBD >= 0 && maxDBD < minDBD) {
+            setMinDBDErrorState2(true);
+            setMaxDBDErrorState2(true);
+            setMaxDBDError2("Wartość maksymalna jest mniejsza od minimalnej!");
+            setMinDBDError2("Wartość minimalna jest większa od maksymalnej!");
+        }
+        else {
+            setMinDBDErrorState2(false);
+            setMaxDBDErrorState2(false);
+            setMaxDBDError2("");
+            setMinDBDError2("");
+        }
+
+        if (maxPA >= 0 && maxPA < minPA) {
+            setMinPAErrorState2(true);
+            setMaxPAErrorState2(true);
+            setMaxPAError2("Wartość maksymalna jest mniejsza od minimalnej!");
+            setMinPAError2("Wartość minimalna jest większa od maksymalnej!");
+        }
+        else {
+            setMinPAErrorState2(false);
+            setMaxPAErrorState2(false);
+            setMaxPAError2("");
+            setMinPAError2("");
+        }
+
+    }, [minDBD, maxDBD, minPA, maxPA]);
 
     const handleSubmit = async (event) => {
+        if (minPAErrorState || minPAErrorState2 || minDBDErrorState || minDBDErrorState2 || maxPAErrorState || maxPAErrorState2 || maxDBDErrorState || maxDBDErrorState2 || nODErrorState) {
+            setOperationError("Błąd walidacji pól")
+            setOperationErrorState(true)
+            return
+        }
+
         event.preventDefault();
         const data = new FormData(event.currentTarget);
+        let error;
+        console.log(location.state.action)
 
-        console.log(data.get('firstName'))
-        let error = await editPatient(location.state.id, data.get('pesel'), data.get('firstName'), data.get('lastName'),
-            data.get('mail'), data.get('dateOfBirth'), data.get('phoneNumber'), data.get('active'));
+        if (location.state.action === "add")
+            error = await addVaccine(data.get('company'), data.get('name'), Number.parseInt(data.get('numberOfDoses')),
+                Number.parseInt(data.get('minDaysBetweenDoses')), Number.parseInt(data.get('maxDaysBetweenDoses')),
+                data.get('virus'), Number.parseInt(data.get('minPatientAge')), Number.parseInt(data.get('maxPatientAge')),
+                data.get('active'));
+        else if (location.state.action === "edit")
+            //editVaccine    
+            error = await editVaccine(location.state.id, data.get('company'), data.get('name'), Number.parseInt(data.get('numberOfDoses')),
+                Number.parseInt(data.get('minDaysBetweenDoses')), Number.parseInt(data.get('maxDaysBetweenDoses')),
+                data.get('virus'), Number.parseInt(data.get('minPatientAge')), Number.parseInt(data.get('maxPatientAge')),
+                data.get('active'));
         setOperationError(error);
         if (error != '200')
             setOperationErrorState(true);
         else
             setSuccess(true);
-
-        console.log(location.state.dateOfBirth)
-        console.log('po replace:')
-        console.log(location.state.dateOfBirth.replaceAll('-', '/'))
     };
+
+    const [activeOption, setActiveOption] = React.useState(location.state != null ? location.state.active ? 'aktywny' : 'nieaktywny' : '');
 
     const handleChange = (event) => {
         setActiveOption(event.target.value);
     };
 
+    const activeOptions = [
+        {
+            value: 'aktywny',
+            label: 'aktywny',
+        },
+        {
+            value: 'nieaktywny',
+            label: 'nieaktywny',
+        },
+    ];
+
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {
             return;
+        }
+        if (operationErrorState) {
+            if (operationError === '401' || operationError === '403') {
+                LoginHelpers.logOut();
+                navigate('/signin');
+            }
         }
         setOperationErrorState(false);
     };
@@ -84,13 +150,15 @@ export default function EditPatient() {
     function renderError(param) {
         switch (param) {
             case '400':
-                return 'Nieprawidłowe dane.';
+                return 'Złe dane. Czyżbyś próbował dodać nieistniejącego wirusa?';
             case '401':
-                return 'Użytkownik nie posiada uprawnień do wykonania tej operacji'
+                return 'Użytkownik nieuprawniony do dodania szczepionki'
             case '403':
-                return 'Użytkownikowi zabroniono wykonania tej operacji'
+                return 'Użytkownikowi zabroniono dodawania szczepionki'
             case '404':
-                return 'Nie znaleziono takiego pacjenta'
+                return 'Nie znaleziono szczepionki do dodania'
+            case 'ECONNABORTED':
+                return 'Przekroczono limit połączenia'
             default:
                 return 'Wystąpił błąd!';
         }
@@ -108,7 +176,7 @@ export default function EditPatient() {
                     }}
                 >
                     <Typography component="h1" variant="h5">
-                        Wpisz dane pacjenta
+                        Wpisz dane centrum szczepień
                     </Typography>
                     <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
                         <Grid container spacing={2}>
@@ -117,9 +185,9 @@ export default function EditPatient() {
                                     defaultValue={location.state != null ? location.state.pesel : null}
                                     required
                                     fullWidth
-                                    name="pesel"
-                                    label="PESEL"
-                                    id="pesel"
+                                    name="name"
+                                    label="Nazwa"
+                                    id="name"
                                     onChange={(e) => {
                                         ValidationHelpers.validatePESEL(e, setPeselError, setPeselErrorState)
                                     }}
@@ -255,5 +323,5 @@ export default function EditPatient() {
             </Container>
         </ThemeProvider>
 
-    )
+    )*/
 }

@@ -200,6 +200,9 @@ export async function deletePatient(patientId) {
 }
 
 export async function addDoctor(patientId, vaccinationCenterId) {
+    console.log(patientId, vaccinationCenterId);
+    return;
+
     let response;
     let err = '200';
 
@@ -297,5 +300,68 @@ export async function getVaccinationCentersData() {
         if (error.response != null)
             return [response, error.response.status.toString()];
         return [response, error.code];
+    }
+}
+
+export async function addVaccinationCenter(name, city, street, vaccineIds, openingHoursDays, active) {
+    let response;
+    let err = '200';
+
+    try {
+        response = await axios({
+            method: 'post',
+            url: SYSTEM_SZCZEPIEN_URL + '/admin/vaccinationCenters/addVaccinationCenter',
+            data:
+            {
+                name: name,
+                city: city,
+                street: street,
+                vaccineIds: vaccineIds,
+                openingHoursDays: openingHoursDays,
+                active: active
+            },
+            timeout: 2000
+        });
+        console.log(response)
+        return err;
+
+    } catch (error) {
+        console.error(error.message);
+        console.error(error.code);
+        if (error.response == null)
+            return error.code;
+        return error.response.status.toString();
+    }
+}
+
+export async function editVaccinationCenter(id, name, city, street, vaccineIds, openingHoursDays, active) {
+    let response;
+    let err = '200';
+
+    try {
+        response = await axios({
+            method: 'post',
+            url: SYSTEM_SZCZEPIEN_URL + '/admin/vaccinationCenters/editVaccinationCenter',
+            data:
+            {
+                id: id,
+                name: name,
+                city: city,
+                street: street,
+                vaccineIds: vaccineIds,
+                openingHoursDays: openingHoursDays,
+                active: active
+            },
+            timeout: 2000
+        });
+        console.log(response)
+        return err;
+
+    } catch (error) {
+        console.error(error.message);
+        console.error(error.code);
+        if (error.response == null)
+            return error.code;
+        return error.response.status.toString();
     }
 }
