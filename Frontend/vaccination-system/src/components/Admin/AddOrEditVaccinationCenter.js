@@ -102,7 +102,7 @@ export default function AddOrEditVaccinationCenter() {
             <Grid item xs={12}>
                 <TextField
                     defaultValue={location.state != null ?
-                        location.state.openingHours[dayNum].from + " - " + location.state.openingHours[0].to : "08:00 - 20:00"}
+                        location.state.openingHours[dayNum].from + " - " + location.state.openingHours[dayNum].to : "08:00 - 20:00"}
                     required
                     fullWidth
                     name={dayNum + "hours"}
@@ -153,6 +153,17 @@ export default function AddOrEditVaccinationCenter() {
             console.log(err)
         }
         await fetchData();
+
+        let newChecked = [];
+        if (location.state != null) {
+            for (let i = 0; i < location.state.vaccines.length; i++)
+                newChecked.push(location.state.vaccines[i]);
+        }
+
+        setCheckedVaccines(newChecked);
+        console.log("checkedVaccines")
+        console.log(checkedVaccines)
+
         setChooseVaccinesDialogOpen(true)
     }
 
@@ -326,7 +337,7 @@ export default function AddOrEditVaccinationCenter() {
                                 const labelId = `checkbox-list-label-${vaccine}`;
                                 return (
                                     <ListItem
-                                        key={vaccine}
+                                        key={vaccine.id}
                                         disablePadding
                                     >
                                         <ListItemButton role={undefined} onClick={handleToggle(vaccine)} dense>

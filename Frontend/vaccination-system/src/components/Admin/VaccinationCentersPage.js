@@ -190,7 +190,7 @@ export default function VaccinationCentersPage() {
         navigate('/admin/vaccinationCenters/editVaccinationCenter', {
             state: {
                 action: "edit", id: row.id, name: row.name, city: row.city, street: row.street,
-                active: row.active, openingHours: row.openingHoursDays, vaccines: row.vacciens
+                active: row.active, openingHours: row.openingHoursDays, vaccines: row.vaccines
             }
         })
     }
