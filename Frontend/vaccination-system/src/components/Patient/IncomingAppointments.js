@@ -171,7 +171,7 @@ export default function IncomingAppointment() {
                             type="submit"
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
-                            onClick={() => { /*handleBack(navigate())*/ navigate('/patient') }}
+                            onClick={() => { handleBack(navigate) }}
                         >
                             Powrót
                         </Button>

@@ -30,6 +30,7 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import Snackbar from '@mui/material/Snackbar';
+import { handleBack } from './General';
 
 const theme = createTheme();
 
@@ -62,8 +63,6 @@ export default function FilterTimeSlots() {
                 return 'Użytkownikowi zabroniono wyszukiwania'
             case '404':
                 return 'Nie znaleziono dostępnych terminów dla tych danych'
-            case 'ECONNABORTED':
-                return 'Przekroczono limit połączenia'
             default:
                 return 'Wystąpił błąd!';
         }
@@ -80,8 +79,6 @@ export default function FilterTimeSlots() {
                 return 'Użytkownikowi zabroniono zapisać się na to szczepienie'
             case '404':
                 return 'Nie udało się zapisać na szczepienie'
-            case 'ECONNABORTED':
-                return 'Przekroczono limit połączenia'
             default:
                 return 'Wystąpił błąd!';
         }
@@ -350,7 +347,7 @@ export default function FilterTimeSlots() {
                             fullWidth
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
-                            onClick={async () => { navigate("/patient") }}
+                            onClick={async () => { handleBack(navigate) }}
                         >
                             Powrót
                         </Button>

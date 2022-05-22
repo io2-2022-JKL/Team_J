@@ -5,6 +5,7 @@ import { Grid } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { getFormerAppointments } from './PatientApi';
 import ItemListPageTemplate from '../ItemsListPageTemplate';
+import { handleBack } from './General';
 
 function renderRow(props) {
     const { index, style, data } = props;
@@ -78,9 +79,9 @@ export default function FormerAppointments() {
         setErrorState(false);
     };
 
-    const handleBack = () => { navigate("/patient") }
+    const handleBackClick = () => { handleBack(navigate) }
 
     return (
-        ItemListPageTemplate("Historia szczpień", data, renderRow, renderError, errorState, error, handleClose, handleBack, loading)
+        ItemListPageTemplate("Historia szczpień", data, renderRow, renderError, errorState, error, handleClose, handleBackClick, loading)
     );
 }

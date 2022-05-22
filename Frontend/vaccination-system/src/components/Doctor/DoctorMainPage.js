@@ -33,7 +33,7 @@ export default function DoctorMainPage() {
                             alignItems: 'center',
                         }}
                     >
-                        <Avatar sx={{ m: 3, bgcolor: 'secondary.main' }}>
+                        <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
                             <AccountBoxRoundedIcon />
                         </Avatar>
                         <Typography component="h1" variant="h4">
@@ -59,7 +59,7 @@ export default function DoctorMainPage() {
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
                             onClick={() => {
-                                navigate("doctor/incomingAppointments")
+                                navigate("/doctor/incomingAppointments")
                             }}
                         >
                             Przeglądaj przyszłe szczepienia
