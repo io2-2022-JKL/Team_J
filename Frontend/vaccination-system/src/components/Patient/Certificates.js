@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import { getCertificates } from './PatientApi';
 import ItemListPageTemplate from '../ItemsListPageTemplate';
+import { handleBack } from './General';
 
 function renderRow(props) {
     const { index, style, data } = props;
@@ -83,9 +84,9 @@ export default function Certificate() {
         setErrorState(false);
     };
 
-    const handleBack = () => { navigate("/patient") }
+    const handleBackClick = () => { handleBack(navigate) }
 
     return (
-        ItemListPageTemplate("Twoje certyfikaty", data, renderRow, renderError, errorState, error, handleClose, handleBack, loading)
+        ItemListPageTemplate("Twoje certyfikaty", data, renderRow, renderError, errorState, error, handleClose, handleBackClick, loading)
     );
 }

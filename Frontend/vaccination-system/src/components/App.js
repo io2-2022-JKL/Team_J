@@ -16,6 +16,9 @@ import IncomingAppointment from './Patient/IncomingAppointments';
 import Certificate from './Patient/Certificates';
 import AddOrEditVaccine from './Admin/AddOrEditVaccine';
 import EditPatient from './Admin/EditPatient';
+import AddOrEditVaccinationCenter from './Admin/AddOrEditVaccinationCenter';
+import DoctorIncomingAppointments from './Doctor/IncomingAppointments';
+import Redirection from './Doctor/Redirection';
 
 
 function App() {
@@ -30,12 +33,16 @@ function App() {
           <Route exact path='/patient/appointments/formerAppointments' element={<FormerAppointment />} />
           <Route exact path='/patient/appointments/incomingAppointments' element={<IncomingAppointment />} />
           <Route exact path='/doctor' element={<DoctorMainPage />} />
+          <Route exact path='/doctor/redirection' element={<Redirection />} />
+          <Route exact path='/doctor/incomingAppointments' element={<DoctorIncomingAppointments />} />
           <Route exact path='/admin' element={<AdminMainPage />} />
           <Route exact path='/admin/patients' element={<PatientsPage />} />
           <Route exact path='/admin/patients/editPatient' element={<EditPatient />} />
           <Route exact path='/admin/doctors' element={<DoctorsPage />} />
           <Route exact path='/admin/doctors/editDoctor' element={< EditDoctor />} />
           <Route exact path='/admin/vaccinationCenters' element={<VaccinationCentersPage />} />
+          <Route exact path='/admin/vaccinationCenters/addVaccinationCenter' element={<AddOrEditVaccinationCenter />} />
+          <Route exact path='/admin/vaccinationCenters/editVaccinationCenter' element={<AddOrEditVaccinationCenter />} />
           <Route exact path='/admin/vaccines' element={<VaccinesPage />} />
           <Route exact path='/admin/vaccines/addVaccine' element={<AddOrEditVaccine />} />
           <Route exact path='/admin/vaccines/editVaccine' element={<AddOrEditVaccine />} />

@@ -8,14 +8,13 @@ import Button from '@mui/material/Button';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Container, CssBaseline } from '@mui/material';
 import Typography from '@mui/material/Typography';
-import { cancelAppointment, getIncomingAppointments } from './PatientApi';
+import { getIncomingAppointments } from './DoctorApi';
 import CircularProgress from '@mui/material/CircularProgress';
 import { blue } from '@mui/material/colors';
 import SummarizeIcon from '@mui/icons-material/Summarize';
 import Avatar from '@mui/material/Avatar';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
-import { handleBack } from './General';
 
 const theme = createTheme();
 
@@ -56,7 +55,7 @@ function renderCancelError(param) {
     }
 }
 
-export default function IncomingAppointment() {
+export default function DoctorIncomingAppointment() {
     const navigate = useNavigate();
     const [data, setData] = React.useState([]);
     const [loading, setLoading] = React.useState(false);
@@ -69,10 +68,10 @@ export default function IncomingAppointment() {
         const fetchData = async () => {
             setLoading(true);
             let userID = localStorage.getItem('userID');
-            let [patientData, err] = await getIncomingAppointments(userID);
-            if (patientData != null) {
-                setData(patientData);
-                console.log(patientData)
+            let [appointmentsData, err] = await getIncomingAppointments(userID);
+            if (appointmentsData != null) {
+                setData(appointmentsData);
+                console.log(appointmentsData)
             }
             else {
                 setData([]);
@@ -92,33 +91,15 @@ export default function IncomingAppointment() {
             <ListItem style={style} key={index} component="div" disablePadding divider>
                 <Grid container direction={"row"} spacing={1}>
                     <Grid item xs={4}>
-                        <ListItemText primary={"Wirus: " + item.vaccineVirus} secondary={"Numer dawki: " + item.whichVaccineDose} />
+                        <ListItemText primary={"Wirus: " + item.vaccineVirus} secondary={"Nazwa szczepionki: " + item.vaccineName} />
                     </Grid>
                     <Grid item xs={4}>
-                        <ListItemText primary={"Miasto: " + item.vaccinationCenterCity} secondary={"Ulica: " + item.vaccinationCenterStreet} />
+                        <ListItemText primary={"Imię pacjenta: " + item.patientFirstName} secondary={"Nazwisko pacjenta: " + item.patientLastName} />
                     </Grid>
                     <Grid item xs={4}>
-                        <ListItemText primary={"Lekarz: " + item.doctorFirstName + " " + item.doctorLastName} secondary={"Data szczepienia: " + item.windowEnd} />
+                        <ListItemText primary={"Początek wizyty: " + item.from} secondary={"Koniec wizyty: " + item.to} />
                     </Grid>
                 </Grid>
-                <Button
-                    onClick={async () => {
-                        let userID = localStorage.getItem('userID');
-                        let appointmentId = item.appointmentId;
-                        const result = window.confirm("Czy na pewno chcesz anulować wizytę?", confirmOptionsInPolish);
-                        if (result) {
-                            console.log("You click yes!");
-                            let err = await cancelAppointment(userID, appointmentId);
-                            setErrorCancel(err);
-                            setErrorCancelState(true);
-                            return;
-                        }
-                        else
-                            console.log("You click No!");
-                    }}
-                >
-                    Anuluj wizytę
-                </Button>
             </ListItem>
         );
     }
@@ -171,7 +152,7 @@ export default function IncomingAppointment() {
                             type="submit"
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
-                            onClick={() => { handleBack(navigate) }}
+                            onClick={() => { navigate('/doctor/redirection') }}
                         >
                             Powrót
                         </Button>
@@ -208,11 +189,4 @@ export default function IncomingAppointment() {
             </Container>
         </ThemeProvider>
     );
-}
-
-const confirmOptionsInPolish = {
-    labels: {
-        confirmable: "Tak",
-        cancellable: "Nie"
-    }
 }

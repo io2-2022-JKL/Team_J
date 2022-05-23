@@ -4,26 +4,21 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Container, CssBaseline, Snackbar, TextField } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Grid from "@material-ui/core/Grid";
 import { GridActionsCellItem } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
 import clsx from 'clsx';
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
 import Avatar from '@mui/material/Avatar';
-import { confirm } from "react-confirm-box";
 import DataDisplayArray from '../DataDisplayArray';
-import { addDoctor, getPatientsData, getRandomPatientData, getVaccinationCenters } from './AdminApi';
+import { addDoctor, getPatientsData, getVaccinationCentersData } from './AdminApi';
 import FilteringHelepers from '../../tools/FilteringHelepers';
-import Autocomplete from '@mui/material/Autocomplete';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
+import { activeOptionsEmptyPossible } from '../../tools/ActiveOptions';
 
 const theme = createTheme();
 
@@ -38,7 +33,7 @@ export default function PatientsPage() {
             flex: 2
         },
         {
-            field: 'PESEL',
+            field: 'pesel',
             headerName: 'PESEL',
             minWidth: 110,
             flex: 0.5,
@@ -107,11 +102,15 @@ export default function PatientsPage() {
     ];
 
     const [loading, setLoading] = React.useState(true);
-
-    //const [rows, setRows] = React.useState();
-
     const [rows, setRows] = React.useState([]);
-
+    const [filteredRows, setFilteredRows] = React.useState(rows);
+    const [openCentersDialog, setOpenCentersDialog] = React.useState(false)
+    const [vaccinationCenters, setVaccinationCenters] = React.useState()
+    const [openSnackBar, setOpenSnackBar] = React.useState(false)
+    const [snackBarMessage, setSnackBarMessage] = React.useState('')
+    const [option, setOption] = React.useState('');
+    const [selectedRow, setSelectedRow] = React.useState();
+    const [selectedCenterId, setSelectedCenterId] = React.useState();
 
     React.useEffect(() => {
 
@@ -122,16 +121,11 @@ export default function PatientsPage() {
                 setRows(data);
                 setFilteredRows(data)
             }
-            else {
-                //setError(err);
-                //setErrorState(true);
-            }
             setLoading(false);
         }
         fetchData();
     }, []);
 
-    const [filteredRows, setFilteredRows] = React.useState(rows);
 
     const deleteUser = React.useCallback(
         (id) => () => {
@@ -143,18 +137,10 @@ export default function PatientsPage() {
         [],
     );
 
-    const [openCentersDialog, setOpenCentersDialog] = React.useState(false)
-    const [vaccinationCenters, setVaccinationCenters] = React.useState()
-    const [openSnackBar, setOpenSnackBar] = React.useState(false)
-    const [snackBarMessage, setSnackBarMessage] = React.useState('')
-
-    const [selectedRow, setSelectedRow] = React.useState();
-    const [selectedCenter, setSelectedCenter] = React.useState();
-
     async function handleRowClick(row) {
         if (location.state == true) {
             setSelectedRow(row)
-            const [data, err] = await getVaccinationCenters()
+            const [data, err] = await getVaccinationCentersData()
             if (err != '200') {
                 setOpenSnackBar(true)
                 setSnackBarMessage('Nie udało się pobrac danych')
@@ -168,31 +154,14 @@ export default function PatientsPage() {
         else
             navigate('/admin/patients/editPatient', {
                 state: {
-                    id: row.id, pesel: row.PESEL, firstName: row.firstName, lastName: row.lastName, mail: row.mail,
+                    id: row.id, pesel: row.pesel, firstName: row.firstName, lastName: row.lastName, mail: row.mail,
                     dateOfBirth: row.dateOfBirth, phoneNumber: row.phoneNumber, active: row.active
                 }
             })
     }
 
-    const handleCenterChange = (e) => {
-        setSelectedCenter(vaccinationCenters.filter(center => {
-            //console.log(e.target.value)
-            //console.log(center.name)
-            return center.name === e.target.value
-        })[0])
-
-        //console.log(vaccinationCenters.filter(center => {
-        //    return center.name === e.target.value
-        //})[0])
-    }
-
-    const handleDialogClose = () => {
-        setOpenCentersDialog(false)
-    }
-
     const handleCenterChoice = async () => {
-        //console.log(selectedCenter)
-        const err = await addDoctor(selectedRow.id, selectedCenter.id)
+        const err = await addDoctor(selectedRow.id, selectedCenterId)
         if (err != '200') {
             setSnackBarMessage('Nie udało się dodać lekarza')
             setOpenSnackBar(true)
@@ -219,27 +188,9 @@ export default function PatientsPage() {
         setFilteredRows(result);
     };
 
-
-    const [currency, setCurrency] = React.useState('');
-
     const handleChange = (event) => {
-        setCurrency(event.target.value);
+        setOption(event.target.value);
     };
-
-    const currencies = [
-        {
-            value: 'aktywny',
-            label: 'aktywny',
-        },
-        {
-            value: 'nieaktywny',
-            label: 'nieaktywny',
-        },
-        {
-            value: '',
-            label: '',
-        }
-    ];
 
     return (
         <ThemeProvider theme={theme}>
@@ -333,13 +284,13 @@ export default function PatientsPage() {
                                         select
                                         label="Aktywny"
                                         name="activeFilter"
-                                        value={currency}
+                                        value={option}
                                         onChange={handleChange}
                                         SelectProps={{
                                             native: true,
                                         }}
                                     >
-                                        {currencies.map((option) => (
+                                        {activeOptionsEmptyPossible.map((option) => (
                                             <option key={option.value} value={option.value}>
                                                 {option.label}
                                             </option>
@@ -382,22 +333,28 @@ export default function PatientsPage() {
                                     width: 'fit-content',
                                 }}
                             >
-                                {openCentersDialog && <FormControl sx={{ mt: 2, minWidth: 120 }}>
-                                    <InputLabel htmlFor="max-width">Wybierz</InputLabel>
-                                    <Select
-                                        value={vaccinationCenters[0].name}
-                                        autoFocus
-                                        onChange={handleCenterChange}
-                                        label="maxWidth"
+                                {openCentersDialog &&
+                                    <TextField
+                                        fullWidth
+                                        id="centerSelection"
+                                        select
+                                        name="centerSelection"
+                                        value={selectedCenterId}
+                                        onChange={(e) => setSelectedCenterId(e.target.value)}
+                                        SelectProps={{
+                                            native: true,
+                                        }}
                                     >
-                                        {vaccinationCenters && vaccinationCenters.map(center =>
-                                            <MenuItem value={center.name}>{center.name + ",  " + center.city}</MenuItem>)}
-                                    </Select>
-                                </FormControl>}
+                                        {vaccinationCenters.map((center) => (
+                                            <option key={center.id} value={center.id}>
+                                                {center.name + ",  " + center.city}
+                                            </option>
+                                        ))}
+                                    </TextField>}
                             </Box>
                         </DialogContent>
                         <DialogActions>
-                            <Button onClick={handleDialogClose}>Wróc</Button>
+                            <Button onClick={() => setOpenCentersDialog(false)}>Wróc</Button>
                             <Button onClick={handleCenterChoice}>Wybierz</Button>
                         </DialogActions>
                     </Dialog>

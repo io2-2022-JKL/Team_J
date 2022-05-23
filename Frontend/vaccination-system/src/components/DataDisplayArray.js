@@ -34,9 +34,6 @@ export default function DataDisplayArray(
             }}
         >
             <DataGrid
-                getRowHeight={({ id, densityFactor }) => {
-                    return 125 * densityFactor;
-                }}
                 components={{
                     Toolbar: CustomToolbar,
                     LoadingOverlay: LinearProgress,

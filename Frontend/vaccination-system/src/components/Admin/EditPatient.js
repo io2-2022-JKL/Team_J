@@ -15,6 +15,7 @@ import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { activeOptions } from '../../tools/ActiveOptions';
 
 const theme = createTheme();
 
@@ -65,17 +66,6 @@ export default function EditPatient() {
     const handleChange = (event) => {
         setActiveOption(event.target.value);
     };
-
-    const activeOptions = [
-        {
-            value: 'aktywny',
-            label: 'aktywny',
-        },
-        {
-            value: 'nieaktywny',
-            label: 'nieaktywny',
-        },
-    ];
 
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {
@@ -146,7 +136,7 @@ export default function EditPatient() {
                                     label="Imię"
                                     id="firstName"
                                     onChange={(e) => {
-                                        ValidationHelpers.validateFirstName(e, setFirstNameError, setFirstNameErrorState)
+                                        ValidationHelpers.validateName(e, setFirstNameError, setFirstNameErrorState)
                                     }}
                                     helperText={firstNameError}
                                     error={firstNameErrorSate}
@@ -182,28 +172,6 @@ export default function EditPatient() {
                                     error={mailErrorState}
                                 />
                             </Grid>
-                            {/*<Grid item xs={12}>
-                                <LocalizationProvider dateAdapter={AdapterDateFns}>
-                                    <DatePicker
-                                        label="Data urodzenia"
-                                        views={['year', 'month', 'day']}
-                                        inputFormat="dd-MM-yyyy"
-                                        mask="__-__-____"
-                                        value={dateOfBirth}
-                                        minDate={new Date("01/01/1900")}
-                                        maxDate={new Date()}
-                                        onChange={(newDate) => {
-                                            setDateOfBirth(newDate);
-                                        }}
-                                        renderInput={(params) => <TextField
-                                            {...params}
-                                            fullWidth
-                                            id='dateOfBirth'
-                                            name='dateOfBirth'
-                                        />}
-                                    />
-                                </LocalizationProvider>
-                                        </Grid>*/}
                             <Grid item xs={12}>
                                 <TextField
                                     defaultValue={location.state != null ? location.state.dateOfBirth : null}

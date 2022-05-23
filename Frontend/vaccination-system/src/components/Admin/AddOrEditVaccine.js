@@ -15,6 +15,7 @@ import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import Snackbars from '../../tools/Snackbars';
 import LoginHelpers from '../../tools/LoginHelpers'
+import { activeOptions } from '../../tools/ActiveOptions';
 
 const theme = createTheme();
 
@@ -115,17 +116,6 @@ export default function AddOrEditVaccine() {
     const handleChange = (event) => {
         setActiveOption(event.target.value);
     };
-
-    const activeOptions = [
-        {
-            value: 'aktywny',
-            label: 'aktywny',
-        },
-        {
-            value: 'nieaktywny',
-            label: 'nieaktywny',
-        },
-    ];
 
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {

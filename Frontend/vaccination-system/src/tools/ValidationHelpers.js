@@ -25,7 +25,7 @@ export default class ValidationHelpers {
         }
     }
 
-    static validateFirstName(e, setFirstNameError, setFirstNameErrorState) {
+    static validateName(e, setFirstNameError, setFirstNameErrorState) {
         var name = e.target.value;
         const substrings = ['!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', '=', '[', '{', ']', '}', ';', ':', '"', '\\', '|', '<', '>', ',', '.', '/']
         if (name.length > 0 && !substrings.some(c => name.includes(c))) {
@@ -33,7 +33,7 @@ export default class ValidationHelpers {
             setFirstNameErrorState(false)
         }
         else {
-            setFirstNameError('Imię nie może zawierać symboli !@#$%^&*()_+=[{]};:"\|<>,./ i musi mieć przynajmniej jeden znak!')
+            setFirstNameError('Pole nie może zawierać symboli !@#$%^&*()_+=[{]};:"\|<>,./ i musi mieć przynajmniej jeden znak!')
             setFirstNameErrorState(true)
         }
     }
@@ -46,7 +46,7 @@ export default class ValidationHelpers {
             setLastNameErrorState(false)
         }
         else {
-            setLastNameError('Nazwisko nie może zawierać symboli !@#$%^&*()_+=[{]};:"|<>,./\\ i musi mieć przynajmniej jeden znak!')
+            setLastNameError('Pole nie może zawierać symboli !@#$%^&*()_+=[{]};:"|<>,./\\ i musi mieć przynajmniej jeden znak!')
             setLastNameErrorState(true)
         }
     }
@@ -121,6 +121,19 @@ export default class ValidationHelpers {
         }
         else {
             setError('Niepoprawny format daty! Oczekiwany format: dd-MM-yyyy');
+            setErrorState(true);
+        }
+    }
+
+    static validateOpeningHours(e, setError, setErrorState) {
+        var date = e.target.value;
+        var regEx = /[0-9][0-9]:[0-9][0-9] - [0-9][0-9]:[0-9][0-9]/
+        if (regEx.test(date)) {
+            setError('');
+            setErrorState(false);
+        }
+        else {
+            setError('Nieprawidłowe dane! Oczekiwany format: hh:mm - hh:mm');
             setErrorState(true);
         }
     }

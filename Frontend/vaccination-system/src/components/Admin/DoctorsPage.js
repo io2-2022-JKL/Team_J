@@ -16,6 +16,7 @@ import DataDisplayArray from '../DataDisplayArray';
 import { getDoctorsData, getPatientsData, getRandomPatientData } from './AdminApi';
 import FilteringHelepers from '../../tools/FilteringHelepers';
 import Autocomplete from '@mui/material/Autocomplete';
+import { activeOptionsEmptyPossible } from '../../tools/ActiveOptions';
 
 const theme = createTheme();
 
@@ -29,7 +30,7 @@ export default function DoctorsPage() {
             flex: 2
         },
         {
-            field: 'PESEL',
+            field: 'pesel',
             headerName: 'PESEL',
             minWidth: 110,
             flex: 0.5,
@@ -157,7 +158,7 @@ export default function DoctorsPage() {
     function handleRowClick(row) {
         navigate('/admin/doctors/editDoctor', {
             state: {
-                id: row.id, pesel: row.PESEL, firstName: row.firstName, lastName: row.lastName, mail: row.mail,
+                id: row.id, pesel: row.pesel, firstName: row.firstName, lastName: row.lastName, mail: row.mail,
                 dateOfBirth: row.dateOfBirth, phoneNumber: row.phoneNumber, active: row.active, vaccinationCenterId: row.vaccinationCenterId
             },
         })
@@ -183,26 +184,11 @@ export default function DoctorsPage() {
     };
 
 
-    const [currency, setCurrency] = React.useState('');
+    const [option, setOption] = React.useState('');
 
     const handleChange = (event) => {
-        setCurrency(event.target.value);
+        setOption(event.target.value);
     };
-
-    const currencies = [
-        {
-            value: 'aktywny',
-            label: 'aktywny',
-        },
-        {
-            value: 'nieaktywny',
-            label: 'nieaktywny',
-        },
-        {
-            value: '',
-            label: '',
-        }
-    ];
 
     return (
         <ThemeProvider theme={theme}>
@@ -296,13 +282,13 @@ export default function DoctorsPage() {
                                         select
                                         label="Aktywny"
                                         name="activeFilter"
-                                        value={currency}
+                                        value={option}
                                         onChange={handleChange}
                                         SelectProps={{
                                             native: true,
                                         }}
                                     >
-                                        {currencies.map((option) => (
+                                        {activeOptionsEmptyPossible.map((option) => (
                                             <option key={option.value} value={option.value}>
                                                 {option.label}
                                             </option>
