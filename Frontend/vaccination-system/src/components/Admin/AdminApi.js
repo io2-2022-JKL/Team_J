@@ -1,5 +1,4 @@
 import { randomDate, randomEmail, randomId, randomPhoneNumber, randomTraderName, randomBoolean, randomInt } from '@mui/x-data-grid-generator';
-import dateFormat from 'dateformat';
 import axios from 'axios';
 import { SYSTEM_SZCZEPIEN_URL } from '../../api/Api';
 

@@ -67,7 +67,11 @@ const mockColumns = [
     },
 ];
 
-const mockData = getRandomPatientData();
+test("renders buttons", async () => {
+
+})
+
+//const mockData = getRandomPatientData();
 
 /*test("renders buttons", async () => {
     const { getByText } = render(
