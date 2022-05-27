@@ -12,13 +12,14 @@ import clsx from 'clsx';
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
 import Avatar from '@mui/material/Avatar';
 import DataDisplayArray from '../DataDisplayArray';
-import { addDoctor, getPatientsData, getVaccinationCentersData } from './AdminApi';
+import { addDoctor, deletePatient, getPatientsData, getVaccinationCentersData } from './AdminApi';
 import FilteringHelepers from '../../tools/FilteringHelepers';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import { activeOptionsEmptyPossible } from '../../tools/ActiveOptions';
+import {ErrorSnackbar} from '../../tools/Snackbars';
 
 const theme = createTheme();
 
@@ -95,7 +96,7 @@ export default function PatientsPage() {
                 <GridActionsCellItem
                     icon={<DeleteIcon color='error' />}
                     label="Delete"
-                    onClick={deleteUser(params.id)}
+                    onClick={deactivatePatient(params.id)}
                 />,
             ],
         },
@@ -127,12 +128,22 @@ export default function PatientsPage() {
     }, []);
 
 
-    const deleteUser = React.useCallback(
-        (id) => () => {
-            setTimeout(() => {
-                setRows((prevRows) => prevRows.filter((row) => row.id !== id));
-                setFilteredRows((prevRows) => prevRows.filter((row) => row.id !== id));
-            });
+    const deactivatePatient = React.useCallback(
+        (id) => async () => {
+            let error = await deletePatient(id); 
+            console.log(error)
+            if(error !== '200')
+            {
+                setSnackBarMessage(error)
+                setOpenSnackBar(true)
+            }
+            else
+            {
+               setTimeout(() => {
+                setRows((prevRows) => prevRows.map((row) => row.id === id ? {...row,active: false} : row));
+                setFilteredRows((prevRows) => prevRows.map((row) => row.id === id ? {...row,active: false}: row));    
+                }); 
+            } 
         },
         [],
     );
@@ -358,11 +369,10 @@ export default function PatientsPage() {
                             <Button onClick={handleCenterChoice}>Wybierz</Button>
                         </DialogActions>
                     </Dialog>
-                    <Snackbar
-                        open={openSnackBar}
-                        autoHideDuration={6000}
-                        onClose={() => { setOpenSnackBar(false) }}
-                        message={snackBarMessage}
+                    <ErrorSnackbar
+                        error = {snackBarMessage}
+                        errorState = {openSnackBar}
+                        setErrorState = {setOpenSnackBar}
                     />
                 </CssBaseline>
             </Container >

@@ -16,6 +16,7 @@ import MuiAlert from '@mui/material/Alert';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { activeOptions } from '../../tools/ActiveOptions';
+import { ErrorSnackbar, SuccessSnackbar } from '../../tools/Snackbars';
 
 const theme = createTheme();
 
@@ -241,16 +242,15 @@ export default function EditPatient() {
                     >
                         Powrót
                     </Button>
-                    <Snackbar open={operationErrorState} autoHideDuration={6000} onClose={handleClose}>
-                        <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
-                            {renderError(operationError)}
-                        </Alert>
-                    </Snackbar>
-                    <Snackbar open={success} autoHideDuration={6000} onClose={handleClose2}>
-                        <Alert onClose={handleClose2} severity="success" sx={{ width: '100%' }}>
-                            Akcja wykonana pomyślnie
-                        </Alert>
-                    </Snackbar>
+                    <ErrorSnackbar
+                        error={operationError}
+                        errorState={operationErrorState}
+                        setErrorState={setOperationErrorState}
+                    />
+                    <SuccessSnackbar
+                        success={success}
+                        setSuccess={setSuccess}
+                    />
                 </Box>
             </Container>
         </ThemeProvider>

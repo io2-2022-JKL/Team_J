@@ -13,10 +13,11 @@ import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
 import Avatar from '@mui/material/Avatar';
 import { confirm } from "react-confirm-box";
 import DataDisplayArray from '../DataDisplayArray';
-import { getDoctorsData, getPatientsData, getRandomPatientData } from './AdminApi';
+import { deleteDoctor, getDoctorsData, getPatientsData, getRandomPatientData } from './AdminApi';
 import FilteringHelepers from '../../tools/FilteringHelepers';
 import Autocomplete from '@mui/material/Autocomplete';
 import { activeOptionsEmptyPossible } from '../../tools/ActiveOptions';
+import {ErrorSnackbar} from '../../tools/Snackbars';
 
 const theme = createTheme();
 
@@ -124,6 +125,8 @@ export default function DoctorsPage() {
 
     const [loading, setLoading] = React.useState(true);
     const [rows, setRows] = React.useState([]);
+    const [error, setError] = React.useState('');
+    const [errorState, setErrorState] = React.useState(false);
 
     React.useEffect(() => {
 
@@ -135,8 +138,8 @@ export default function DoctorsPage() {
                 setFilteredRows(data)
             }
             else {
-                //setError(err);
-                //setErrorState(true);
+                setError(err);
+                setErrorState(true);
             }
             setLoading(false);
         }
@@ -146,11 +149,21 @@ export default function DoctorsPage() {
     const [filteredRows, setFilteredRows] = React.useState(rows);
 
     const deactivateDoctor = React.useCallback(
-        (id) => () => {
-            setTimeout(() => {
-                setRows((prevRows) => prevRows.filter((row) => row.id !== id));
-                setFilteredRows((prevRows) => prevRows.filter((row) => row.id !== id));
-            });
+        (id) => async () => {
+            let error = await deleteDoctor(id); 
+            console.log(error)
+            if(error !== '200')
+            {
+                setError(error)
+                setErrorState(true)
+            }
+            else
+            {
+               setTimeout(() => {
+                setRows((prevRows) => prevRows.map((row) => row.id === id ? {...row,active: false} : row));
+                setFilteredRows((prevRows) => prevRows.map((row) => row.id === id ? {...row,active: false}: row));    
+                }); 
+            } 
         },
         [],
     );
@@ -353,6 +366,11 @@ export default function DoctorsPage() {
                         >
                             Powrót
                         </Button>
+                        <ErrorSnackbar
+                            error = {error}
+                            errorState = {errorState}
+                            setErrorState = {setErrorState}
+                        />
                     </Box>
                 </CssBaseline>
             </Container >
