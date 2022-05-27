@@ -365,3 +365,47 @@ export async function editVaccinationCenter(id, name, city, street, vaccineIds, 
         return error.response.status.toString();
     }
 }
+
+export async function deleteVaccinationCenter(vaccinationCenterId) {
+    let response;
+    let err = '200';
+    try {
+        response = await axios({
+            method: 'delete',
+            url: SYSTEM_SZCZEPIEN_URL + '/admin/vaccinationCenters/deleteVaccinationCenter/' + vaccinationCenterId,
+            timeout: 2000
+        });
+        console.log(response)
+        return err;
+
+    } catch (error) {
+        console.error(error.message);
+        console.error(error.code);
+        console.error(error.response.status)
+        if (error.response == null)
+            return error.code;
+        return error.response.status.toString();
+    }
+}
+
+export async function deleteVaccine(vaccineId) {
+    let response;
+    let err = '200';
+    try {
+        response = await axios({
+            method: 'delete',
+            url: SYSTEM_SZCZEPIEN_URL + '/admin/vaccines/deleteVaccine/' + vaccineId,
+            timeout: 2000
+        });
+        console.log(response)
+        return err;
+
+    } catch (error) {
+        console.error(error.message);
+        console.error(error.code);
+        console.error(error.response.status)
+        if (error.response == null)
+            return error.code;
+        return error.response.status.toString();
+    }
+}

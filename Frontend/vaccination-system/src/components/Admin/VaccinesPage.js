@@ -14,10 +14,11 @@ import Avatar from '@mui/material/Avatar';
 import { confirm } from "react-confirm-box";
 import FilteringHelepers from '../../tools/FilteringHelepers';
 import DataDisplayArray from '../DataDisplayArray';
-import { getVaccinesData } from './AdminApi';
+import { getVaccinesData,deleteVaccine } from './AdminApi';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import LoginHelpers from '../../tools/LoginHelpers';
+import {ErrorSnackbar} from '../../tools/Snackbars';
 
 const theme = createTheme();
 
@@ -111,7 +112,7 @@ export default function DoctorsPage() {
                 <GridActionsCellItem
                     icon={<DeleteIcon color='error' />}
                     label="Delete"
-                    onClick={deleteUser(params.id)}
+                    onClick={deactivateVaccine(params.id)}
                 />,
             ],
         },
@@ -141,12 +142,22 @@ export default function DoctorsPage() {
         fetchData();
     }, []);
 
-    const deleteUser = React.useCallback(
-        (id) => () => {
-            setTimeout(() => {
-                setRows((prevRows) => prevRows.filter((row) => row.id !== id));
-                setFilteredRows((prevRows) => prevRows.filter((row) => row.id !== id));
-            });
+    const deactivateVaccine = React.useCallback(
+        (id) => async () => {
+            let error = await deleteVaccine(id); 
+            console.log(error)
+            if(error !== '200')
+            {
+                setError(error)
+                setErrorState(true)
+            }
+            else
+            {
+               setTimeout(() => {
+                setRows((prevRows) => prevRows.map((row) => row.id === id ? {...row,active: false} : row));
+                setFilteredRows((prevRows) => prevRows.map((row) => row.id === id ? {...row,active: false}: row));    
+                }); 
+            } 
         },
         [],
     );
@@ -187,20 +198,7 @@ export default function DoctorsPage() {
             label: '',
         }
     ];
-    const handleClose = (event, reason) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        if (errorState) {
-            if (error === '401' || error === '403') {
-                LoginHelpers.logOut();
-                navigate('/signin');
-            }
-
-        }
-        setErrorState(false);
-    };
-
+    
     function handleRowClick(row) {
         navigate('/admin/vaccines/editVaccine', {
             state: {
@@ -208,21 +206,6 @@ export default function DoctorsPage() {
                 minDaysBetweenDoses: row.minDaysBetweenDoses, maxDaysBetweenDoses: row.maxDaysBetweenDoses, virusName: row.virus, minPatientAge: row.minPatientAge, maxPatientAge: row.maxPatientAge, active: row.active
             }
         })
-    }
-
-    function renderError(param) {
-        switch (param) {
-            case '401':
-                return 'Użytkownik nieuprawniony do pobrania szczepionek'
-            case '403':
-                return 'Użytkownikowi zabroniono pobierania szczepionek'
-            case '404':
-                return 'Nie znaleziono szczepionek'
-            case 'ECONNABORTED':
-                return 'Przekroczono limit połączenia'
-            default:
-                return 'Wystąpił błąd!';
-        }
     }
 
     return (
@@ -359,11 +342,11 @@ export default function DoctorsPage() {
                         >
                             Powrót
                         </Button>
-                        <Snackbar open={errorState} autoHideDuration={2000} onClose={handleClose}>
-                            <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
-                                {renderError(error)}
-                            </Alert>
-                        </Snackbar>
+                        <ErrorSnackbar
+                            error = {error}
+                            errorState = {errorState}
+                            setErrorState = {setErrorState}
+                        />
                     </Box>
                 </CssBaseline>
             </Container >

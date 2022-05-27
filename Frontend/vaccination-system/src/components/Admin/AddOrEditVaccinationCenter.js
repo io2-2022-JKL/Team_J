@@ -11,9 +11,6 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { addVaccine, editVaccine, getVaccinesData } from './AdminApi';
 import ValidationHelpers from '../../tools/ValidationHelpers';
-import Snackbar from '@mui/material/Snackbar';
-import MuiAlert from '@mui/material/Alert';
-import Snackbars from '../../tools/Snackbars';
 import LoginHelpers from '../../tools/LoginHelpers'
 import { activeOptions } from '../../tools/ActiveOptions';
 import WeekDays from '../../tools/WeekDays';
@@ -26,12 +23,9 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Checkbox from '@mui/material/Checkbox';
+import { ErrorSnackbar, SuccessSnackbar } from '../../tools/Snackbars';
 
 const theme = createTheme();
-
-const Alert = React.forwardRef(function Alert(props, ref) {
-    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
-});
 
 export default function AddOrEditVaccinationCenter() {
     const navigate = useNavigate();
@@ -182,22 +176,6 @@ export default function AddOrEditVaccinationCenter() {
         setCheckedVaccines(newChecked);
     };
 
-    function renderError(param) {
-        switch (param) {
-            case '400':
-                return 'Złe dane. Czyżbyś próbował dodać nieistniejącego wirusa?';
-            case '401':
-                return 'Użytkownik nieuprawniony do dodania szczepionki'
-            case '403':
-                return 'Użytkownikowi zabroniono dodawania szczepionki'
-            case '404':
-                return 'Nie znaleziono szczepionki do dodania'
-            case 'ECONNABORTED':
-                return 'Przekroczono limit połączenia'
-            default:
-                return 'Wystąpił błąd!';
-        }
-    }
     return (
         <ThemeProvider theme={theme}>
             <Container component="main" maxWidth="xs">
@@ -314,16 +292,15 @@ export default function AddOrEditVaccinationCenter() {
                     >
                         Powrót
                     </Button>
-                    <Snackbar open={operationErrorState} autoHideDuration={6000} onClose={handleClose}>
-                        <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
-                            {renderError(operationError)}
-                        </Alert>
-                    </Snackbar>
-                    <Snackbar open={success} autoHideDuration={6000} onClose={handleClose2}>
-                        <Alert onClose={handleClose2} severity="success" sx={{ width: '100%' }}>
-                            Akcja wykonana pomyślnie
-                        </Alert>
-                    </Snackbar>
+                    <ErrorSnackbar
+                        error={operationError}
+                        errorState={operationErrorState}
+                        setErrorState={setOperationErrorState}
+                    />
+                    <SuccessSnackbar
+                        success={success}
+                        setSuccess={setSuccess}
+                    />
                 </Box>
 
                 <Dialog

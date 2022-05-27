@@ -14,6 +14,7 @@ import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import { editDoctor } from './AdminApi';
 import { activeOptions } from '../../tools/ActiveOptions';
+import {ErrorSnackbar,SuccessSnackbar} from '../../tools/Snackbars';
 
 const theme = createTheme();
 
@@ -64,34 +65,6 @@ export default function EditDoctor() {
         setActiveOption(event.target.value);
     };
 
-    const handleClose = (event, reason) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setOperationErrorState(false);
-    };
-
-    const handleClose2 = (event, reason) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setSuccess(false);
-    };
-
-    function renderError(param) {
-        switch (param) {
-            case '400':
-                return 'Nieprawidłowe dane.';
-            case '401':
-                return 'Użytkownik nieuprawniony.'
-            case '403':
-                return 'Użytkownikowi zabroniono wykonania tej akcji.'
-            case '404':
-                return 'Nie znaleziono takich danych.'
-            default:
-                return 'Wystąpił błąd!';
-        }
-    }
     return (
         <ThemeProvider theme={theme}>
             <Container component="main" maxWidth="xs">
@@ -260,16 +233,15 @@ export default function EditDoctor() {
                     >
                         Powrót
                     </Button>
-                    <Snackbar open={operationErrorState} autoHideDuration={6000} onClose={handleClose}>
-                        <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
-                            {renderError(operationError)}
-                        </Alert>
-                    </Snackbar>
-                    <Snackbar open={success} autoHideDuration={6000} onClose={handleClose2}>
-                        <Alert onClose={handleClose2} severity="success" sx={{ width: '100%' }}>
-                            Akcja wykonana pomyślnie
-                        </Alert>
-                    </Snackbar>
+                    <ErrorSnackbar
+                        error = {operationError}
+                        errorState = {operationErrorState}
+                        setErrorState = {setOperationErrorState}
+                    />
+                    <SuccessSnackbar
+                        success = {success}
+                        setSuccess = {setSuccess}
+                    />
                 </Box>
             </Container>
         </ThemeProvider>
