@@ -145,6 +145,7 @@ namespace VaccinationSystem
 
             services.AddControllersWithViews();
             services.Configure<MailSettings>(Configuration.GetSection("MailSettings"));
+            services.AddTransient<IMailService, MailService>();
 
             // In production, the React files will be served from this directory
             /*services.AddSpaStaticFiles(configuration =>
