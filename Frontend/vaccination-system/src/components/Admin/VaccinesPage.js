@@ -129,8 +129,22 @@ export default function DoctorsPage() {
             setLoading(true);
             let [data, err] = await getVaccinesData();
             if (data != null) {
-                setRows(data);
-                setFilteredRows(data)
+                const result = data.map(obj => {
+                    return {
+                        id: obj.vaccineId,
+                        company: obj.company,
+                        name: obj.name,
+                        numberOfDoses: obj.numberOfDoses,
+                        minDaysBetweenDoses: obj.minDaysBetweenDoses,
+                        maxDaysBetweenDoses: obj.maxDaysBetweenDoses,
+                        virus: obj.virus,
+                        minPatientAge: obj.minPatientAge,
+                        maxPatientAge: obj.maxPatientAge,
+                        active: obj.active
+                    }
+                })
+                setRows(result);
+                setFilteredRows(result)
             }
             else {
                 setError(err);
