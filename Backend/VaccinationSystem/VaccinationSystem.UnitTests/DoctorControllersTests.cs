@@ -25,9 +25,13 @@ namespace VaccinationSystem.UnitTests
             var patientData = GetPatientsData().ToList();
             var patientMockSet = GetMock(patientData.AsQueryable());
 
+            var vaccinationCenterData = GetVaccinationCentersData().ToList();
+            var vaccinationCenterMockSet = GetMock(vaccinationCenterData.AsQueryable());
+
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.Doctors).Returns(doctorMockSet.Object);
             mockContext.Setup(c => c.Patients).Returns(patientMockSet.Object);
+            mockContext.Setup(c => c.VaccinationCenters).Returns(vaccinationCenterMockSet.Object);
 
             var controller = new DoctorController(mockContext.Object, null);
 
