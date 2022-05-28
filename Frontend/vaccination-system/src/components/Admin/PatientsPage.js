@@ -165,7 +165,7 @@ export default function PatientsPage() {
         else
             navigate('/admin/patients/editPatient', {
                 state: {
-                    id: row.id, pesel: row.pesel, firstName: row.firstName, lastName: row.lastName, mail: row.mail,
+                    id: row.id, pesel: row.PESEL, firstName: row.firstName, lastName: row.lastName, mail: row.mail,
                     dateOfBirth: row.dateOfBirth, phoneNumber: row.phoneNumber, active: row.active
                 }
             })

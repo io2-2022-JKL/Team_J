@@ -69,7 +69,7 @@ export default function AddOrEditVaccinationCenter() {
             active: data.get('active')
         })
 
-        return
+        //return
         let error;
         console.log(location.state.action)
 

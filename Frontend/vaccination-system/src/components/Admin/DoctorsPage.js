@@ -171,7 +171,7 @@ export default function DoctorsPage() {
     function handleRowClick(row) {
         navigate('/admin/doctors/editDoctor', {
             state: {
-                id: row.id, pesel: row.pesel, firstName: row.firstName, lastName: row.lastName, mail: row.mail,
+                id: row.id, pesel: row.PESEL, firstName: row.firstName, lastName: row.lastName, mail: row.mail,
                 dateOfBirth: row.dateOfBirth, phoneNumber: row.phoneNumber, active: row.active, vaccinationCenterId: row.vaccinationCenterId
             },
         })
