@@ -17,7 +17,7 @@ export default function PatientMainPage() {
     const [patientData, setPatientData] = React.useState();
 
     React.useEffect(() => {
-
+        document.title = "Patient Page"
         const fetchData = async () => {
             let userID = localStorage.getItem('userID');
             let [data, err] = await getPatientInfo(userID);

@@ -30,23 +30,6 @@ function renderRow(props) {
     );
 }
 
-function renderError(param) {
-    switch (param) {
-        case '400':
-            return 'Złe dane';
-        case '401':
-            return 'Użytkownik nieuprawniony do uzyskania historii szczepień'
-        case '403':
-            return 'Użytkownikowi zabroniono uzyskiwania historii szczepień'
-        case '404':
-            return 'Nie znaleziono historii szczepień'
-        case 'ECONNABORTED':
-            return 'Przekroczono limit połączenia'
-        default:
-            return 'Wystąpił błąd!';
-    }
-}
-
 export default function FormerAppointments() {
     const navigate = useNavigate();
     const [data, setData] = React.useState([]);
@@ -72,16 +55,19 @@ export default function FormerAppointments() {
         fetchData();
     }, []);
 
-    const handleClose = (event, reason) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setErrorState(false);
-    };
-
     const handleBackClick = () => { handleBack(navigate) }
 
     return (
-        ItemListPageTemplate("Historia szczpień", data, renderRow, renderError, errorState, error, handleClose, handleBackClick, loading)
+        //ItemListPageTemplate("Historia szczpień", data, renderRow, renderError, errorState, error, handleClose, handleBackClick, loading)
+        <ItemListPageTemplate
+            title = {"Historia szczpień"}
+            data = {data}
+            renderRow = {renderRow}
+            errorState = {errorState}
+            error = {error}
+            handleBack = {handleBackClick}
+            loading = {loading}
+            setErrorState = {setErrorState}
+        />
     );
 }

@@ -12,7 +12,7 @@ export default class FilteringHelepers {
         return array.filter((item) => item.phoneNumber.includes(filter));
     };
     static filterPESEL(array, filter) {
-        return array.filter((item) => item.pesel.includes(filter));
+        return array.filter((item) => item.PESEL.includes(filter));
     };
     static filterId(array, filter) {
         return array.filter((item) => item.id.includes(filter));
