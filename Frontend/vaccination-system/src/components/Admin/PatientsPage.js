@@ -34,7 +34,7 @@ export default function PatientsPage() {
             flex: 2
         },
         {
-            field: 'pesel',
+            field: 'PESEL',
             headerName: 'PESEL',
             minWidth: 110,
             flex: 0.5,

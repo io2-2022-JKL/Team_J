@@ -8,6 +8,7 @@ import { getCertificates } from './PatientApi';
 import ItemListPageTemplate from '../ItemsListPageTemplate';
 import { handleBack } from './General';
 
+
 function renderRow(props) {
     const { index, style, data } = props;
     const item = data[index];
@@ -36,22 +37,6 @@ function renderRow(props) {
     );
 }
 
-function renderError(param) {
-    switch (param) {
-        case '400':
-            return 'Złe dane';
-        case '401':
-            return 'Użytkownik nieuprawniony do uzyskania certyfikatów'
-        case '403':
-            return 'Użytkownikowi zabroniono uzyskiwania certyfikatów'
-        case '404':
-            return 'Nie znaleziono certyfikatów'
-        case 'ECONNABORTED':
-            return 'Przekroczono limit połączenia'
-        default:
-            return 'Wystąpił błąd!';
-    }
-}
 export default function Certificate() {
     const navigate = useNavigate();
 
@@ -77,16 +62,19 @@ export default function Certificate() {
         fetchData();
     }, []);
 
-    const handleClose = (event, reason) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setErrorState(false);
-    };
-
     const handleBackClick = () => { handleBack(navigate) }
 
     return (
-        ItemListPageTemplate("Twoje certyfikaty", data, renderRow, renderError, errorState, error, handleClose, handleBackClick, loading)
+        //ItemListPageTemplate("Twoje certyfikaty", data, renderRow, renderError, errorState, error, handleClose, handleBackClick, loading, setErrorState)
+        <ItemListPageTemplate
+            title = {"Twoje certyfikaty"}
+            data = {data}
+            renderRow = {renderRow}
+            errorState = {errorState}
+            error = {error}
+            handleBack = {handleBackClick}
+            loading = {loading}
+            setErrorState = {setErrorState}
+        />
     );
 }
