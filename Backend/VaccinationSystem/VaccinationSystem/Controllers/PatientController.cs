@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using EmailService.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -21,11 +22,13 @@ namespace VaccinationSystem.Controllers
     public class PatientController : ControllerBase
     {
         private readonly VaccinationSystemDbContext _context;
+        private readonly IMailService _mailService;
         private readonly string _dateTimeFormat = "dd-MM-yyyy HH\\:mm";
         private readonly string _dateFormat = "dd-MM-yyyy";
-        public PatientController(VaccinationSystemDbContext context)
+        public PatientController(VaccinationSystemDbContext context, IMailService mailService)
         {
             _context = context;
+            _mailService = mailService;
         }
 
         [ProducesResponseType(typeof(IEnumerable<PatientInfoResponseDTO>), 200)]
@@ -293,6 +296,17 @@ namespace VaccinationSystem.Controllers
             _context.Appointments.Add(appointment);
             timeSlot.IsFree = false;
             _context.SaveChanges();
+            MailRequest request = new MailRequest();
+            request.Subject = "Visit booking successful";
+            request.Body = "You have successfully booked a visit!";
+            try
+            {
+                _mailService.SendEmailAsync(request);
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
             return true;
         }
         [ProducesResponseType(typeof(IEnumerable<FutureAppointmentDTO>), 200)]

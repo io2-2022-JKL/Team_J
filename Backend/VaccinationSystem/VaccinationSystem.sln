@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.1.32228.430
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31729.503
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VaccinationSystem", "VaccinationSystem\VaccinationSystem.csproj", "{0534E707-3B9A-420D-8E9C-0BE91034232F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VaccinationSystem.UnitTests", "VaccinationSystem.UnitTests\VaccinationSystem.UnitTests.csproj", "{3B5D28BE-1C59-4B09-9D6C-28D2E5BC4DA4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer", "IdentityServer\IdentityServer.csproj", "{995EE3FE-471C-4AC6-ABF1-04DF2DAE445F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmailService", "EmailService\EmailService.csproj", "{2FFA02A6-29C6-495A-A514-E9EF25E9E1D4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{995EE3FE-471C-4AC6-ABF1-04DF2DAE445F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{995EE3FE-471C-4AC6-ABF1-04DF2DAE445F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{995EE3FE-471C-4AC6-ABF1-04DF2DAE445F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2FFA02A6-29C6-495A-A514-E9EF25E9E1D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2FFA02A6-29C6-495A-A514-E9EF25E9E1D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2FFA02A6-29C6-495A-A514-E9EF25E9E1D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2FFA02A6-29C6-495A-A514-E9EF25E9E1D4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
