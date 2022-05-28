@@ -19,3 +19,20 @@ export async function getIncomingAppointments(doctorId) {
         return [response, error.code];
     }
 }
+
+export async function getDoctorInfo(doctorId) {
+    let response;
+    let errCode = '200';
+    try {
+        response = await axios({
+            method: 'get',
+            url: SYSTEM_SZCZEPIEN_URL + '/doctor/info/' + doctorId,
+        });
+        return [response.data, errCode];
+    } catch (error) {
+        console.error(error.message);
+        if (error.response != null)
+            return [response, error.response.status.toString()];
+        return [response, error.code];
+    }
+}

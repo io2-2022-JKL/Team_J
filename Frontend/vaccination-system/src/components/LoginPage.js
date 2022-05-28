@@ -18,6 +18,8 @@ import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import { SYSTEM_SZCZEPIEN_URL } from '../api/Api';
 import ValidationHelpers from '../tools/ValidationHelpers';
+import { getPatientInfo } from './Patient/PatientApi';
+import { getDoctorInfo } from './Doctor/DoctorApi';
 
 const theme = createTheme();
 
@@ -85,15 +87,28 @@ export default function LoginPage() {
 
         localStorage.setItem('isDoctor', false)
         console.log(response.data.userType)
+        let [data, err] = [];
+        let patientId;
         switch (response.data.userType) {
             case "admin":
                 navigate("/admin");
                 break;
             case "patient":
-                navigate("/patient", { state: { name: "Jan", surname: "Kowalski" } });
+                patientId = localStorage.getItem('userID');
+                [data, err] = await getPatientInfo(patientId);
+                localStorage.setItem('userFirstName', data.firstName)
+                localStorage.setItem('userLastName', data.lastName)
+                navigate("/patient");
                 break;
             case "doctor":
                 localStorage.setItem('isDoctor', true)
+                let doctorId = localStorage.getItem('userID');
+                console.log(doctorId)
+                let [doctorData, DoctorErr] = await getDoctorInfo(doctorId);
+                patientId = doctorData.patientId
+                [data, err] = await getPatientInfo(patientId);
+                localStorage.setItem('userFirstName', data.firstName)
+                localStorage.setItem('userLastName', data.lastName)
                 navigate("/doctor/redirection");
                 break;
             default:
@@ -153,7 +168,7 @@ export default function LoginPage() {
                             sx={{ mt: 3, mb: 2 }}
                             disabled={loading}
                             onClick={() => { logInUser(mail, password) }}
-                            name = "submitButton"
+                            name="submitButton"
                         >
                             Zaloguj się
                         </Button>

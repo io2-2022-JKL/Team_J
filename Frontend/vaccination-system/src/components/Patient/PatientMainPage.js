@@ -6,7 +6,7 @@ import AccountBoxRoundedIcon from '@mui/icons-material/AccountBoxRounded';
 import Typography from '@mui/material/Typography';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { getPatientInfo } from './PatientApi';
 import LoginHelpers from '../../tools/LoginHelpers';
 
@@ -46,7 +46,8 @@ export default function PatientMainPage() {
                             <AccountBoxRoundedIcon />
                         </Avatar>
                         <Typography component="h1" variant="h4">
-                            Witaj {patientData != null && (patientData.firstName + ' ' + patientData.lastName)}
+                            Witaj {localStorage.getItem('userFirstName') != null && localStorage.getItem('userLastName') != null
+                                && (localStorage.getItem('userFirstName') + ' ' + localStorage.getItem('userLastName'))}
                         </Typography>
                         <Typography component="h1" variant="h6">
                             Pacjent

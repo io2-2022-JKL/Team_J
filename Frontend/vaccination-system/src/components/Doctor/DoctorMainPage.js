@@ -14,7 +14,6 @@ import PatientMainPage from '../Patient/PatientMainPage';
 const theme = createTheme();
 
 export default function DoctorMainPage() {
-    //const name = "Jan", surname = "Kowalski";
     const navigate = useNavigate();
 
     React.useEffect(() => {
@@ -37,7 +36,8 @@ export default function DoctorMainPage() {
                             <AccountBoxRoundedIcon />
                         </Avatar>
                         <Typography component="h1" variant="h4">
-                            Witaj {/*name + " " + surname*/}
+                            Lekarz {localStorage.getItem('userFirstName') != null && localStorage.getItem('userLastName') != null
+                                && (localStorage.getItem('userFirstName') + ' ' + localStorage.getItem('userLastName'))}
                         </Typography>
                         <Typography component="h1" variant="h6">
                             Lekarz
