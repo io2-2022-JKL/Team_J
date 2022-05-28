@@ -229,7 +229,7 @@ export async function addDoctor(patientId, vaccinationCenterId) {
     }
 }
 
-export async function editDoctor(doctorId, pesel, firstName, lastName, mail, dateOfBirth, phoneNumber, vaccinationCenterId) {
+export async function editDoctor(doctorId, pesel, firstName, lastName, mail, dateOfBirth, phoneNumber, vaccinationCenterId, active) {
     let response;
     let err = '200';
 
@@ -246,9 +246,10 @@ export async function editDoctor(doctorId, pesel, firstName, lastName, mail, dat
                 mail: mail,
                 dateOfBirth: dateOfBirth,
                 phoneNumber: phoneNumber,
-                vaccinationCenterId: vaccinationCenterId
+                vaccinationCenterId: vaccinationCenterId,
+                active: active === "aktywny" ? true : false
             },
-            timeout: 2000
+            timeout: 3000
         });
         console.log(response)
         return err;
