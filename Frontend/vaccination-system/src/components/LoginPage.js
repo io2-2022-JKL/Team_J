@@ -105,8 +105,9 @@ export default function LoginPage() {
                 let doctorId = localStorage.getItem('userID');
                 console.log(doctorId)
                 let [doctorData, DoctorErr] = await getDoctorInfo(doctorId);
-                patientId = doctorData.patientId
-                [data, err] = await getPatientInfo(patientId);
+                //console.log('doctorData')
+                //patientId = doctorData.patientId
+                [data, err] = await getPatientInfo(doctorData.patientId);
                 localStorage.setItem('userFirstName', data.firstName)
                 localStorage.setItem('userLastName', data.lastName)
                 navigate("/doctor/redirection");

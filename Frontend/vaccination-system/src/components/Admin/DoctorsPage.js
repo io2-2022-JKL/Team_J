@@ -11,13 +11,11 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import clsx from 'clsx';
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
 import Avatar from '@mui/material/Avatar';
-import { confirm } from "react-confirm-box";
 import DataDisplayArray from '../DataDisplayArray';
-import { deleteDoctor, getDoctorsData, getPatientsData, getRandomPatientData } from './AdminApi';
+import { deleteDoctor, getDoctorsData } from './AdminApi';
 import FilteringHelepers from '../../tools/FilteringHelepers';
-import Autocomplete from '@mui/material/Autocomplete';
 import { activeOptionsEmptyPossible } from '../../tools/ActiveOptions';
-import {ErrorSnackbar} from '../../tools/Snackbars';
+import { ErrorSnackbar } from '../Snackbars';
 
 const theme = createTheme();
 
@@ -150,20 +148,18 @@ export default function DoctorsPage() {
 
     const deactivateDoctor = React.useCallback(
         (id) => async () => {
-            let error = await deleteDoctor(id); 
+            let error = await deleteDoctor(id);
             console.log(error)
-            if(error !== '200')
-            {
+            if (error !== '200') {
                 setError(error)
                 setErrorState(true)
             }
-            else
-            {
-               setTimeout(() => {
-                setRows((prevRows) => prevRows.map((row) => row.id === id ? {...row,active: false} : row));
-                setFilteredRows((prevRows) => prevRows.map((row) => row.id === id ? {...row,active: false}: row));    
-                }); 
-            } 
+            else {
+                setTimeout(() => {
+                    setRows((prevRows) => prevRows.map((row) => row.id === id ? { ...row, active: false } : row));
+                    setFilteredRows((prevRows) => prevRows.map((row) => row.id === id ? { ...row, active: false } : row));
+                });
+            }
         },
         [],
     );
@@ -367,9 +363,9 @@ export default function DoctorsPage() {
                             Powrót
                         </Button>
                         <ErrorSnackbar
-                            error = {error}
-                            errorState = {errorState}
-                            setErrorState = {setErrorState}
+                            error={error}
+                            errorState={errorState}
+                            setErrorState={setErrorState}
                         />
                     </Box>
                 </CssBaseline>

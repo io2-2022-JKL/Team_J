@@ -8,13 +8,12 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { addVaccine, editVaccine, getVaccinesData } from './AdminApi';
 import ValidationHelpers from '../../tools/ValidationHelpers';
 import LoginHelpers from '../../tools/LoginHelpers'
 import { activeOptions } from '../../tools/ActiveOptions';
 import WeekDays from '../../tools/WeekDays';
-import CheckboxList from './DialogChooseVaccines';
 import { Dialog } from '@material-ui/core';
 import { DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import List from '@mui/material/List';
@@ -23,7 +22,7 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Checkbox from '@mui/material/Checkbox';
-import { ErrorSnackbar, SuccessSnackbar } from '../../tools/Snackbars';
+import { ErrorSnackbar, SuccessSnackbar } from '../Snackbars';
 
 const theme = createTheme();
 

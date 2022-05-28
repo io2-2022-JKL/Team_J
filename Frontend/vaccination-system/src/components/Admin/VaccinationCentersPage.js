@@ -16,7 +16,7 @@ import FilteringHelepers from '../../tools/FilteringHelepers';
 import DataDisplayArray from '../DataDisplayArray';
 import { getVaccinationCentersData, deleteVaccinationCenter } from './AdminApi';
 import { activeOptionsEmptyPossible } from '../../tools/ActiveOptions';
-import {ErrorSnackbar} from '../../tools/Snackbars';
+import { ErrorSnackbar } from '../Snackbars';
 
 const theme = createTheme();
 
@@ -140,20 +140,18 @@ export default function VaccinationCentersPage() {
 
     const deactivateVaccinationCenter = React.useCallback(
         (id) => async () => {
-            let error = await deleteVaccinationCenter(id); 
+            let error = await deleteVaccinationCenter(id);
             console.log(error)
-            if(error !== '200')
-            {
+            if (error !== '200') {
                 setError(error)
                 setErrorState(true)
             }
-            else
-            {
-               setTimeout(() => {
-                setRows((prevRows) => prevRows.map((row) => row.id === id ? {...row,active: false} : row));
-                setFilteredRows((prevRows) => prevRows.map((row) => row.id === id ? {...row,active: false}: row));    
-                }); 
-            } 
+            else {
+                setTimeout(() => {
+                    setRows((prevRows) => prevRows.map((row) => row.id === id ? { ...row, active: false } : row));
+                    setFilteredRows((prevRows) => prevRows.map((row) => row.id === id ? { ...row, active: false } : row));
+                });
+            }
         },
         [],
     );
@@ -284,9 +282,9 @@ export default function VaccinationCentersPage() {
                             Powrót
                         </Button>
                         <ErrorSnackbar
-                            error = {error}
-                            errorState = {errorState}
-                            setErrorState = {setErrorState}
+                            error={error}
+                            errorState={errorState}
+                            setErrorState={setErrorState}
                         />
                     </Box>
                 </CssBaseline>

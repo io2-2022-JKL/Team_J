@@ -14,11 +14,11 @@ import Avatar from '@mui/material/Avatar';
 import { confirm } from "react-confirm-box";
 import FilteringHelepers from '../../tools/FilteringHelepers';
 import DataDisplayArray from '../DataDisplayArray';
-import { getVaccinesData,deleteVaccine } from './AdminApi';
+import { getVaccinesData, deleteVaccine } from './AdminApi';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import LoginHelpers from '../../tools/LoginHelpers';
-import {ErrorSnackbar} from '../../tools/Snackbars';
+import { ErrorSnackbar } from '../Snackbars';
 
 const theme = createTheme();
 
@@ -144,20 +144,18 @@ export default function DoctorsPage() {
 
     const deactivateVaccine = React.useCallback(
         (id) => async () => {
-            let error = await deleteVaccine(id); 
+            let error = await deleteVaccine(id);
             console.log(error)
-            if(error !== '200')
-            {
+            if (error !== '200') {
                 setError(error)
                 setErrorState(true)
             }
-            else
-            {
-               setTimeout(() => {
-                setRows((prevRows) => prevRows.map((row) => row.id === id ? {...row,active: false} : row));
-                setFilteredRows((prevRows) => prevRows.map((row) => row.id === id ? {...row,active: false}: row));    
-                }); 
-            } 
+            else {
+                setTimeout(() => {
+                    setRows((prevRows) => prevRows.map((row) => row.id === id ? { ...row, active: false } : row));
+                    setFilteredRows((prevRows) => prevRows.map((row) => row.id === id ? { ...row, active: false } : row));
+                });
+            }
         },
         [],
     );
@@ -198,7 +196,7 @@ export default function DoctorsPage() {
             label: '',
         }
     ];
-    
+
     function handleRowClick(row) {
         navigate('/admin/vaccines/editVaccine', {
             state: {
@@ -343,9 +341,9 @@ export default function DoctorsPage() {
                             Powrót
                         </Button>
                         <ErrorSnackbar
-                            error = {error}
-                            errorState = {errorState}
-                            setErrorState = {setErrorState}
+                            error={error}
+                            errorState={errorState}
+                            setErrorState={setErrorState}
                         />
                     </Box>
                 </CssBaseline>

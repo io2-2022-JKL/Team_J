@@ -12,7 +12,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { addVaccine, editVaccine } from './AdminApi';
 import ValidationHelpers from '../../tools/ValidationHelpers';
 import { activeOptions } from '../../tools/ActiveOptions';
-import {ErrorSnackbar,SuccessSnackbar} from '../../tools/Snackbars';
+import { ErrorSnackbar, SuccessSnackbar } from '../Snackbars';
 
 const theme = createTheme();
 
@@ -274,13 +274,13 @@ export default function AddOrEditVaccine() {
                         Powrót
                     </Button>
                     <ErrorSnackbar
-                        error = {operationError}
-                        errorState = {operationErrorState}
-                        setErrorState = {setOperationErrorState}
+                        error={operationError}
+                        errorState={operationErrorState}
+                        setErrorState={setOperationErrorState}
                     />
                     <SuccessSnackbar
-                        success = {success}
-                        setSuccess = {setSuccess}
+                        success={success}
+                        setSuccess={setSuccess}
                     />
                 </Box>
             </Container>
