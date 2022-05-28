@@ -44,7 +44,7 @@ BEGIN TRANSACTION
       ,[PhoneNumber]
       ,[Active])
 	VALUES ('802c5ceb-22b8-422a-a963-a976a26efdc8', '93040518422', 'Hans', 'Zimmer', '1993-05-04 00:00:00.0000000', 'hZimm@gmail.com', 'Password', '453628905', 0),
-    ('f969ffd0-6dbc-4900-8eb8-b4fe25906a74', '88030851737', 'Peter', 'Paker', '1988-03-08 00:00:00.0000000', 'pParker@gmail.com', 'Password', '489657215', 1),
+    ('f969ffd0-6dbc-4900-8eb8-b4fe25906a74', '88030851737', 'Peter', 'Parker', '1988-03-08 00:00:00.0000000', 'pParker@gmail.com', 'Password', '489657215', 1),
     ('1448be96-c2de-4fdb-93c5-3caf1de2f8a0', '42102712753', 'Janusz', 'Mikke', '1942-10-27 00:00:00.0000000', 'korwinKrul@wp.pl', '5Procent', '445445445', 1),
     ('acd9fa16-404e-4305-b57f-93659054be7e', '68041377873', 'James', 'Bond', '1968-04-13 00:00:00.0000000', 'james.bond@mi6.gov.uk', 'AllH4ilTheQu33n', '+44007' , 1),
     ('31f90897-4455-4d26-aa61-d3c3adcd8f70', '50102844947', 'Cecylia Magdalena', 'Piątek-Sobota', '1950-10-28 00:00:00.0000000', 'cecyliaPS@wp.pl', 'w?&duNBLE2j_>Wwb', '+48924110125', 0),
