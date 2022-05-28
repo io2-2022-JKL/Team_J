@@ -11,7 +11,18 @@ using VaccinationSystem.Models;
 using System.Data.Entity;
 using Microsoft.AspNetCore.Authorization;
 using VaccinationSystem.DTO.Errors;
-
+using PdfSharp.Pdf;
+using PdfSharp;
+using PdfSharp.Drawing;
+using PdfSharp.Pdf.IO;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using System.Diagnostics;
+using PdfSharp.Drawing.Layout;
+using QRCoder;
+using System.Drawing;
+using System.IO;
+using Microsoft.Extensions.Configuration;
 
 namespace VaccinationSystem.Controllers
 {
@@ -21,12 +32,16 @@ namespace VaccinationSystem.Controllers
     public class DoctorController : ControllerBase
     {
         private readonly VaccinationSystemDbContext _context;
+        private readonly IConfiguration _configuration;
         private readonly string _dateTimeFormat = "dd-MM-yyyy HH\\:mm";
         private readonly string _dateFormat = "dd-MM-yyyy";
+        private readonly string _storageUrlBase = "https://vaccinationsystem.blob.core.windows.net/certificates/";
+        private readonly string _siteName = "systemszczepien.azurewebsites.net";
 
-        public DoctorController(VaccinationSystemDbContext context)
+        public DoctorController(VaccinationSystemDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
         [ProducesResponseType(typeof(IEnumerable<GetDoctorInfoResponse>), 200)]
         [ProducesResponseType(400)]
@@ -67,13 +82,17 @@ namespace VaccinationSystem.Controllers
             var doctorAccount = _context.Doctors.Where(doc => doc.Id == docId && doc.Active == true).Include(doc => doc.VaccinationCenter).SingleOrDefault();
             if (doctorAccount == null) return null;
             Guid patientAccountId = doctorAccount.PatientId;
+
+            var vaccianationCenter = _context.VaccinationCenters.SingleOrDefault(vc => vc.Id == doctorAccount.VaccinationCenterId);
+            if(vaccianationCenter == null) return null;
+
             GetDoctorInfoResponse result = new GetDoctorInfoResponse()
             {
                 patientId = patientAccountId.ToString(),
                 vaccinationCenterId = doctorAccount.VaccinationCenterId.ToString(),
-                vaccinationCenterCity = doctorAccount.VaccinationCenter.City,
-                vaccinationCenterName = doctorAccount.VaccinationCenter.Name,
-                vaccinationCenterStreet = doctorAccount.VaccinationCenter.Address,
+                vaccinationCenterCity = vaccianationCenter.City,
+                vaccinationCenterName = vaccianationCenter.Name,
+                vaccinationCenterStreet = vaccianationCenter.Address,
             };
             return result;
         }
@@ -709,12 +728,153 @@ namespace VaccinationSystem.Controllers
                 PatientId = appointment.PatientId,
                 Vaccine = appointment.Vaccine,
                 VaccineId = appointment.VaccineId,
-                Url = "randomFakeUrl", // to change to something proper once we get there
+                // Url = "randomFakeUrl", // to change to something proper once we get there
             };
+            string url = GenerateCertificate(appointment, newCert.Id.ToString()).Result;
+            newCert.Url = url;
             _context.Certificates.Add(newCert);
             appointment.CertifyState = CertifyState.Certified;
             _context.SaveChanges();
             return true;
         }
+
+        private async Task<string> GenerateCertificate(Appointment appointment, string certifyGuid)
+        {
+            var patient = _context.Patients.SingleOrDefault(p => p.Id == appointment.PatientId);
+            if (patient == null)
+                throw new BadRequestException();
+            var timeSlot = _context.TimeSlots.SingleOrDefault(ts => ts.Id == appointment.TimeSlotId);
+            if (timeSlot == null)
+                throw new BadRequestException();
+            var date = timeSlot.From.ToString(_dateFormat);
+            var vaccine = _context.Vaccines.SingleOrDefault(v => v.Id == appointment.VaccineId);
+            if (vaccine == null)
+                throw new BadRequestException();
+
+            //string urlPatient = patient.FirstName.Replace(" ", "%20") + "_" + patient.LastName.Replace(" ", "%20");
+            string urlPatient = patient.FirstName + "_" + patient.LastName;
+            string pdfName = Guid.NewGuid().ToString() + ".pdf";
+            string url = _storageUrlBase + urlPatient + "/" + pdfName;
+            //string url = _storageUrlBase + urlPatient + "/";
+
+            System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+            PdfDocument document = new PdfDocument();
+            PdfPage page = document.AddPage();
+
+            XGraphics gfx = XGraphics.FromPdfPage(page);
+
+            XFont fontTitle = new XFont("Arial", 32, XFontStyle.Bold);
+
+            gfx.DrawString("Certyfikat szczepienia", fontTitle, XBrushes.Black, new XRect(0, 0, page.Width, 3*page.Height/10), XStringFormats.Center);
+
+            XFont fontField = new XFont("Arial", 8, XFontStyle.Regular);
+            double fieldHeight = 10;
+            XFont fontData = new XFont("Arial", 16, XFontStyle.Bold);
+            double dataHeight = 20;
+            double gapHeight = 40;
+            XFont fontGuid = new XFont("Arial", 8, XFontStyle.Regular);
+
+            gfx.DrawString("Nazwisko / Surname", fontField, XBrushes.Black, new XRect(page.Width / 5, 3 * page.Height / 10, 4 * page.Width / 5, fieldHeight), XStringFormats.CenterLeft);
+            gfx.DrawString(patient.LastName, fontData, XBrushes.Black, new XRect(page.Width / 5, 3 * page.Height / 10 + fieldHeight, 4 * page.Width / 5, dataHeight), XStringFormats.CenterLeft);
+
+            gfx.DrawString("Imiona / Names", fontField, XBrushes.Black, new XRect(page.Width / 5, 3 * page.Height / 10 + gapHeight, 4 * page.Width / 5, fieldHeight), XStringFormats.CenterLeft);
+            gfx.DrawString(patient.FirstName, fontData, XBrushes.Black, new XRect(page.Width / 5, 3 * page.Height / 10 + gapHeight + fieldHeight, 4 * page.Width / 5, dataHeight), XStringFormats.CenterLeft);
+
+            gfx.DrawString("Wirus / Virus", fontField, XBrushes.Black, new XRect(page.Width / 5, 3 * page.Height / 10 + 2 * gapHeight, 4 * page.Width / 5, fieldHeight), XStringFormats.CenterLeft);
+            gfx.DrawString(vaccine.Virus.ToString(), fontData, XBrushes.Black, new XRect(page.Width / 5, 3 * page.Height / 10 + 2 * gapHeight + fieldHeight, 4 * page.Width / 5, dataHeight), XStringFormats.CenterLeft);
+
+            gfx.DrawString("Szczepionka / Vaccine", fontField, XBrushes.Black, new XRect(page.Width / 5, 3 * page.Height / 10 + 3 * gapHeight, 4 * page.Width / 5, fieldHeight), XStringFormats.CenterLeft);
+            gfx.DrawString(vaccine.Company + " " + vaccine.Name, fontData, XBrushes.Black, new XRect(page.Width / 5, 3 * page.Height / 10 + 3 * gapHeight + fieldHeight, 4 * page.Width / 5, dataHeight), XStringFormats.CenterLeft);
+
+            gfx.DrawString("Dawka / Dose", fontField, XBrushes.Black, new XRect(page.Width / 5, 3 * page.Height / 10 + 4 * gapHeight, 4 * page.Width / 5, fieldHeight), XStringFormats.CenterLeft);
+            gfx.DrawString($"{appointment.WhichDose}", fontData, XBrushes.Black, new XRect(page.Width / 5, 3 * page.Height / 10 + 4 * gapHeight + fieldHeight, 4 * page.Width / 5, dataHeight), XStringFormats.CenterLeft);
+
+            gfx.DrawString("Data szczepienia / Vaccination date", fontField, XBrushes.Black, new XRect(page.Width / 5, 3 * page.Height / 10 + 5 * gapHeight, 4 * page.Width / 5, fieldHeight), XStringFormats.CenterLeft);
+            gfx.DrawString(date, fontData, XBrushes.Black, new XRect(page.Width / 5, 3 * page.Height / 10 + 5 * gapHeight + fieldHeight, 4 * page.Width / 5, dataHeight), XStringFormats.CenterLeft);
+
+            XBrush brush = new XSolidBrush(new XColor { A = 50, R = 128, G = 128, B = 128});
+            gfx.DrawString(certifyGuid, fontGuid, brush, new XRect(0, page.Height - 42, page.Width, 42), XStringFormats.Center);
+
+            QRCodeGenerator qrGenerator = new QRCodeGenerator();
+            PayloadGenerator.Url urlPayload = new PayloadGenerator.Url(url);
+            QRCodeData qrCodeData = qrGenerator.CreateQrCode(urlPayload, QRCodeGenerator.ECCLevel.Q);
+            QRCode qrCode = new QRCode(qrCodeData);
+            Bitmap qrCodeImage = qrCode.GetGraphic(6);
+
+            using(MemoryStream stream = new MemoryStream())
+            {
+                qrCodeImage.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+                XImage image = XImage.FromStream(stream);
+
+                gfx.DrawImage(image, new XPoint((page.Width - image.PointWidth) / 2, page.Height - 52 - image.PointHeight));
+            }
+
+            XFont watermarkFont = new XFont("Arial", 50, XFontStyle.Italic);
+            var watermarkSize = gfx.MeasureString(_siteName, watermarkFont);
+
+            gfx.TranslateTransform(page.Width / 2, page.Height / 2);
+            gfx.RotateTransform(-Math.Atan(page.Height / page.Width) * 180 / Math.PI);
+            gfx.TranslateTransform(-page.Width / 2, -page.Height / 2);
+
+            var format = new XStringFormat();
+            format.Alignment = XStringAlignment.Near;
+            format.LineAlignment = XLineAlignment.Near;
+
+            brush = new XSolidBrush(XColor.FromArgb(50, 128, 128, 128));
+
+            gfx.DrawString(_siteName, watermarkFont, brush, new XPoint((page.Width - watermarkSize.Width) / 2, (page.Height - watermarkSize.Height) / 2), format);
+
+            using (MemoryStream stream = new MemoryStream())
+            {
+                document.Save(stream);
+
+                string connectionString = _configuration.GetConnectionString("AppStorage");
+                string containerName = "certificates";
+                var serviceClient = new BlobServiceClient(connectionString);
+                var containerClient = serviceClient.GetBlobContainerClient(containerName);
+                var blobClient = containerClient.GetBlobClient(urlPatient + "/" + pdfName);
+                await blobClient.UploadAsync(stream, true);
+            }
+
+
+            return url;
+
+        }
+
+        /*
+        [AllowAnonymous]
+        [HttpGet("test/{appointmentId}/{certifyGuid}")]
+        public IActionResult Test(string appointmentId, string certifyGuid)
+        {
+            Guid apId;
+            try
+            {
+                apId = Guid.Parse(appointmentId);
+            }
+            catch (ArgumentNullException)
+            {
+                throw new BadRequestException();
+            }
+            catch (FormatException)
+            {
+                throw new BadRequestException();
+            }
+
+            var appointment = _context.Appointments.SingleOrDefault(a => a.Id == apId);
+
+            if (appointment == null)
+                return NotFound();
+
+            try
+            {
+                GenerateCertificate(appointment, certifyGuid);
+            }
+            catch
+            {
+                return BadRequest();
+            }
+            
+            return Ok();
+        }*/
     }
 }
