@@ -84,7 +84,7 @@ export default function LoginPage() {
         setLoading(false);
 
         localStorage.setItem('isDoctor', false)
-
+        console.log(response.data.userType)
         switch (response.data.userType) {
             case "admin":
                 navigate("/admin");
@@ -153,6 +153,7 @@ export default function LoginPage() {
                             sx={{ mt: 3, mb: 2 }}
                             disabled={loading}
                             onClick={() => { logInUser(mail, password) }}
+                            name = "submitButton"
                         >
                             Zaloguj się
                         </Button>
