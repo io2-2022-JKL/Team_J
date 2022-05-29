@@ -1,4 +1,4 @@
-import { getRequest, postRequest, deleteRequest } from '../../api/Api';
+import { getRequest, postRequest, deleteRequest, postRequestNoBody } from '../../api/Api';
 
 export async function getIncomingAppointments(doctorId) {
     return getRequest('/doctor/incomingAppointments/' + doctorId)
@@ -12,16 +12,16 @@ export async function getAppointmetInfo(doctorId, appointmentId) {
     return getRequest('/doctor/vaccinate/' + doctorId + '/' + appointmentId)
 }
 
-export async function createTimeSlots(doctorId, windowBegin,windowEnd,duration) {
-    return postRequest('/doctor/timeSlots/create/' + doctorId, { 
+export async function createTimeSlots(doctorId, windowBegin, windowEnd, duration) {
+    return postRequest('/doctor/timeSlots/create/' + doctorId, {
         windowBegin: windowBegin,
         windowEnd: windowEnd,
         timeSlotDurationInMinutes: duration
     })
 }
 
-export async function modifyTimeSlots(doctorId, timeSlotId, timeFrom,timeTo) {
-    return postRequest('/doctor/timeSlots/modify/' + doctorId + '/' + timeSlotId, { 
+export async function modifyTimeSlots(doctorId, timeSlotId, timeFrom, timeTo) {
+    return postRequest('/doctor/timeSlots/modify/' + doctorId + '/' + timeSlotId, {
         timeFrom: timeFrom,
         timeTo: timeTo
     })
@@ -33,4 +33,8 @@ export async function deleteTimeSlots(doctorId, timeSlotsId) {
 
 export async function getTimeSlots(doctorId) {
     return getRequest('/doctor/timeSlots/' + doctorId)
+}
+
+export async function vaccinationDidNotHappen(doctorId, appointmentId) {
+    return postRequestNoBody('/doctor/vaccinate/vaccinationDidNotHappen/' + doctorId + '/' + appointmentId)
 }
