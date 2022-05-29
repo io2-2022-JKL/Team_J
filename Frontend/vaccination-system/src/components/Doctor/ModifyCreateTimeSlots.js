@@ -11,7 +11,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useLocation, useNavigate } from "react-router-dom";
 import { DatePicker, LocalizationProvider, TimePicker, StaticTimePicker, DateTimePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { ErrorSnackbar, SuccessSnackbar } from '../../tools/Snackbars';
+import { ErrorSnackbar, SuccessSnackbar } from '../Snackbars';
 import { createTimeSlots, modifyTimeSlots } from './DoctorApi';
 
 const theme = createTheme();

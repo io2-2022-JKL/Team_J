@@ -13,7 +13,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { blue } from '@mui/material/colors';
 import SummarizeIcon from '@mui/icons-material/Summarize';
 import Avatar from '@mui/material/Avatar';
-import { ErrorSnackbar, SuccessSnackbar } from '../../tools/Snackbars';
+import { ErrorSnackbar, SuccessSnackbar } from '../Snackbars';
 
 const theme = createTheme();
 
