@@ -1,14 +1,11 @@
 
 const assert = require('assert')
 const { Builder, By, Key, until } = require('selenium-webdriver');
-//const driver = new Builder().forBrowser('firefox').build();
 
 async function patientLoginTest() {
   try {
     let driver = new Builder().forBrowser('firefox').build();
     await driver.get('http://localhost:3000/signin');
-
-    //console.log(await driver.getTitle());
 
     driver.manage().setTimeouts({ implicit: 1000 })
 
@@ -23,9 +20,8 @@ async function patientLoginTest() {
 
     let expectedUrl = "http://localhost:3000/patient";
     await driver.wait(until.urlIs(expectedUrl)); //czekam na przejście do następnej strony
-    
+
     let actualUrl = await driver.getCurrentUrl();
-    //console.log(await driver.getTitle())
     assert.equal(actualUrl, expectedUrl);
     console.log("Patient login test passed")
     await driver.quit();
@@ -38,10 +34,8 @@ async function patientLoginTest() {
 async function adminLoginTest() {
   try {
     let driver = new Builder().forBrowser('chrome').build();
-    
-    await driver.get('http://localhost:3000/signin');
 
-    //console.log(await driver.getTitle());
+    await driver.get('http://localhost:3000/signin');
 
     driver.manage().setTimeouts({ implicit: 1000 })
 
@@ -56,9 +50,8 @@ async function adminLoginTest() {
 
     let expectedUrl = "http://localhost:3000/admin";
     await driver.wait(until.urlIs(expectedUrl)); //czekam na przejście do następnej strony
-    
+
     let actualUrl = await driver.getCurrentUrl();
-    //console.log(await driver.getTitle())
     assert.equal(actualUrl, expectedUrl);
     console.log("Admin login test passed")
     await driver.quit();

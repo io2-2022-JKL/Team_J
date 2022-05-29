@@ -7,3 +7,7 @@ export async function getIncomingAppointments(doctorId) {
 export async function getDoctorInfo(doctorId) {
     return getRequest('/doctor/info/' + doctorId)
 }
+
+export async function getAppointmetInfo(doctorId, appointmentId) {
+    return getRequest('/doctor/vaccinate/' + doctorId + '/' + appointmentId)
+}

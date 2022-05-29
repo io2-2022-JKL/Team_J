@@ -8,7 +8,7 @@ import Button from '@mui/material/Button';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Container, CssBaseline } from '@mui/material';
 import Typography from '@mui/material/Typography';
-import { getIncomingAppointments } from './DoctorApi';
+import { getAppointmetInfo, getIncomingAppointments } from './DoctorApi';
 import CircularProgress from '@mui/material/CircularProgress';
 import { blue } from '@mui/material/colors';
 import SummarizeIcon from '@mui/icons-material/Summarize';
@@ -99,6 +99,14 @@ export default function DoctorIncomingAppointment() {
                     <Grid item xs={4}>
                         <ListItemText primary={"Początek wizyty: " + item.from} secondary={"Koniec wizyty: " + item.to} />
                     </Grid>
+                    <Button
+                        onClick={async () => {
+                            const [appointmentsData, err] = await getAppointmetInfo(localStorage.getItem('userID'), item.appointmentId)
+                            console.log(appointmentsData)
+                        }}
+                    >
+                        Rozpocznij szczepienie
+                    </Button>
                 </Grid>
             </ListItem>
         );

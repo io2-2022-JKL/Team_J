@@ -1,12 +1,11 @@
-import axios from 'axios';
 import Moment from 'moment';
-import { deleteRequest, getRequest, postRequest, postRequestNoBody, SYSTEM_SZCZEPIEN_URL } from '../../api/Api';
+import { deleteRequest, getRequest, postRequest, postRequestNoBody } from '../../api/Api';
 
 export async function getFreeTimeSlots(city, dateFrom, dateTo, virus) {
-    return postRequest('/patient/timeSlots/Filter', {
+    return postRequest('/patient/timeSlots/filter', {
         city: city,
-        dateFrom: Moment(dateFrom).format('DD-MM-YYYY hh:mm'),
-        dateTo: Moment(dateTo).format('DD-MM-YYYY hh:mm'),
+        dateFrom: Moment(dateFrom).format('DD-MM-YYYY'),
+        dateTo: Moment(dateTo).format('DD-MM-YYYY'),
         virus: virus
     })
 }
