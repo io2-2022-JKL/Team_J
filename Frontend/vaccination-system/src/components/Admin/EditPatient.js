@@ -17,10 +17,6 @@ import { ErrorSnackbar, SuccessSnackbar } from '../Snackbars';
 
 const theme = createTheme();
 
-const Alert = React.forwardRef(function Alert(props, ref) {
-    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
-});
-
 export default function EditPatient() {
     const navigate = useNavigate();
     const location = useLocation();
@@ -65,34 +61,6 @@ export default function EditPatient() {
         setActiveOption(event.target.value);
     };
 
-    const handleClose = (event, reason) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setOperationErrorState(false);
-    };
-
-    const handleClose2 = (event, reason) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setSuccess(false);
-    };
-
-    function renderError(param) {
-        switch (param) {
-            case '400':
-                return 'Nieprawidłowe dane.';
-            case '401':
-                return 'Użytkownik nie posiada uprawnień do wykonania tej operacji'
-            case '403':
-                return 'Użytkownikowi zabroniono wykonania tej operacji'
-            case '404':
-                return 'Nie znaleziono takiego pacjenta'
-            default:
-                return 'Wystąpił błąd!';
-        }
-    }
     return (
         <ThemeProvider theme={theme}>
             <Container component="main" maxWidth="xs">

@@ -119,6 +119,7 @@ export default function LoginPage() {
                 [data, err] = await getPatientInfo(doctorData.patientId);
                 localStorage.setItem('userFirstName', data.firstName)
                 localStorage.setItem('userLastName', data.lastName)
+
                 navigate("/doctor/redirection");
                 break;
             default:
