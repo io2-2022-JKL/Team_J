@@ -20,6 +20,8 @@ import { SYSTEM_SZCZEPIEN_URL } from '../api/Api';
 import ValidationHelpers from '../tools/ValidationHelpers';
 import { getPatientInfo } from './Patient/PatientApi';
 import { getDoctorInfo } from './Doctor/DoctorApi';
+import getViruses, { downloadViruses } from '../api/Viruses';
+import getCities, { downloadCities } from '../api/Cities';
 
 const theme = createTheme();
 
@@ -79,6 +81,13 @@ export default function LoginPage() {
             setLoading(false)
         }
 
+        const [viruses, virusesError] = await getViruses();
+        localStorage.setItem('viruses', JSON.stringify(viruses))
+        const [cities, citiesError] = await getCities();
+        localStorage.setItem('cities', JSON.stringify(cities))
+        downloadCities()
+        downloadViruses()
+
         localStorage.setItem('userID', response.data.userId)
 
         axios.defaults.headers.common['authorization'] = 'Bearer ' + response.headers.authorization
@@ -105,10 +114,9 @@ export default function LoginPage() {
                 let doctorId = localStorage.getItem('userID');
                 console.log(doctorId)
                 let [doctorData, DoctorErr] = await getDoctorInfo(doctorId);
-                console.log(doctorData)
-                patientId = doctorData.patientId
-                console.log(patientId)
-                [data, err] = await getPatientInfo(patientId);
+                //console.log('doctorData')
+                //patientId = doctorData.patientId
+                [data, err] = await getPatientInfo(doctorData.patientId);
                 localStorage.setItem('userFirstName', data.firstName)
                 localStorage.setItem('userLastName', data.lastName)
 

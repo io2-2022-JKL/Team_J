@@ -14,7 +14,7 @@ import { blue } from '@mui/material/colors';
 import SummarizeIcon from '@mui/icons-material/Summarize';
 import Avatar from '@mui/material/Avatar';
 import { handleBack } from './General';
-import { ErrorSnackbar, SuccessSnackbar } from '../../tools/Snackbars';
+import { ErrorSnackbar, SuccessSnackbar } from '../Snackbars';
 
 const theme = createTheme();
 
@@ -154,9 +154,9 @@ export default function IncomingAppointment() {
                             setErrorState={setErrorCancelState}
                         />
                         <SuccessSnackbar
-                            success = {success}
-                            setSuccess = {setSuccess}
-                        />                        
+                            success={success}
+                            setSuccess={setSuccess}
+                        />
                     </Box>
                 </CssBaseline>
             </Container>

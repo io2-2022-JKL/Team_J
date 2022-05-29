@@ -16,11 +16,14 @@ import FilteringHelepers from '../../tools/FilteringHelepers';
 import DataDisplayArray from '../DataDisplayArray';
 import { getVaccinationCentersData, deleteVaccinationCenter } from './AdminApi';
 import { activeOptionsEmptyPossible } from '../../tools/ActiveOptions';
-import {ErrorSnackbar} from '../../tools/Snackbars';
+import { ErrorSnackbar } from '../Snackbars';
+import DropDownSelect from '../DropDownSelect';
+import { citiesEmptyPossible } from '../../api/Cities';
 
 const theme = createTheme();
 
 const daysOfTheWeek = ["pon", "wt", "śr", "czw", "pt", "sob", "niedz"]
+
 
 export default function VaccinationCentersPage() {
 
@@ -118,6 +121,7 @@ export default function VaccinationCentersPage() {
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState('');
     const [errorState, setErrorState] = React.useState(false);
+    const [selectedCity, setSelectedCity] = React.useState('')
 
     React.useEffect(() => {
         const fetchData = async () => {
@@ -140,20 +144,18 @@ export default function VaccinationCentersPage() {
 
     const deactivateVaccinationCenter = React.useCallback(
         (id) => async () => {
-            let error = await deleteVaccinationCenter(id); 
+            let error = await deleteVaccinationCenter(id);
             console.log(error)
-            if(error !== '200')
-            {
+            if (error !== '200') {
                 setError(error)
                 setErrorState(true)
             }
-            else
-            {
-               setTimeout(() => {
-                setRows((prevRows) => prevRows.map((row) => row.id === id ? {...row,active: false} : row));
-                setFilteredRows((prevRows) => prevRows.map((row) => row.id === id ? {...row,active: false}: row));    
-                }); 
-            } 
+            else {
+                setTimeout(() => {
+                    setRows((prevRows) => prevRows.map((row) => row.id === id ? { ...row, active: false } : row));
+                    setFilteredRows((prevRows) => prevRows.map((row) => row.id === id ? { ...row, active: false } : row));
+                });
+            }
         },
         [],
     );
@@ -170,11 +172,7 @@ export default function VaccinationCentersPage() {
         console.log(result);
         setFilteredRows(result);
     };
-    const [currency, setCurrency] = React.useState('');
-
-    const handleChange = (event) => {
-        setCurrency(event.target.value);
-    };
+    const [activeOption, setActiveOption] = React.useState('');
 
     function handleRowClick(row) {
         navigate('/admin/vaccinationCenters/editVaccinationCenter', {
@@ -229,11 +227,8 @@ export default function VaccinationCentersPage() {
                                     />
                                 </Grid>
                                 <Grid item>
-                                    <TextField
-                                        id="cityFilter"
-                                        label="Miasto"
-                                        name="cityFilter"
-                                    />
+
+                                    {DropDownSelect("cityFilter", "Miasto", citiesEmptyPossible, selectedCity, setSelectedCity)}
                                 </Grid>
                                 <Grid item>
                                     <TextField
@@ -243,24 +238,7 @@ export default function VaccinationCentersPage() {
                                     />
                                 </Grid>
                                 <Grid item >
-                                    <TextField
-                                        fullWidth
-                                        id="activeFilter"
-                                        select
-                                        label="Aktywny"
-                                        name="activeFilter"
-                                        value={currency}
-                                        onChange={handleChange}
-                                        SelectProps={{
-                                            native: true,
-                                        }}
-                                    >
-                                        {activeOptionsEmptyPossible.map((option) => (
-                                            <option key={option.value} value={option.value}>
-                                                {option.label}
-                                            </option>
-                                        ))}
-                                    </TextField>
+                                    {DropDownSelect("activeFilter", "Aktywny", activeOptionsEmptyPossible, activeOption, setActiveOption)}
                                 </Grid>
                             </Grid>
                             <Button variant='outlined' onClick={() => { navigate("/admin/vaccinationCenters/addVaccinationCenter", { state: { action: "add" } }) }}>
@@ -284,9 +262,9 @@ export default function VaccinationCentersPage() {
                             Powrót
                         </Button>
                         <ErrorSnackbar
-                            error = {error}
-                            errorState = {errorState}
-                            setErrorState = {setErrorState}
+                            error={error}
+                            errorState={errorState}
+                            setErrorState={setErrorState}
                         />
                     </Box>
                 </CssBaseline>
