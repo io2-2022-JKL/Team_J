@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.OpenApi.Models;
 using System;
 using Microsoft.Net.Http.Headers;
+using EmailService.Models;
 
 namespace VaccinationSystem
 {
@@ -143,7 +144,8 @@ namespace VaccinationSystem
             services.AddDbContext<VaccinationSystemDbContext>(x => x.UseSqlServer(connectionString));
 
             services.AddControllersWithViews();
-
+            services.Configure<MailSettings>(Configuration.GetSection("MailSettings"));
+            services.AddTransient<IMailService, MailService>();
 
             // In production, the React files will be served from this directory
             /*services.AddSpaStaticFiles(configuration =>

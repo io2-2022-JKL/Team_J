@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using VaccinationSystem.DTO.DoctorDTOs;
 using VaccinationSystem.DTO;
@@ -11,6 +12,7 @@ using VaccinationSystem.Models;
 using System.Data.Entity;
 using Microsoft.AspNetCore.Authorization;
 using VaccinationSystem.DTO.Errors;
+using EmailService.Models;
 using PdfSharp.Pdf;
 using PdfSharp;
 using PdfSharp.Drawing;
@@ -32,15 +34,16 @@ namespace VaccinationSystem.Controllers
     public class DoctorController : ControllerBase
     {
         private readonly VaccinationSystemDbContext _context;
+        private readonly IMailService _mailService;
         private readonly IConfiguration _configuration;
         private readonly string _dateTimeFormat = "dd-MM-yyyy HH\\:mm";
         private readonly string _dateFormat = "dd-MM-yyyy";
         private readonly string _storageUrlBase = "https://vaccinationsystem.blob.core.windows.net/certificates/";
         private readonly string _siteName = "systemszczepien.azurewebsites.net";
-
-        public DoctorController(VaccinationSystemDbContext context, IConfiguration configuration)
+        public DoctorController(VaccinationSystemDbContext context, IMailService mailService, IConfiguration configuration)
         {
             _context = context;
+            _mailService = mailService;
             _configuration = configuration;
         }
         [ProducesResponseType(typeof(IEnumerable<GetDoctorInfoResponse>), 200)]
@@ -274,11 +277,29 @@ namespace VaccinationSystem.Controllers
             {
                 var tempTimeSlot = _context.TimeSlots.Where(ts => ts.DoctorId == docId && ts.Id == id && ts.Active == true).SingleOrDefault();
                 if (tempTimeSlot == null) continue;
-                var possibleAppointment = this._context.Appointments.Where(a => a.TimeSlotId == tempTimeSlot.Id && a.State == Models.AppointmentState.Planned).SingleOrDefault();
+
+                /*var possibleAppointment = this._context.Appointments.Include(a => a.Patient).
+                    Where(a => a.TimeSlotId == tempTimeSlot.Id && a.State == Models.AppointmentState.Planned).SingleOrDefault();*/
+                var possibleAppointment = this._context.Appointments.Where(a => a.TimeSlotId == tempTimeSlot.Id && a.State == Models.AppointmentState.Planned)
+                    .Include(a => a.Patient).SingleOrDefault();
                 if (possibleAppointment != null)
                 {
                     possibleAppointment.State = Models.AppointmentState.Cancelled;
-                    // TODO: Take care of patient assigned to the appointment (email)
+                    if (_mailService != null)
+                    {
+                        MailRequest request = new MailRequest();
+                        request.Subject = "Visit cancelled";
+                        request.Body = "Your visit from " + tempTimeSlot.From + " to " + tempTimeSlot.To + " has been cancelled.";
+                        request.ToEmail = possibleAppointment.Patient.Mail;
+                        try
+                        {
+                            _mailService.SendEmailAsync(request);
+                        }
+                        catch
+                        {
+                            throw;
+                        } 
+                    }
                 }
                 tempTimeSlot.Active = false;
                 this._context.SaveChanges();
@@ -310,7 +331,7 @@ namespace VaccinationSystem.Controllers
         private bool tryModifyAppointment(string doctorId, string timeSlotId, ModifyTimeSlotRequestDTO modifyVisitRequestDTO)
         {
             Guid docId, tsId;
-            DateTime newFrom, newTo;
+            DateTime newFrom, newTo, oldFrom, oldTo;
             try
             {
                 docId = Guid.Parse(doctorId);
@@ -343,9 +364,35 @@ namespace VaccinationSystem.Controllers
             // All time slots which are active, belong to this doctor, collide with new time slot start and end times and are NOT the time slot we're changing
             if (collidingTimeSlot == null || collidingTimeSlot.Count == 0) throw new BadRequestException(); // There are collisions
 
+            oldFrom = timeSlotToChange.From;
+            oldTo = timeSlotToChange.To;
             timeSlotToChange.From = newFrom;
             timeSlotToChange.To = newTo;
             _context.SaveChanges();
+            /*var possibleAppointment = this._context.Appointments.Include(a => a.Patient).
+                    Where(a => a.TimeSlotId == timeSlotToChange.Id && a.State == Models.AppointmentState.Planned).SingleOrDefault();*/
+            var possibleAppointment = this._context.Appointments.Where(a => a.TimeSlotId == timeSlotToChange.Id && a.State == Models.AppointmentState.Planned)
+                .Include(a => a.Patient).SingleOrDefault();
+            if (possibleAppointment != null)
+            {
+                possibleAppointment.State = Models.AppointmentState.Cancelled;
+                if (_mailService != null)
+                {
+                    MailRequest request = new MailRequest();
+                    request.Subject = "Visit modified";
+                    request.Body = "Your visit from " + oldFrom + " to " + oldTo + " has been changed. " +
+                        "It's now from " + timeSlotToChange.From + " to " + timeSlotToChange.To + ".";
+                    request.ToEmail = possibleAppointment.Patient.Mail;
+                    try
+                    {
+                        _mailService.SendEmailAsync(request);
+                    }
+                    catch
+                    {
+                        throw;
+                    } 
+                }
+            }
             return true;
         }
         [ProducesResponseType(typeof(IEnumerable<DoctorFormerAppointmentDTO>), 200)]
@@ -549,8 +596,11 @@ namespace VaccinationSystem.Controllers
             var appointment = _context.Appointments.Where(ap => ap.Id == apId && ap.State == AppointmentState.Planned)
                 .Include(ap => ap.Patient).Include(ap => ap.TimeSlot).Include(ap => ap.Vaccine).SingleOrDefault();
             if (appointment == null) return null;
-            if (appointment.Patient.Active == false || appointment.TimeSlot.Active == false || 
-                appointment.Vaccine.Active == false || appointment.TimeSlot.DoctorId != docId) return null;
+            var patient = _context.Patients.Where(p => p.Id == appointment.PatientId).FirstOrDefault();
+            var timeSlot = _context.TimeSlots.Where(ts => ts.Id == appointment.TimeSlotId).FirstOrDefault();
+            var vaccine = _context.Vaccines.Where(v => v.Id == appointment.VaccineId).FirstOrDefault();
+            if (patient.Active == false || timeSlot.Active == false ||
+                vaccine.Active == false || timeSlot.DoctorId != docId) return null;
             DoctorMarkedAppointmentResponseDTO result = new DoctorMarkedAppointmentResponseDTO()
             {
                 vaccineName = appointment.Vaccine.Name,
@@ -611,8 +661,14 @@ namespace VaccinationSystem.Controllers
             var checkIfDoctorActive = _context.Doctors.Where(doc => doc.Id == docId && doc.Active == true).FirstOrDefault();
             if (checkIfDoctorActive == null) return null;
 
-            var appointment = _context.Appointments.Where(ap => ap.Id == apId && ap.State == AppointmentState.Planned).Include(ap => ap.TimeSlot).Include(ap => ap.Vaccine).SingleOrDefault();
-            if (appointment == null || appointment.TimeSlot.Active == false || appointment.Vaccine.Active == false || appointment.TimeSlot.DoctorId != docId) return null;
+            var appointment = _context.Appointments.Where(ap => ap.Id == apId && ap.State == AppointmentState.Planned)
+                .Include(ap => ap.Patient).Include(ap => ap.TimeSlot).Include(ap => ap.Vaccine).SingleOrDefault();
+            if (appointment == null) return null;
+            var patient = _context.Patients.Where(p => p.Id == appointment.PatientId).FirstOrDefault();
+            var timeSlot = _context.TimeSlots.Where(ts => ts.Id == appointment.TimeSlotId).FirstOrDefault();
+            var vaccine = _context.Vaccines.Where(v => v.Id == appointment.VaccineId).FirstOrDefault();
+            if (timeSlot.Active == false ||
+                vaccine.Active == false || timeSlot.DoctorId != docId) return null;
 
             DoctorConfirmVaccinationResponseDTO result = new DoctorConfirmVaccinationResponseDTO();
             if (appointment.WhichDose == appointment.Vaccine.NumberOfDoses) // That was the last dose for that vaccine
@@ -629,6 +685,21 @@ namespace VaccinationSystem.Controllers
             appointment.State = AppointmentState.Finished;
             appointment.VaccineBatchNumber = batchId;
             _context.SaveChanges();
+            if (_mailService != null)
+            {
+                MailRequest request = new MailRequest();
+                request.Subject = "Visit completed";
+                request.Body = "Your visit from " + timeSlot.From + " to " + timeSlot.To + " has just finished.";
+                request.ToEmail = patient.Mail;
+                try
+                {
+                    _mailService.SendEmailAsync(request);
+                }
+                catch
+                {
+                    throw;
+                } 
+            }
             return result;
         }
         [ProducesResponseType(200)]
@@ -671,11 +742,31 @@ namespace VaccinationSystem.Controllers
             if (checkIfDoctorActive == null) return false;
 
             var appointment = _context.Appointments.Where(ap => ap.Id == apId && ap.State == AppointmentState.Planned)
-                .Include(ap => ap.TimeSlot).Include(ap => ap.Vaccine).SingleOrDefault();
-            if (appointment == null || appointment.TimeSlot.Active == false ||
-                appointment.Vaccine.Active == false || appointment.TimeSlot.DoctorId != docId) return false;
+                .Include(ap => ap.TimeSlot).Include(ap => ap.Vaccine).Include(ap => ap.Patient).SingleOrDefault();
+            if (appointment == null) return false;
+            var patient = _context.Patients.Where(p => p.Id == appointment.PatientId).FirstOrDefault();
+            var timeSlot = _context.TimeSlots.Where(ts => ts.Id == appointment.TimeSlotId).FirstOrDefault();
+            var vaccine = _context.Vaccines.Where(v => v.Id == appointment.VaccineId).FirstOrDefault();
+            if (timeSlot.Active == false ||
+                vaccine.Active == false || timeSlot.DoctorId != docId) return false;
             appointment.State = AppointmentState.Cancelled; // At least I assume so
             _context.SaveChanges();
+            if (_mailService != null)
+            {
+                MailRequest request = new MailRequest();
+                request.Subject = "You missed your visit";
+                request.Body = "You have missed your visit from " + timeSlot.From + " to " + timeSlot.To + "! " +
+                    "You need to book a new one now.";
+                request.ToEmail = patient.Mail;
+                try
+                {
+                    _mailService.SendEmailAsync(request);
+                }
+                catch
+                {
+                    throw;
+                } 
+            }
             return true;
         }
         [ProducesResponseType(200)]
@@ -719,14 +810,18 @@ namespace VaccinationSystem.Controllers
 
             var appointment = _context.Appointments.Where(ap => ap.Id == apId && ap.State == AppointmentState.Finished && ap.CertifyState == CertifyState.LastNotCertified
             && ap.VaccineBatchNumber != null).Include(ap => ap.TimeSlot).Include(ap => ap.Patient).Include(ap => ap.Vaccine).SingleOrDefault();
-            if (appointment == null || appointment.TimeSlot.Active == false || appointment.Patient.Active == false ||
-                appointment.Vaccine.Active == false || appointment.TimeSlot.DoctorId != docId) return false;
+            if (appointment == null) return false;
+            var patient = _context.Patients.Where(p => p.Id == appointment.PatientId).FirstOrDefault();
+            var timeSlot = _context.TimeSlots.Where(ts => ts.Id == appointment.TimeSlotId).FirstOrDefault();
+            var vaccine = _context.Vaccines.Where(v => v.Id == appointment.VaccineId).FirstOrDefault();
+            if (timeSlot.Active == false || patient.Active == false ||
+                vaccine.Active == false || timeSlot.DoctorId != docId) return false;
             Certificate newCert = new Certificate()
             {
                 Id = Guid.NewGuid(),
-                Patient = appointment.Patient,
+                Patient = patient,
                 PatientId = appointment.PatientId,
-                Vaccine = appointment.Vaccine,
+                Vaccine = vaccine,
                 VaccineId = appointment.VaccineId,
                 // Url = "randomFakeUrl", // to change to something proper once we get there
             };
@@ -735,6 +830,22 @@ namespace VaccinationSystem.Controllers
             _context.Certificates.Add(newCert);
             appointment.CertifyState = CertifyState.Certified;
             _context.SaveChanges();
+            if (_mailService != null)
+            {
+                MailRequest request = new MailRequest();
+                request.Subject = "Certificate ready";
+                request.Body = "You have just received a certificate for " + vaccine.Name +
+                    " vaccine. Check it out now on our website!";
+                request.ToEmail = patient.Mail;
+                try
+                {
+                    _mailService.SendEmailAsync(request);
+                }
+                catch
+                {
+                    throw;
+                }
+            }
             return true;
         }
 
