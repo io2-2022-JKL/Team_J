@@ -1,4 +1,4 @@
-import { getRequest, postRequest, postRequestNoBody} from '../../api/Api';
+import { getRequest, postRequest, postRequestNoBody } from '../../api/Api';
 
 export async function getIncomingAppointments(doctorId) {
     return getRequest('/doctor/incomingAppointments/' + doctorId)
@@ -37,6 +37,14 @@ export async function deleteTimeSlots(doctorId, timeSlotsId) {
 
 export async function getTimeSlots(doctorId) {
     return getRequest('/doctor/timeSlots/' + doctorId)
+}
+
+export async function vaccinationDidNotHappen(doctorId, appointmentId) {
+    return postRequestNoBody('/doctor/vaccinate/vaccinationDidNotHappen/' + doctorId + '/' + appointmentId)
+}
+
+export async function confirmVaccination(doctorId, appointmentId, batchId) {
+    return postRequestNoBody('/doctor/vaccinate/confirmVaccination/' + doctorId + '/' + appointmentId + '/' + batchId)
 }
 
 export async function certify(doctorId, appointmentId) {
