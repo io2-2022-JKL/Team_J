@@ -18,6 +18,7 @@ import { getVaccinationCentersData, deleteVaccinationCenter } from './AdminApi';
 import { activeOptionsEmptyPossible } from '../../tools/ActiveOptions';
 import { ErrorSnackbar } from '../Snackbars';
 import DropDownSelect from '../DropDownSelect';
+import { citiesEmptyPossible } from '../../api/Cities';
 
 const theme = createTheme();
 
@@ -120,7 +121,6 @@ export default function VaccinationCentersPage() {
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState('');
     const [errorState, setErrorState] = React.useState(false);
-    const cities = JSON.parse(localStorage.getItem('cities')).map(city => ({ value: city.city, label: city.city }))
     const [selectedCity, setSelectedCity] = React.useState('')
 
     React.useEffect(() => {
@@ -173,10 +173,6 @@ export default function VaccinationCentersPage() {
         setFilteredRows(result);
     };
     const [activeOption, setActiveOption] = React.useState('');
-
-    const handleChange = (event) => {
-        setActiveOption(event.target.value);
-    };
 
     function handleRowClick(row) {
         navigate('/admin/vaccinationCenters/editVaccinationCenter', {
@@ -232,7 +228,7 @@ export default function VaccinationCentersPage() {
                                 </Grid>
                                 <Grid item>
 
-                                    {DropDownSelect("cityFilter", "Miasto", cities, selectedCity, setSelectedCity)}
+                                    {DropDownSelect("cityFilter", "Miasto", citiesEmptyPossible, selectedCity, setSelectedCity)}
                                 </Grid>
                                 <Grid item>
                                     <TextField

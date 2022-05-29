@@ -14,7 +14,7 @@ import ValidationHelpers from '../../tools/ValidationHelpers';
 import { activeOptions } from '../../tools/ActiveOptions';
 import { ErrorSnackbar, SuccessSnackbar } from '../Snackbars';
 import DropDownSelect from '../DropDownSelect';
-import getViruses from '../../api/Viruses';
+import getViruses, { viruses } from '../../api/Viruses';
 
 const theme = createTheme();
 
@@ -47,8 +47,6 @@ export default function AddOrEditVaccine() {
     const [operationErrorState, setOperationErrorState] = useState(false);
     const [success, setSuccess] = useState(false);
     const [selectedVirus, setSelectedVirus] = useState()
-
-    const viruses = JSON.parse(localStorage.getItem('viruses')).map(virus => ({ value: virus.virus, label: virus.virus }))
 
     React.useEffect(async () => {
         /*let [data, err] = await getViruses();
