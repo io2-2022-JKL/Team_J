@@ -18,6 +18,10 @@ import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import { SYSTEM_SZCZEPIEN_URL } from '../api/Api';
 import ValidationHelpers from '../tools/ValidationHelpers';
+import { getPatientInfo } from './Patient/PatientApi';
+import { getDoctorInfo } from './Doctor/DoctorApi';
+import getViruses, { downloadViruses } from '../api/Viruses';
+import getCities, { downloadCities } from '../api/Cities';
 
 const theme = createTheme();
 
@@ -77,6 +81,13 @@ export default function LoginPage() {
             setLoading(false)
         }
 
+        const [viruses, virusesError] = await getViruses();
+        localStorage.setItem('viruses', JSON.stringify(viruses))
+        const [cities, citiesError] = await getCities();
+        localStorage.setItem('cities', JSON.stringify(cities))
+        downloadCities()
+        downloadViruses()
+
         localStorage.setItem('userID', response.data.userId)
 
         axios.defaults.headers.common['authorization'] = 'Bearer ' + response.headers.authorization
@@ -84,16 +95,30 @@ export default function LoginPage() {
         setLoading(false);
 
         localStorage.setItem('isDoctor', false)
-
+        console.log(response.data.userType)
+        let [data, err] = [];
+        let patientId;
         switch (response.data.userType) {
             case "admin":
                 navigate("/admin");
                 break;
             case "patient":
-                navigate("/patient", { state: { name: "Jan", surname: "Kowalski" } });
+                patientId = localStorage.getItem('userID');
+                [data, err] = await getPatientInfo(patientId);
+                localStorage.setItem('userFirstName', data.firstName)
+                localStorage.setItem('userLastName', data.lastName)
+                navigate("/patient");
                 break;
             case "doctor":
                 localStorage.setItem('isDoctor', true)
+                let doctorId = localStorage.getItem('userID');
+                console.log(doctorId)
+                let [doctorData, DoctorErr] = await getDoctorInfo(doctorId);
+                //console.log('doctorData')
+                //patientId = doctorData.patientId
+                [data, err] = await getPatientInfo(doctorData.patientId);
+                localStorage.setItem('userFirstName', data.firstName)
+                localStorage.setItem('userLastName', data.lastName)
                 navigate("/doctor/redirection");
                 break;
             default:
@@ -153,6 +178,7 @@ export default function LoginPage() {
                             sx={{ mt: 3, mb: 2 }}
                             disabled={loading}
                             onClick={() => { logInUser(mail, password) }}
+                            name="submitButton"
                         >
                             Zaloguj się
                         </Button>

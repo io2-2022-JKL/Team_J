@@ -31,6 +31,9 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import Snackbar from '@mui/material/Snackbar';
 import { handleBack } from './General';
+import DropDownSelect from '../DropDownSelect';
+import { virusesEmptyPossible } from '../../api/Viruses';
+import { citiesEmptyPossible } from '../../api/Cities';
 
 const theme = createTheme();
 
@@ -38,8 +41,8 @@ export default function FilterTimeSlots() {
 
     const navigate = useNavigate();
     const [showDaysList, setShowDaysList] = React.useState(false);
-    const [city, setCity] = React.useState();
-    const [virus, setVirus] = React.useState();
+    const [city, setCity] = React.useState('');
+    const [virus, setVirus] = React.useState('');
     const [dateFrom, setDateFrom] = React.useState();
     const [dateTo, setDateTo] = React.useState();
     const [daysInCenters, setDaysInCenters] = React.useState();
@@ -225,7 +228,6 @@ export default function FilterTimeSlots() {
                         <Box
                             component='form'
                             noValidate
-                            onChange={handleSubmit}
                             sx={{
                                 marginTop: 2,
                                 marginBottom: 2,
@@ -234,20 +236,11 @@ export default function FilterTimeSlots() {
                         >
                             <Grid container direction={"row"} spacing={1} >
                                 <Grid item xs={3}>
-                                    <TextField
-                                        fullWidth
-                                        id="idVirus"
-                                        label="Wirus"
-                                        name="virusFilter"
-                                    />
+                                    {DropDownSelect("idVirus", "Wirus", virusesEmptyPossible, virus, setVirus)}
                                 </Grid>
                                 <Grid item xs={3}>
-                                    <TextField
-                                        fullWidth
-                                        id="city"
-                                        label="Miasto"
-                                        name="cityFilter"
-                                    />
+
+                                    {DropDownSelect("cityFilter", "Miasto", citiesEmptyPossible, city, setCity)}
                                 </Grid>
                                 <Grid item xs={3}>
 

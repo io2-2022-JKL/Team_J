@@ -12,10 +12,13 @@ export default class FilteringHelepers {
         return array.filter((item) => item.phoneNumber.includes(filter));
     };
     static filterPESEL(array, filter) {
-        return array.filter((item) => item.pesel.includes(filter));
+        return array.filter((item) => item.PESEL.includes(filter));
     };
     static filterId(array, filter) {
         return array.filter((item) => item.id.includes(filter));
+    };
+    static filterVaccinationCenterId(array, filter) {
+        return array.filter((item) => item.vaccinationCenterId.includes(filter));
     };
     static filterDate(array, filter) {
         return array.filter((item) => {
@@ -40,21 +43,21 @@ export default class FilteringHelepers {
     };
     static filterNumberOfDoses = (array, filter) => {
         return array.filter((item) => {
-            if(filter === '')
+            if (filter === '')
                 return true;
             return item.numberOfDoses == filter;
         });
     };
-   static filterMinDaysBetweenDoses = (array, filter) => {
+    static filterMinDaysBetweenDoses = (array, filter) => {
         return array.filter((item) => {
-            if(filter === '')
+            if (filter === '')
                 return true;
             return item.minDaysBetweenDoses == filter
         });
     };
     static filterMaxDaysBetweenDoses = (array, filter) => {
         return array.filter((item) => {
-            if(filter === '')
+            if (filter === '')
                 return true;
             return item.maxDaysBetweenDoses == filter
         });
@@ -67,14 +70,14 @@ export default class FilteringHelepers {
     };
     static filterMinPatientAge = (array, filter) => {
         return array.filter((item) => {
-            if(filter === '')
+            if (filter === '')
                 return true;
             return item.minPatientAge == filter
         });
     };
     static filterMaxPatientAge = (array, filter) => {
         return array.filter((item) => {
-            if(filter === '')
+            if (filter === '')
                 return true;
             return item.maxPatientAge == filter
         });

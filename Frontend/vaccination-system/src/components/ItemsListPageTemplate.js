@@ -1,8 +1,5 @@
 import * as React from 'react';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import { Box, Grid } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { Box } from '@mui/material';
 import { FixedSizeList } from 'react-window';
 import Button from '@mui/material/Button';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
@@ -12,18 +9,13 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { blue } from '@mui/material/colors';
 import SummarizeIcon from '@mui/icons-material/Summarize';
 import Avatar from '@mui/material/Avatar';
-import Snackbar from '@mui/material/Snackbar';
-import MuiAlert from '@mui/material/Alert';
-
-const Alert = React.forwardRef(function Alert(props, ref) {
-    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
-});
+import { ErrorSnackbar } from './Snackbars';
 
 const theme = createTheme();
 
 
-export default function ItemListPageTemplate(title, data, renderRow, renderError, errorState, error, handleSnackBarClose, handleBack, loading) {
-
+export default function ItemListPageTemplate(props) //title, data, renderRow, renderError, errorState, error, handleSnackBarClose, handleBack, loading) 
+{
     return (
         <ThemeProvider theme={theme}>
             <Container component="main" maxWidth="lg">
@@ -40,31 +32,31 @@ export default function ItemListPageTemplate(title, data, renderRow, renderError
                             <SummarizeIcon />
                         </Avatar>
                         <Typography component="h1" variant='h5'>
-                            {title}
+                            {props.title}
                         </Typography>
 
                         <Box sx={{ marginTop: 2, }} />
 
                         <FixedSizeList
-                            height={Math.min(window.innerHeight - 200, data.length * 100)}
+                            height={Math.min(window.innerHeight - 200, props.data.length * 100)}
                             width="70%"
                             itemSize={100}
-                            itemCount={data.length}
+                            itemCount={props.data.length}
                             overscanCount={5}
-                            itemData={data}
+                            itemData={props.data}
                         >
-                            {renderRow}
+                            {props.renderRow}
                         </FixedSizeList>
                         <Button
                             type="submit"
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
-                            onClick={handleBack}
+                            onClick={props.handleBack}
                         >
                             Powrót
                         </Button>
                         {
-                            loading &&
+                            props.loading &&
                             (
                                 <CircularProgress
                                     size={24}
@@ -78,13 +70,11 @@ export default function ItemListPageTemplate(title, data, renderRow, renderError
                             )
                         }
                     </Box>
-                    <Snackbar open={errorState} autoHideDuration={6000} onClose={handleSnackBarClose}>
-                        <Alert onClose={handleSnackBarClose} severity="error" sx={{ width: '100%' }}>
-                            {
-                                renderError(error)
-                            }
-                        </Alert>
-                    </Snackbar>
+                    <ErrorSnackbar
+                        error={props.error}
+                        errorState={props.errorState}
+                        setErrorState={props.setErrorState}
+                    />
                 </CssBaseline>
             </Container>
         </ThemeProvider>

@@ -13,48 +13,10 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { blue } from '@mui/material/colors';
 import SummarizeIcon from '@mui/icons-material/Summarize';
 import Avatar from '@mui/material/Avatar';
-import Snackbar from '@mui/material/Snackbar';
-import MuiAlert from '@mui/material/Alert';
 import { handleBack } from './General';
+import { ErrorSnackbar, SuccessSnackbar } from '../Snackbars';
 
 const theme = createTheme();
-
-const Alert = React.forwardRef(function Alert(props, ref) {
-    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
-});
-
-function renderError(param) {
-    switch (param) {
-        case '400':
-            return 'Złe dane';
-        case '401':
-            return 'Użytkownik nieuprawniony do uzyskania przyszłych szczepień'
-        case '403':
-            return 'Użytkownikowi zabroniono uzyskiwania przyszłych szczepień'
-        case '404':
-            return 'Nie znaleziono przyszłych szczepień'
-        case 'ECONNABORTED':
-            return 'Przekroczono limit połączenia'
-        default:
-            return 'Wystąpił błąd!';
-    }
-}
-function renderCancelError(param) {
-    switch (param) {
-        case '200':
-            return 'Anulowano wizytę'
-        case '400':
-            return 'Złe dane';
-        case '401':
-            return 'Użytkownik nieuprawniony do anulowania wizyty'
-        case '403':
-            return 'Użytkownikowi zabroniono anulować wizytę'
-        case '404':
-            return 'Nie znaleziono przyszłego szczepienia'
-        default:
-            return 'Wystąpił błąd!';
-    }
-}
 
 export default function IncomingAppointment() {
     const navigate = useNavigate();
@@ -64,6 +26,7 @@ export default function IncomingAppointment() {
     const [errorState, setErrorState] = React.useState(false);
     const [cancelError, setErrorCancel] = React.useState('');
     const [errorCancelState, setErrorCancelState] = React.useState(false);
+    const [success, setSuccess] = React.useState(false);
 
     React.useEffect(() => {
         const fetchData = async () => {
@@ -109,8 +72,12 @@ export default function IncomingAppointment() {
                         if (result) {
                             console.log("You click yes!");
                             let err = await cancelAppointment(userID, appointmentId);
-                            setErrorCancel(err);
-                            setErrorCancelState(true);
+                            if (err !== '200') {
+                                setErrorCancel(err);
+                                setErrorCancelState(true);
+                            }
+                            else
+                                setSuccess(true);
                             return;
                         }
                         else
@@ -122,19 +89,6 @@ export default function IncomingAppointment() {
             </ListItem>
         );
     }
-
-    const handleClose = (event, reason) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setErrorState(false);
-    };
-    const handleClose2 = (event, reason) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setErrorCancelState(false);
-    };
     return (
         <ThemeProvider theme={theme}>
             <Container component="main" maxWidth="lg">
@@ -189,20 +143,20 @@ export default function IncomingAppointment() {
                                 />
                             )
                         }
-                        <Snackbar open={errorState} autoHideDuration={6000} onClose={handleClose}>
-                            <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
-                                {
-                                    renderError(errorMessage)
-                                }
-                            </Alert>
-                        </Snackbar>
-                        <Snackbar open={errorCancelState} autoHideDuration={6000} onClose={handleClose2}>
-                            <Alert onClose={handleClose2} severity={cancelError === '200' ? "success" : "error"} sx={{ width: '100%' }}>
-                                {
-                                    renderCancelError(cancelError)
-                                }
-                            </Alert>
-                        </Snackbar>
+                        <ErrorSnackbar
+                            error={errorMessage}
+                            errorState={errorState}
+                            setErrorState={setErrorState}
+                        />
+                        <ErrorSnackbar
+                            error={cancelError}
+                            errorState={errorCancelState}
+                            setErrorState={setErrorCancelState}
+                        />
+                        <SuccessSnackbar
+                            success={success}
+                            setSuccess={setSuccess}
+                        />
                     </Box>
                 </CssBaseline>
             </Container>
