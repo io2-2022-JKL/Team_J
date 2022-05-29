@@ -16,13 +16,12 @@ export default function Vaccinate() {
     const [errCode, setErrCode] = React.useState()
     const [errState, setErrState] = React.useState(false)
     const [succes, setSuccess] = React.useState(false)
-    const [data, setData] = React.useState([]);
-    const [loading, setLoading] = React.useState(false);
     const [batchError, setBatchError] = React.useState('');
     const [batchErrorState, setBatchErrorState] = React.useState(false);
     const [batchNumber, setBatchNumber] = React.useState(null)
 
     const [openConfirmDialog, setOpenConfrimDialog] = React.useState(false)
+    const [openCancelDialog, setOpenCancelDialog] = React.useState()
 
     function handleConfrimClose() {
         setOpenConfrimDialog(false)
@@ -41,6 +40,19 @@ export default function Vaccinate() {
         }
 
         setOpenConfrimDialog(false)
+    }
+
+    const handleCancelConfirmation = () => {
+        let code = vaccinationDidNotHappen(localStorage.getItem('userID'), location.appointmentId)
+        if (code == '200') {
+            setSuccess(true)
+        }
+        else {
+            setErrCode(code)
+            setErrState(true)
+        }
+
+        setOpenCancelDialog(false)
     }
 
 
@@ -113,7 +125,7 @@ export default function Vaccinate() {
                                 fullWidth
                                 variant="contained"
                                 sx={{ mt: 3, mb: 2 }}
-                                onClick={() => { vaccinationDidNotHappen(localStorage.getItem('userID'), location.appointmentId) }}
+                                onClick={() => { setOpenCancelDialog(true) }}
                             >
                                 Anuluj szczepienie
                             </Button>
@@ -171,6 +183,23 @@ export default function Vaccinate() {
                         </Button>
                     </DialogActions>
                 </Dialog>
+
+                <Dialog
+                    open={openCancelDialog}
+                    aria-labelledby="alert-dialog"
+                    aria-describedby="alert-dialog"
+                >
+                    <DialogTitle id="alert-dialog-title">
+                        {"Czy potwierdzasz, że szczepienie nie powiodło się?"}
+                    </DialogTitle>
+                    <DialogActions>
+                        <Button onClick={() => setOpenCancelDialog(false)}>Nie</Button>
+                        <Button onClick={handleCancelConfirmation} autoFocus>
+                            Tak
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+
                 <ErrorSnackbar
                     error={errCode}
                     errorState={errState}
