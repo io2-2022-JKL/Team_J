@@ -100,9 +100,11 @@ export default function LoginPage() {
         let patientId;
         switch (response.data.userType) {
             case "admin":
+            case "Admin":
                 navigate("/admin");
                 break;
             case "patient":
+            case "Patient":
                 patientId = localStorage.getItem('userID');
                 [data, err] = await getPatientInfo(patientId);
                 localStorage.setItem('userFirstName', data.firstName)
@@ -110,6 +112,7 @@ export default function LoginPage() {
                 navigate("/patient");
                 break;
             case "doctor":
+            case "Doctor":
                 localStorage.setItem('isDoctor', true)
                 let doctorId = localStorage.getItem('userID');
                 console.log(doctorId)
