@@ -19,6 +19,8 @@ import EditPatient from './Admin/EditPatient';
 import AddOrEditVaccinationCenter from './Admin/AddOrEditVaccinationCenter';
 import DoctorIncomingAppointments from './Doctor/IncomingAppointments';
 import Redirection from './Doctor/Redirection';
+import BrowsingTimeSLots from './Doctor/BrowsingTimeSlots';
+import ModifyCreateTimeSlot from './Doctor/ModifyCreateTimeSlots';
 
 
 function App() {
@@ -35,6 +37,8 @@ function App() {
           <Route exact path='/doctor' element={<DoctorMainPage />} />
           <Route exact path='/doctor/redirection' element={<Redirection />} />
           <Route exact path='/doctor/incomingAppointments' element={<DoctorIncomingAppointments />} />
+          <Route exact path='/doctor/timeSlots' element={<BrowsingTimeSLots />} />
+          <Route exact path='/doctor/timeSlots/modify' element={<ModifyCreateTimeSlot />} />
           <Route exact path='/admin' element={<AdminMainPage />} />
           <Route exact path='/admin/patients' element={<PatientsPage />} />
           <Route exact path='/admin/patients/editPatient' element={<EditPatient />} />

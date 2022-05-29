@@ -13,7 +13,6 @@ import { ErrorSnackbar } from '../tools/Snackbars';
 
 const theme = createTheme();
 
-
 export default function ItemListPageTemplate(props) //title, data, renderRow, renderError, errorState, error, handleSnackBarClose, handleBack, loading) 
 {
     return (
@@ -62,7 +61,7 @@ export default function ItemListPageTemplate(props) //title, data, renderRow, re
                                     size={24}
                                     sx={{
                                         color: blue,
-                                        position: 'relative',
+                                        position: 'absolute',
                                         alignSelf: 'center',
                                         left: '50%'
                                     }}

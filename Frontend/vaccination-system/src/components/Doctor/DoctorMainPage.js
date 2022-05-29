@@ -48,7 +48,7 @@ export default function DoctorMainPage() {
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
                             onClick={() => {
-                                //navigate("") 
+                                navigate("/doctor/timeSlots") 
                             }}
                         >
                             Twoje okna godzinowe
