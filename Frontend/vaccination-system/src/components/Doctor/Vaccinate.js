@@ -1,9 +1,11 @@
-import { Button, Container, CssBaseline, Grid, Typography } from '@mui/material';
+import { Button, Container, CssBaseline, Dialog, DialogActions, DialogContent, DialogTitle, Grid, TextField, Typography } from '@mui/material';
 import { Box, createTheme } from '@mui/system';
 import * as React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
-import { vaccinationDidNotHappen } from './DoctorApi';
+import ValidationHelpers from '../../tools/ValidationHelpers';
+import { ErrorSnackbar, SuccessSnackbar } from '../Snackbars';
+import { confirmVaccination, vaccinationDidNotHappen } from './DoctorApi';
 
 const theme = createTheme();
 
@@ -11,10 +13,35 @@ export default function Vaccinate() {
     const location = useLocation();
     const navigate = useNavigate();
 
+    const [errCode, setErrCode] = React.useState()
+    const [errState, setErrState] = React.useState(false)
+    const [succes, setSuccess] = React.useState(false)
     const [data, setData] = React.useState([]);
     const [loading, setLoading] = React.useState(false);
-    const [error, setError] = React.useState('');
-    const [errorState, setErrorState] = React.useState(false);
+    const [batchError, setBatchError] = React.useState('');
+    const [batchErrorState, setBatchErrorState] = React.useState(false);
+    const [batchNumber, setBatchNumber] = React.useState(null)
+
+    const [openConfirmDialog, setOpenConfrimDialog] = React.useState(false)
+
+    function handleConfrimClose() {
+        setOpenConfrimDialog(false)
+    }
+
+    const handleVaccineConfirmation = () => {
+        if (batchNumber == '') return
+
+        let code = confirmVaccination(localStorage.getItem('userID'), location.state.appointmentData.appointmentId, batchNumber)
+        if (code == '200') {
+            setSuccess(true)
+        }
+        else {
+            setErrCode(code)
+            setErrState(true)
+        }
+
+        setOpenConfrimDialog(false)
+    }
 
 
     return (
@@ -44,10 +71,10 @@ export default function Vaccinate() {
                         >
                             <Box>Pacjent: </Box>
                         </Grid>
-                        <Box> {location.state.patientFirstName + " " + location.state.patientLastName} </Box>
-                        <Box> {'PESEL: ' + location.state.PESEL} </Box>
-                        <Box> {'Data urodzenia: ' + location.state.dateOfBirth} </Box>
-                        <Box> {'Dawka szczepionki: ' + location.state.whichVaccineDose} </Box>
+                        <Box> {location.state.appointmentData.patientFirstName + " " + location.state.appointmentData.patientLastName} </Box>
+                        <Box> {'PESEL: ' + location.state.appointmentData.PESEL} </Box>
+                        <Box> {'Data urodzenia: ' + location.state.appointmentData.dateOfBirth} </Box>
+                        <Box> {'Dawka szczepionki: ' + location.state.appointmentData.whichVaccineDose} </Box>
                         <Box sx={{ m: 2 }} />
 
                         <Grid
@@ -58,12 +85,12 @@ export default function Vaccinate() {
                         >
                             <Box>Szczepionka: </Box>
                         </Grid>
-                        <Box> {location.state.vaccineName} </Box>
-                        <Box> {'Firma: ' + location.state.vaccineCompany} </Box>
-                        <Box> {'Wirus: ' + location.state.virusName} </Box>
-                        <Box> {'Wiek pacjenta: ' + location.state.minPatientAge + ' - ' + location.state.maxPatientAge} </Box>
-                        <Box> {'Liczba dawek: ' + location.state.numberOfDoses} </Box>
-                        <Box> {'Dni pomiędzy dawkami: ' + location.state.minDaysBetweenDoses + ' - ' + location.state.maxDaysBetweenDoses} </Box>
+                        <Box> {location.state.appointmentData.vaccineName} </Box>
+                        <Box> {'Firma: ' + location.state.appointmentData.vaccineCompany} </Box>
+                        <Box> {'Wirus: ' + location.state.appointmentData.virusName} </Box>
+                        <Box> {'Wiek pacjenta: ' + location.state.appointmentData.minPatientAge + ' - ' + location.state.appointmentData.maxPatientAge} </Box>
+                        <Box> {'Liczba dawek: ' + location.state.appointmentData.numberOfDoses} </Box>
+                        <Box> {'Dni pomiędzy dawkami: ' + location.state.appointmentData.minDaysBetweenDoses + ' - ' + location.state.appointmentData.maxDaysBetweenDoses} </Box>
                         <Box sx={{ m: 2 }} />
 
                         <Grid
@@ -77,6 +104,7 @@ export default function Vaccinate() {
                                 fullWidth
                                 variant="contained"
                                 sx={{ mt: 3, mb: 2 }}
+                                onClick={() => { setOpenConfrimDialog(true) }}
                             >
                                 Przeprowadź szczepienie
                             </Button>
@@ -85,7 +113,7 @@ export default function Vaccinate() {
                                 fullWidth
                                 variant="contained"
                                 sx={{ mt: 3, mb: 2 }}
-                                onClick={() => { console.log(location.appointmentId) /*vaccinationDidNotHappen(localStorage.getItem('userID'), location.appointmentId)*/ }}
+                                onClick={() => { vaccinationDidNotHappen(localStorage.getItem('userID'), location.appointmentId) }}
                             >
                                 Anuluj szczepienie
                             </Button>
@@ -101,10 +129,57 @@ export default function Vaccinate() {
 
                         </Grid>
 
-
-
                     </Grid>
                 </Box>
+
+                <Dialog
+                    open={openConfirmDialog}
+                    onClose={handleConfrimClose}
+                    aria-labelledby="alert-dialog-title"
+                    aria-describedby="alert-dialog-description"
+                >
+                    <DialogTitle id="alert-dialog-title">
+                        {"Wpisz numer partii szczepionki i potwierdź szczepienie"}
+                    </DialogTitle>
+                    <DialogContent>
+                        <Box
+                            component='form'
+                            noValidate
+                            sx={{
+                                marginTop: 2,
+                                marginBottom: 2,
+                                display: 'flex',
+                            }}
+                        >
+                            <Grid item xs={3}>
+                                <TextField
+                                    fullWidth
+                                    id="batchNumber"
+                                    label="Numer Partii"
+                                    name="batchNumber"
+                                    error={batchErrorState}
+                                    helperText={batchError}
+                                    onChange={(e) => { ValidationHelpers.validateInt(e, setBatchError, setBatchErrorState); setBatchNumber(e.target.value) }}
+                                />
+                            </Grid>
+                        </Box>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleConfrimClose}>Nie</Button>
+                        <Button onClick={handleVaccineConfirmation} autoFocus>
+                            Tak
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+                <ErrorSnackbar
+                    error={errCode}
+                    errorState={errState}
+                    setErrorState={setErrState}
+                />
+                <SuccessSnackbar
+                    success={succes}
+                    setSuccess={setSuccess}
+                />
             </Container>
         </ThemeProvider >
     );

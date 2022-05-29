@@ -104,7 +104,7 @@ export default function DoctorIncomingAppointment() {
                             const appointmentId = item.appointmentId
                             const [appointmentData, err] = await getAppointmetInfo(localStorage.getItem('userID'), item.appointmentId)
                             console.log({ state: appointmentData, appointmentId })
-                            navigate("/doctor/vaccinate", { state: appointmentData, appointmentId })
+                            navigate("/doctor/vaccinate", { state: { appointmentData, appointmentId } })
                         }}
                     >
                         Rozpocznij szczepienie

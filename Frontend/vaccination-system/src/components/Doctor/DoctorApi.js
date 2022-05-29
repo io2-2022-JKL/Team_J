@@ -38,3 +38,7 @@ export async function getTimeSlots(doctorId) {
 export async function vaccinationDidNotHappen(doctorId, appointmentId) {
     return postRequestNoBody('/doctor/vaccinate/vaccinationDidNotHappen/' + doctorId + '/' + appointmentId)
 }
+
+export async function confirmVaccination(doctorId, appointmentId, batchId) {
+    return postRequestNoBody('/doctor/vaccinate/confirmVaccination/' + doctorId + '/' + appointmentId + '/' + batchId)
+}
