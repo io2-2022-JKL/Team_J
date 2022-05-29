@@ -1,5 +1,4 @@
-﻿using EmailService.Models;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -12,6 +11,7 @@ using VaccinationSystem.Config;
 using VaccinationSystem.DTO;
 using VaccinationSystem.DTO.Errors;
 using VaccinationSystem.DTO.PatientDTOs;
+using VaccinationSystem.MailStuff;
 using VaccinationSystem.Models;
 
 namespace VaccinationSystem.Controllers

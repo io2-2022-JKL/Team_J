@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace EmailService.Models
+namespace VaccinationSystem.MailStuff
 {
     public class MailSettings
     {

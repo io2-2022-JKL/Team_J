@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Mvc;
 using VaccinationSystem.DTO;
 using VaccinationSystem.DTO.PatientDTOs;
 using VaccinationSystem.DTO.Errors;
-using EmailService.Models;
 using Microsoft.Extensions.Options;
 
 namespace VaccinationSystem.UnitTests
