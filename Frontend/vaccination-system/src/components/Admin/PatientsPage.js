@@ -1,26 +1,32 @@
 import * as React from 'react';
 import Button from '@mui/material/Button';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { Container, CssBaseline, TextField } from '@mui/material';
+import { Container, CssBaseline, Snackbar, TextField } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Grid from "@material-ui/core/Grid";
 import { GridActionsCellItem } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
 import clsx from 'clsx';
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
 import Avatar from '@mui/material/Avatar';
-import { confirm } from "react-confirm-box";
 import DataDisplayArray from '../DataDisplayArray';
-import { getPatientsData, getRandomPatientData } from './AdminApi';
-import { FilteringHelepers } from '../FilteringHelepers';
+import { addDoctor, deletePatient, getPatientsData, getVaccinationCentersData } from './AdminApi';
+import FilteringHelepers from '../../tools/FilteringHelepers';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import { activeOptionsEmptyPossible } from '../../tools/ActiveOptions';
+import {ErrorSnackbar} from '../../tools/Snackbars';
 
 const theme = createTheme();
 
 export default function PatientsPage() {
 
     const navigate = useNavigate();
+    const location = useLocation();
 
     const columns = [
         {
@@ -29,6 +35,7 @@ export default function PatientsPage() {
         },
         {
             field: 'PESEL',
+            headerName: 'PESEL',
             minWidth: 110,
             flex: 0.5,
             editable: true
@@ -46,7 +53,7 @@ export default function PatientsPage() {
             editable: true
         },
         {
-            field: 'email',
+            field: 'mail',
             headerName: 'E-Mail',
             minWidth: 125,
             flex: 0.5,
@@ -89,92 +96,92 @@ export default function PatientsPage() {
                 <GridActionsCellItem
                     icon={<DeleteIcon color='error' />}
                     label="Delete"
-                    onClick={deleteUser(params.id)}
+                    onClick={deactivatePatient(params.id)}
                 />,
             ],
         },
     ];
 
     const [loading, setLoading] = React.useState(true);
-
-    //const [rows, setRows] = React.useState();
-
     const [rows, setRows] = React.useState([]);
+    const [filteredRows, setFilteredRows] = React.useState(rows);
+    const [openCentersDialog, setOpenCentersDialog] = React.useState(false)
+    const [vaccinationCenters, setVaccinationCenters] = React.useState()
+    const [openSnackBar, setOpenSnackBar] = React.useState(false)
+    const [snackBarMessage, setSnackBarMessage] = React.useState('')
+    const [option, setOption] = React.useState('');
+    const [selectedRow, setSelectedRow] = React.useState();
+    const [selectedCenterId, setSelectedCenterId] = React.useState();
 
     React.useEffect(() => {
-        let patientData;
+
         const fetchData = async () => {
             setLoading(true);
-
-            patientData = await getPatientsData();
-            console.log(patientData)
-            //if (patientData.length === 0)
-            patientData = getRandomPatientData();
-
-            console.log(getRandomPatientData())
-
-            //setTimeout(() => {
-            setRows(patientData);
-            setFilteredRows(rows);
-            //});
-
-            console.log(filteredRows)
-
+            let [data, err] = await getPatientsData();
+            if (data != null) {
+                setRows(data);
+                setFilteredRows(data)
+            }
             setLoading(false);
-
         }
-
         fetchData();
-
-        setRows(getRandomPatientData())
-        console.log("run useEffect")
-
-
     }, []);
 
-    const [filteredRows, setFilteredRows] = React.useState(rows);
 
-    const deleteUser = React.useCallback(
-        (id) => () => {
-            setTimeout(() => {
-                setRows((prevRows) => prevRows.filter((row) => row.id !== id));
-                setFilteredRows((prevRows) => prevRows.filter((row) => row.id !== id));
-            });
+    const deactivatePatient = React.useCallback(
+        (id) => async () => {
+            let error = await deletePatient(id); 
+            console.log(error)
+            if(error !== '200')
+            {
+                setSnackBarMessage(error)
+                setOpenSnackBar(true)
+            }
+            else
+            {
+               setTimeout(() => {
+                setRows((prevRows) => prevRows.map((row) => row.id === id ? {...row,active: false} : row));
+                setFilteredRows((prevRows) => prevRows.map((row) => row.id === id ? {...row,active: false}: row));    
+                }); 
+            } 
         },
         [],
     );
 
-    const editCell = async (params, event) => {
-        const result = await confirm("Czy na pewno chcesz edytować pacjenta?", confirmOptionsInPolish);
-        if (result) {
-            console.log("You click yes!");
-            rows[params.id] = params.value;
-            filteredRows[params.id] = params.value;
-            setRows(rows);
-            setFilteredRows(filteredRows);
-            return;
+    async function handleRowClick(row) {
+        if (location.state == true) {
+            setSelectedRow(row)
+            const [data, err] = await getVaccinationCentersData()
+            if (err != '200') {
+                setOpenSnackBar(true)
+                setSnackBarMessage('Nie udało się pobrac danych')
+            }
+            else {
+                setVaccinationCenters(data)
+                console.log(data)
+                setOpenCentersDialog(true)
+            }
         }
-        else {
-            rows[params.id] = params.value;
-            filteredRows[params.id] = params.value;
-            setFilteredRows(filteredRows);
-        }
-        setFilteredRows(filteredRows);
-        console.log("You click No!");
-
-        if (!event.ctrlKey) {
-            event.defaultMuiPrevented = true;
-        }
-        console.log(params.row.PESEL);
-
-
+        else
+            navigate('/admin/patients/editPatient', {
+                state: {
+                    id: row.id, pesel: row.PESEL, firstName: row.firstName, lastName: row.lastName, mail: row.mail,
+                    dateOfBirth: row.dateOfBirth, phoneNumber: row.phoneNumber, active: row.active
+                }
+            })
     }
 
-    const confirmOptionsInPolish = {
-        labels: {
-            confirmable: "Tak",
-            cancellable: "Nie"
+    const handleCenterChoice = async () => {
+        const err = await addDoctor(selectedRow.id, selectedCenterId)
+        if (err != '200') {
+            setSnackBarMessage('Nie udało się dodać lekarza')
+            setOpenSnackBar(true)
         }
+        else {
+            setSnackBarMessage('Dodano lekarza lekarza')
+            setOpenSnackBar(true)
+        }
+        setOpenCentersDialog(false)
     }
 
     const handleSubmit = (event) => {
@@ -190,6 +197,10 @@ export default function PatientsPage() {
         result = FilteringHelepers.filterPhoneNumber(result, data.get('phoneNumberFilter'));
         result = FilteringHelepers.filterActive(result, data.get('activeFilter'));
         setFilteredRows(result);
+    };
+
+    const handleChange = (event) => {
+        setOption(event.target.value);
     };
 
     return (
@@ -281,28 +292,88 @@ export default function PatientsPage() {
                                     <TextField
                                         fullWidth
                                         id="activeFilter"
+                                        select
                                         label="Aktywny"
                                         name="activeFilter"
-                                    />
+                                        value={option}
+                                        onChange={handleChange}
+                                        SelectProps={{
+                                            native: true,
+                                        }}
+                                    >
+                                        {activeOptionsEmptyPossible.map((option) => (
+                                            <option key={option.value} value={option.value}>
+                                                {option.label}
+                                            </option>
+                                        ))}
+                                    </TextField>
                                 </Grid>
                             </Grid>
                         </Box>
                         <DataDisplayArray
                             loading={loading}
-                            editCell={editCell}
+                            onRowClick={handleRowClick}
                             columns={columns}
                             filteredRows={filteredRows}
+                            density="compact"
                         />
                         <Button
                             type="submit"
                             fullWidth
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
-                            onClick={async () => { /*navigate("/admin"),*/ console.log(await getPatientsData()) }}
+                            onClick={async () => { navigate("/admin") }}
                         >
                             Powrót
                         </Button>
                     </Box>
+
+                    <Dialog
+                        fullWidth
+                        open={openCentersDialog}
+                    >
+                        <DialogTitle>Wybierz Centrum Szczepień</DialogTitle>
+                        <DialogContent>
+                            <Box
+                                noValidate
+                                component="form"
+                                sx={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    m: 'auto',
+                                    width: 'fit-content',
+                                }}
+                            >
+                                {openCentersDialog &&
+                                    <TextField
+                                        fullWidth
+                                        id="centerSelection"
+                                        select
+                                        name="centerSelection"
+                                        value={selectedCenterId}
+                                        onChange={(e) => setSelectedCenterId(e.target.value)}
+                                        SelectProps={{
+                                            native: true,
+                                        }}
+                                    >
+                                        {vaccinationCenters.map((center) => (
+                                            <option key={center.id} value={center.id}>
+                                                {center.name + ",  " + center.city}
+                                            </option>
+                                        ))}
+                                    </TextField>}
+                            </Box>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={() => setOpenCentersDialog(false)}>Wróc</Button>
+                            <Button onClick={handleCenterChoice}>Wybierz</Button>
+                        </DialogActions>
+                    </Dialog>
+                    <ErrorSnackbar
+                        error = {snackBarMessage}
+                        errorState = {openSnackBar}
+                        setErrorState = {setOpenSnackBar}
+                    />
                 </CssBaseline>
             </Container >
         </ThemeProvider >

@@ -2,15 +2,15 @@
 using Xunit;
 using Moq;
 using VaccinationSystem.Models;
-using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using VaccinationSystem.Config;
 using VaccinationSystem.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using VaccinationSystem.DTO;
-using VaccinationSystem.DTO.PatientDTOs;
-using VaccinationSystem.DTO.AdminDTOs;
+using System.Net.Http;
+using System.Net;
+using Microsoft.AspNetCore.Http;
 
 namespace VaccinationSystem.UnitTests
 {
@@ -40,11 +40,13 @@ namespace VaccinationSystem.UnitTests
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.Patients).Returns(patientsMockSet.Object);
 
-            var controller = new DefaultController(mockContext.Object);
+            IHttpClientFactory factory = GetMockHttpClientFactory(HttpStatusCode.OK);
+
+            var controller = new DefaultController(mockContext.Object, factory);
 
             var request = new RegisterRequestDTO()
             {
-                pesel = pesel,
+                PESEL = pesel,
                 firstName = names,
                 lastName = surname,
                 mail = mail,
@@ -97,11 +99,13 @@ namespace VaccinationSystem.UnitTests
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.Patients).Returns(patientsMockSet.Object);
 
-            var controller = new DefaultController(mockContext.Object);
+            IHttpClientFactory factory = GetMockHttpClientFactory(HttpStatusCode.OK);
+
+            var controller = new DefaultController(mockContext.Object, factory);
 
             var request = new RegisterRequestDTO()
             {
-                pesel = pesel,
+                PESEL = pesel,
                 firstName = names,
                 lastName = surname,
                 mail = mail,
@@ -171,11 +175,13 @@ namespace VaccinationSystem.UnitTests
             var mockContext = new Mock<VaccinationSystemDbContext>();
             mockContext.Setup(c => c.Patients).Returns(patientsMockSet.Object);
 
-            var controller = new DefaultController(mockContext.Object);
+            IHttpClientFactory factory = GetMockHttpClientFactory(HttpStatusCode.OK);
+
+            var controller = new DefaultController(mockContext.Object, factory);
 
             var request = new RegisterRequestDTO()
             {
-                pesel = pesel,
+                PESEL = pesel,
                 firstName = names,
                 lastName = surname,
                 mail = mail,
@@ -219,7 +225,11 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.Doctors).Returns(doctorsMockSet.Object);
             mockContext.Setup(c => c.Admins).Returns(adminsMockSet.Object);
 
-            var controller = new DefaultController(mockContext.Object);
+            IHttpClientFactory factory = GetMockHttpClientFactoryTokenResponseDTO(HttpStatusCode.OK);
+
+            var controller = new DefaultController(mockContext.Object, factory);
+            controller.ControllerContext = new ControllerContext();
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
             var request = new SigninRequestDTO()
             {
@@ -272,7 +282,9 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.Doctors).Returns(doctorsMockSet.Object);
             mockContext.Setup(c => c.Admins).Returns(adminsMockSet.Object);
 
-            var controller = new DefaultController(mockContext.Object);
+            IHttpClientFactory factory = GetMockHttpClientFactory(HttpStatusCode.OK);
+
+            var controller = new DefaultController(mockContext.Object, factory);
 
             var request = new SigninRequestDTO()
             {
@@ -287,6 +299,178 @@ namespace VaccinationSystem.UnitTests
             // Assert
 
             Assert.IsType<BadRequestResult>(result.Result);
+        }
+
+        [Theory]
+        [InlineData("Koronawirus")]
+        public void GetVirusesTest(string virusName)
+        {
+            // Arrange
+
+            var mockContext = new Mock<VaccinationSystemDbContext>();
+            var controller = new DefaultController(mockContext.Object, null);
+
+            // Act
+
+            var result = controller.GetViruses();
+
+            // Assert
+
+            Assert.IsType<OkObjectResult>(result.Result);
+
+            var response = result.Result as OkObjectResult;
+            Assert.IsType<List<GetVirusDTO>>(response.Value);
+
+            var viruses = response.Value as List<GetVirusDTO>;
+            Assert.Equal(Enum.GetValues(typeof(Virus)).Cast<Virus>().Count(), viruses.Count);
+
+            bool contains = false;
+            foreach(var virus in viruses)
+            {
+                if (virus.virus == virusName)
+                {
+                    contains = true;
+                    return;
+                }
+            }
+            Assert.True(contains);
+        }
+
+        [Theory]
+        [InlineData("SARS Covid-19")]
+        [InlineData("1")]
+        [InlineData("")]
+        [InlineData(null)]
+        public void GetWrongVirusesTest(string virusName)
+        {
+            // Arrange
+
+            var mockContext = new Mock<VaccinationSystemDbContext>();
+            var controller = new DefaultController(mockContext.Object, null);
+
+            // Act
+
+            var result = controller.GetViruses();
+
+            // Assert
+
+            Assert.IsType<OkObjectResult>(result.Result);
+
+            var response = result.Result as OkObjectResult;
+            Assert.IsType<List<GetVirusDTO>>(response.Value);
+
+            var viruses = response.Value as List<GetVirusDTO>;
+            Assert.Equal(Enum.GetValues(typeof(Virus)).Cast<Virus>().Count(), viruses.Count);
+
+            bool contains = false;
+            foreach (var virus in viruses)
+            {
+                if (virus.virus == virusName)
+                {
+                    contains = true;
+                    return;
+                }
+            }
+            Assert.False(contains);
+        }
+
+        [Fact]
+        public void GetEmptyCitiesTest()
+        {
+            // Arrange
+            var vaccinationCentersData = new List<VaccinationCenter>();
+            var vaccinationCenterMockSet = GetMock(vaccinationCentersData.AsQueryable());
+            var mockContext = new Mock<VaccinationSystemDbContext>();
+            mockContext.Setup(c => c.VaccinationCenters).Returns(vaccinationCenterMockSet.Object);
+            var controller = new DefaultController(mockContext.Object, null);
+
+            // Act
+
+            var result = controller.GetCities();
+
+            // Assert
+
+            Assert.IsType<NotFoundResult>(result.Result);
+
+        }
+
+        [Theory]
+        [InlineData("Warszawa")]
+        [InlineData("Kraków")]
+        [InlineData("Gdańsk")]
+        public void GetCitiesTest(string cityName)
+        {
+            // Arrange
+            var vaccinationCentersData = GetVaccinationCentersData().ToList();
+            var vaccinationCenterMockSet = GetMock(vaccinationCentersData.AsQueryable());
+            var mockContext = new Mock<VaccinationSystemDbContext>();
+            mockContext.Setup(c => c.VaccinationCenters).Returns(vaccinationCenterMockSet.Object);
+            var controller = new DefaultController(mockContext.Object, null);
+
+            // Act
+
+            var result = controller.GetCities();
+
+            // Assert
+
+            Assert.IsType<OkObjectResult>(result.Result);
+
+            var response = result.Result as OkObjectResult;
+            Assert.IsType<List<GetCitiesDTO>>(response.Value);
+
+            var cities = response.Value as List<GetCitiesDTO>;
+            Assert.Equal(vaccinationCentersData.Select(vc => vc.City).Distinct().Count(), cities.Count);
+
+            bool contains = false;
+            foreach (var city in vaccinationCentersData.Select(vc => vc.City).Distinct())
+            {
+                if (city == cityName)
+                {
+                    contains = true;
+                    return;
+                }
+            }
+            Assert.True(contains);
+        }
+
+        [Theory]
+        [InlineData("Pruszków")]
+        [InlineData("123")]
+        [InlineData("")]
+        [InlineData(null)]
+        public void GetWrongCitiesTest(string cityName)
+        {
+            // Arrange
+            var vaccinationCentersData = GetVaccinationCentersData().ToList();
+            var vaccinationCenterMockSet = GetMock(vaccinationCentersData.AsQueryable());
+            var mockContext = new Mock<VaccinationSystemDbContext>();
+            mockContext.Setup(c => c.VaccinationCenters).Returns(vaccinationCenterMockSet.Object);
+            var controller = new DefaultController(mockContext.Object, null);
+
+            // Act
+
+            var result = controller.GetCities();
+
+            // Assert
+
+            Assert.IsType<OkObjectResult>(result.Result);
+
+            var response = result.Result as OkObjectResult;
+            Assert.IsType<List<GetCitiesDTO>>(response.Value);
+
+            var cities = response.Value as List<GetCitiesDTO>;
+            Assert.Equal(vaccinationCentersData.Select(vc => vc.City).Distinct().Count(), cities.Count);
+
+            bool contains = false;
+            foreach (var city in vaccinationCentersData.Select(vc => vc.City).Distinct())
+            {
+                if (city == cityName)
+                {
+                    contains = true;
+                    return;
+                }
+            }
+            Assert.False(contains);
         }
     }
 }

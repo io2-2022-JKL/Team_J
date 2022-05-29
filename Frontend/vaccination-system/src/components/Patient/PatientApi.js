@@ -1,6 +1,6 @@
 import axios from 'axios';
 import Moment from 'moment';
-import { SYSTEM_SZCZEPIEN_URL } from '../Api';
+import { SYSTEM_SZCZEPIEN_URL } from '../../api/Api';
 
 export async function getFreeTimeSlots(city, dateFrom, dateTo, virus) {
 
@@ -8,6 +8,7 @@ export async function getFreeTimeSlots(city, dateFrom, dateTo, virus) {
     //console.log("dateFrom", Moment(dateFrom).format('DD-MM-YYYY hh:mm'))
 
     let response;
+    let errCode = '200'
     try {
         response = await axios({
             method: 'get',
@@ -18,21 +19,24 @@ export async function getFreeTimeSlots(city, dateFrom, dateTo, virus) {
                 dateFrom: Moment(dateFrom).format('DD-MM-YYYY hh:mm'),
                 dateTo: Moment(dateTo).format('DD-MM-YYYY hh:mm'),
                 virus: virus
-                /*city: "Warszawa",
-                dateFrom: "01-01-2022 10:00",
-                dateTo: "01-10-2022 10:00",
-                virus: "Koronawirus"*/
+                //city: city,
+                //dateFrom: Moment(dateFrom).format('DD-MM-YYYY'),
+                //dateTo: Moment(dateTo).format('DD-MM-YYYY'),
+                //virus: virus
             }
         });
         console.log(
             "request succueeded"
         )
+        return [response.data, errCode];
     } catch (error) {
         console.error(error.message);
-        return "fail"
+        if (error.response != null)
+            return [response, error.response.status.toString()];
+        return [response, error.code];
     }
 
-    return response;
+    //return response;
 }
 
 export async function bookTimeSlot(timeSlot, vaccine) {
@@ -43,75 +47,81 @@ export async function bookTimeSlot(timeSlot, vaccine) {
 
     console.log(patientId, timeSlotId, vaccineId)
 
+    let errCode = '200'
 
     try {
-        let response = await axios({
+        await axios({
             method: 'post',
             url: SYSTEM_SZCZEPIEN_URL + '/patient/timeSlots/Book/' + patientId + '/' + timeSlotId + '/' + vaccineId,
         });
-        console.log(
-            "request succueeded"
-        )
-        return "success"
-
+        return [errCode];
     } catch (error) {
         console.error(error.message);
-        return "fail"
+        if (error.response != null)
+            return error.response.status.toString();
+        return error.code;
     }
 }
 
 export async function getFormerAppointments(patientId) {
 
     let response;
+    let err = '200';
     try {
         response = await axios({
             method: 'get',
-            url: 'https://systemszczepien.azurewebsites.net/patient/appointments/formerAppointments/' + patientId,
+            url: SYSTEM_SZCZEPIEN_URL + '/patient/appointments/formerAppointments/' + patientId,
         });
         /*
         console.log({
             data: response.data,
         })
         */
-        return response.data;
+        return [response.data, err];
     } catch (error) {
         console.error(error.message);
+        if (error.response != null)
+            return [response, error.response.status.toString()];
+        return [response, error.code];
     }
 }
 
 export async function getIncomingAppointments(patientId) {
 
     let response;
+    let err = '200'
     try {
         response = await axios({
             method: 'get',
-            url: 'https://systemszczepien.azurewebsites.net/patient/appointments/incomingAppointments/' + patientId,
+            url: SYSTEM_SZCZEPIEN_URL + '/patient/appointments/incomingAppointments/' + patientId,
         });
         /*
         console.log({
             data: response.data,
         })
         */
-        return response.data;
+        return [response.data, err];
     } catch (error) {
         console.error(error.message);
+        if (error.response != null)
+            return [response, error.response.status.toString()];
+        return [response, error.code];
     }
 }
 
 export async function cancelAppointment(patientId, appointmentId) {
-    let response;
+    let err = '200'
     try {
-        response = await axios({
+        await axios({
             method: 'delete',
-            url: 'https://systemszczepien.azurewebsites.net/patient/appointments/incomingAppointments/cancelAppointment/' + patientId + '/' + appointmentId,
+            url: SYSTEM_SZCZEPIEN_URL + '/patient/appointments/incomingAppointments/cancelAppointments/' + patientId + '/' + appointmentId,
         });
-
-        console.log({
-            response,
-        })
-
+        return err;
     } catch (error) {
         console.error(error.message);
+        if (error.response != null)
+            return error.response.status.toString();
+        return error.code;
     }
 
 }
@@ -119,19 +129,34 @@ export async function cancelAppointment(patientId, appointmentId) {
 export async function getCertificates(patientId) {
 
     let response;
+    let error = '200';
     try {
         response = await axios({
             method: 'get',
-            url: 'https://systemszczepien.azurewebsites.net/patient/certificates/' + patientId,
+            url: SYSTEM_SZCZEPIEN_URL + '/patient/certificates/' + patientId,
         });
-        /*
-        console.log({
-            data: response.data,
-        })
-        */
-        return response.data;
-
+        return [response.data, error];
     } catch (error) {
         console.error(error.message);
+        if (error.response != null)
+            return [response, error.response.status.toString()];
+        return [response, error.code];
+    }
+}
+
+export async function getPatientInfo(patientId) {
+    let response;
+    let errCode = '200';
+    try {
+        response = await axios({
+            method: 'get',
+            url: SYSTEM_SZCZEPIEN_URL + '/patient/info/' + patientId,
+        });
+        return [response.data, errCode];
+    } catch (error) {
+        console.error(error.message);
+        if (error.response != null)
+            return [response, error.response.status.toString()];
+        return [response, error.code];
     }
 }

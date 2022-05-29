@@ -3,7 +3,12 @@ using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Net;
+using System.Net.Http;
+using System.Text.Json;
+using System.Threading.Tasks;
+using System.Web.Http;
+using VaccinationSystem.DTO;
 using VaccinationSystem.Models;
 
 namespace VaccinationSystem.UnitTests
@@ -18,6 +23,56 @@ namespace VaccinationSystem.UnitTests
             mockSet.As<IQueryable<T>>().Setup(m => m.ElementType).Returns(data.ElementType);
             mockSet.As<IQueryable<T>>().Setup(m => m.GetEnumerator()).Returns(data.GetEnumerator());
             return mockSet;
+        }
+
+        protected IHttpClientFactory GetMockHttpClientFactory(HttpStatusCode code)
+        {
+            var mockFactory = new Mock<IHttpClientFactory>();
+            var configuration = new HttpConfiguration();
+            var clientHandlerStub = new DelegatingHandlerStub((request, cancellationToken) =>
+            {
+                request.SetConfiguration(configuration);
+                var response = request.CreateResponse(code);
+                return Task.FromResult(response);
+            });
+            var client = new HttpClient(clientHandlerStub);
+            mockFactory.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(client);
+            IHttpClientFactory factory = mockFactory.Object;
+
+            return factory;
+        }
+
+        protected IHttpClientFactory GetMockHttpClientFactoryTokenResponseDTO(HttpStatusCode code)
+        {
+            var mockFactory = new Mock<IHttpClientFactory>();
+            var configuration = new HttpConfiguration();
+            var clientHandlerStub = new DelegatingHandlerStub((request, cancellationToken) =>
+            {
+                request.SetConfiguration(configuration);
+                if (code != HttpStatusCode.OK)
+                {
+                    var response = request.CreateResponse(code);
+                    return Task.FromResult(response);
+                }
+                else
+                {
+                    TokenResponseDTO dto = new TokenResponseDTO()
+                    {
+                        access_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+                    };
+                    var dtoJson = JsonSerializer.Serialize<TokenResponseDTO>(dto);
+
+
+                    var response = request.CreateResponse(code);
+                    response.Content = new StringContent(dtoJson);
+                    return Task.FromResult(response);
+                }
+            });
+            var client = new HttpClient(clientHandlerStub);
+            mockFactory.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(client);
+            IHttpClientFactory factory = mockFactory.Object;
+
+            return factory;
         }
 
         protected IQueryable<Patient> GetPatientsData()
@@ -634,6 +689,16 @@ namespace VaccinationSystem.UnitTests
                     Doctor = GetDoctorsData().ElementAt(0),
                     IsFree = false,
                     Active = true
+                },
+                new TimeSlot // 11
+                {
+                    Id = Guid.Parse("a6780125-a945-4e20-b2ab-02bcf0ce8f3b"),
+                    From = DateTime.ParseExact("01-05-2022 11:15", format, null),
+                    To = DateTime.ParseExact("01-05-2022 11:30", format, null),
+                    DoctorId = GetDoctorsData().ElementAt(0).Id,
+                    Doctor = GetDoctorsData().ElementAt(0),
+                    IsFree = false,
+                    Active = true
                 }
             }.AsQueryable();
             return data;
@@ -720,7 +785,20 @@ namespace VaccinationSystem.UnitTests
                     Vaccine = GetVaccinesData().ElementAt(0),
                     State = AppointmentState.Cancelled,
                     VaccineBatchNumber = null
-                }
+                },
+                new Appointment
+                {
+                    Id = Guid.Parse("baa66325-e151-4cd6-a829-254c0314faad"),
+                    WhichDose = 3,
+                    TimeSlotId = GetTimeSlotsData().ElementAt(11).Id,
+                    TimeSlot = GetTimeSlotsData().ElementAt(11),
+                    PatientId = GetPatientsData().ElementAt(5).Id,
+                    Patient = GetPatientsData().ElementAt(5),
+                    VaccineId = GetVaccinesData().ElementAt(2).Id,
+                    Vaccine = GetVaccinesData().ElementAt(2),
+                    State = AppointmentState.Planned,
+                    VaccineBatchNumber = null
+                },
             }.AsQueryable();
             return data;
         }

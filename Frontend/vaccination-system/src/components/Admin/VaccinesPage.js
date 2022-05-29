@@ -7,98 +7,28 @@ import Box from '@mui/material/Box';
 import { useNavigate } from "react-router-dom";
 import Grid from "@material-ui/core/Grid";
 import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid';
-import { randomDate, randomEmail, randomId, randomPhoneNumber, randomTraderName, randomBoolean, randomInt, randomCompanyName } from '@mui/x-data-grid-generator';
-import dateFormat from 'dateformat';
 import DeleteIcon from '@mui/icons-material/Delete';
 import clsx from 'clsx';
 import VaccinesIcon from '@mui/icons-material/Vaccines';
 import Avatar from '@mui/material/Avatar';
 import { confirm } from "react-confirm-box";
-import { PlayCircleFilledWhiteRounded } from '@mui/icons-material';
+import FilteringHelepers from '../../tools/FilteringHelepers';
+import DataDisplayArray from '../DataDisplayArray';
+import { getVaccinesData,deleteVaccine } from './AdminApi';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
+import LoginHelpers from '../../tools/LoginHelpers';
+import {ErrorSnackbar} from '../../tools/Snackbars';
 
 const theme = createTheme();
 
-const filterName = (array, filter) => {
-    return array.filter((item) => item.name.includes(filter));
-};
-const filterNumberOfDoses = (array, filter) => {
-    return array.filter((item) => {
-        if(filter=='')
-            return true;
-        return item.numberOfDoses == filter
-    });
-};
-const filterMinDaysBetweenDoses = (array, filter) => {
-    return array.filter((item) => {
-        if(filter=='')
-            return true;
-        return item.minDaysBetweenDoses == filter
-    });
-};
-const filterMaxDaysBetweenDoses = (array, filter) => {
-    return array.filter((item) => {
-        if(filter=='')
-            return true;
-        return item.maxDaysBetweenDoses == filter
-    });
-};
-const filterVirus = (array, filter) => {
-    return array.filter((item) => item.virus.includes(filter));
-};
-const filterCompany = (array, filter) => {
-    return array.filter((item) => item.company.includes(filter));
-};
-
-const filterId = (array, filter) => {
-    return array.filter((item) => item.id.includes(filter));
-};
-const filterMinPatientAge = (array, filter) => {
-    return array.filter((item) => {
-        if(filter=='')
-            return true;
-        return item.minPatientAge == filter
-    });
-};
-const filterMaxPatientAge = (array, filter) => {
-    return array.filter((item) => {
-        if(filter=='')
-            return true;
-        return item.maxPatientAge == filter
-    });
-};
-const filterActive = (array, filter) => {
-    return array.filter((item) => {
-        if (filter === "aktywny")
-            return item.active === true;
-        else if (filter === "nieaktywny")
-            return item.active === false;
-        else
-            return true;
-    });
-}
-
-let id = randomId();
-const createRandomRow = () => {
-    id = randomId();
-    return {
-        id: id,
-        company: randomCompanyName(),
-        name: randomCompanyName(),
-        numberOfDoses: randomInt(1,3),
-        minDaysBetweenDoses: randomInt(14,30),
-        maxDaysBetweenDoses: randomInt(30,60),
-        virus: "Koronavirus",
-        minPatientAge: randomInt(18,21),
-        maxPatientAge: randomInt(80,120),
-        active: randomBoolean() 
-    }
-};
+const Alert = React.forwardRef(function Alert(props, ref) {
+    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 export default function DoctorsPage() {
 
     const navigate = useNavigate();
-
-    const [pageSize, setPageSize] = React.useState(10);
 
     const columns = [
         {
@@ -115,7 +45,7 @@ export default function DoctorsPage() {
         {
             field: 'name',
             headerName: 'Nazwa',
-            flex: 0.5,
+            flex: 1,
             editable: true
         },
         {
@@ -182,39 +112,52 @@ export default function DoctorsPage() {
                 <GridActionsCellItem
                     icon={<DeleteIcon color='error' />}
                     label="Delete"
-                    onClick={deleteUser(params.id)}
+                    onClick={deactivateVaccine(params.id)}
                 />,
             ],
         },
     ];
 
-    const [rows, setRows] = React.useState(() => [
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-        createRandomRow(),
-    ]);
-
+    const [rows, setRows] = React.useState([]);
     const [filteredRows, setFilteredRows] = React.useState(rows);
+    const [loading, setLoading] = React.useState(false);
+    const [error, setError] = React.useState('');
+    const [errorState, setErrorState] = React.useState(false);
 
-    const deleteUser = React.useCallback(
-        (id) => () => {
-            setTimeout(() => {
-                setRows((prevRows) => prevRows.filter((row) => row.id !== id));
-                setFilteredRows((prevRows) => prevRows.filter((row) => row.id !== id));
-            });
+    React.useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            let [data, err] = await getVaccinesData();
+            if (data != null) {
+                setRows(data);
+                setFilteredRows(data)
+            }
+            else {
+                setError(err);
+                setErrorState(true);
+            }
+            console.log(err)
+            setLoading(false);
+        }
+        fetchData();
+    }, []);
+
+    const deactivateVaccine = React.useCallback(
+        (id) => async () => {
+            let error = await deleteVaccine(id); 
+            console.log(error)
+            if(error !== '200')
+            {
+                setError(error)
+                setErrorState(true)
+            }
+            else
+            {
+               setTimeout(() => {
+                setRows((prevRows) => prevRows.map((row) => row.id === id ? {...row,active: false} : row));
+                setFilteredRows((prevRows) => prevRows.map((row) => row.id === id ? {...row,active: false}: row));    
+                }); 
+            } 
         },
         [],
     );
@@ -223,28 +166,47 @@ export default function DoctorsPage() {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
         let result = rows;
-        
-        result = filterId(result, data.get('vaccineIdFilter'));
-        result = filterCompany(result, data.get('companyFilter'));
-        result = filterName(result, data.get('nameFilter'));
-        result = filterNumberOfDoses(result, data.get('numberOfDosesFilter'));
-        result = filterActive(result, data.get('activeFilter'));
-        result = filterMinDaysBetweenDoses(result, data.get('minDaysBetweenDosesFilter'));
-        result = filterMaxDaysBetweenDoses(result, data.get('maxDaysBetweenDosesFilter'));
-        result = filterVirus(result, data.get('virusFilter'));
-        result = filterMinPatientAge(result,data.get('minPatientAgeFilter'));
-        result = filterMaxPatientAge(result,data.get('maxPatientAgeFilter'));
+        result = FilteringHelepers.filterId(result, data.get('vaccineIdFilter'));
+        result = FilteringHelepers.filterCompany(result, data.get('companyFilter'));
+        result = FilteringHelepers.filterName(result, data.get('nameFilter'));
+        result = FilteringHelepers.filterNumberOfDoses(result, data.get('numberOfDosesFilter'));
+        result = FilteringHelepers.filterActive(result, data.get('activeFilter'));
+        result = FilteringHelepers.filterMinDaysBetweenDoses(result, data.get('minDaysBetweenDosesFilter'));
+        result = FilteringHelepers.filterMaxDaysBetweenDoses(result, data.get('maxDaysBetweenDosesFilter'));
+        result = FilteringHelepers.filterVirus(result, data.get('virusFilter'));
+        result = FilteringHelepers.filterMinPatientAge(result, data.get('minPatientAgeFilter'));
+        result = FilteringHelepers.filterMaxPatientAge(result, data.get('maxPatientAgeFilter'));
         setFilteredRows(result);
-        /*
-        console.log(
-            {
-                filter: data.get('firstNameFilter'),
-                date: data.get('dateOfBirthFilter'),
-                date2: new Date(data.get('dateOfBirthFilter'))
-            }
-        )
-        */
     };
+    const [currency, setCurrency] = React.useState('');
+
+    const handleChange = (event) => {
+        setCurrency(event.target.value);
+    };
+
+    const currencies = [
+        {
+            value: 'aktywny',
+            label: 'aktywny',
+        },
+        {
+            value: 'nieaktywny',
+            label: 'nieaktywny',
+        },
+        {
+            value: '',
+            label: '',
+        }
+    ];
+    
+    function handleRowClick(row) {
+        navigate('/admin/vaccines/editVaccine', {
+            state: {
+                action: "edit", id: row.id, company: row.company, name: row.name, numberOfDoses: row.numberOfDoses,
+                minDaysBetweenDoses: row.minDaysBetweenDoses, maxDaysBetweenDoses: row.maxDaysBetweenDoses, virusName: row.virus, minPatientAge: row.minPatientAge, maxPatientAge: row.maxPatientAge, active: row.active
+            }
+        })
+    }
 
     return (
         <ThemeProvider theme={theme}>
@@ -273,16 +235,9 @@ export default function DoctorsPage() {
                                 marginTop: 2,
                                 marginBottom: 2,
                                 display: 'flex',
-                                //flexDirection: 'row',
-                                //alignItems: 'center'
                             }}
                         >
-                            <Grid container direction={"row"} spacing={1} //flex={"wrap"}
-                                /*sx={{
-                                    display: 'flex',
-                                    flexDirection: 'row',
-                                    alignItems: 'center',
-                                }}*/>
+                            <Grid container direction={"row"} spacing={1}>
                                 <Grid item>
                                     <TextField
                                         id="vaccineIdFilter"
@@ -348,76 +303,36 @@ export default function DoctorsPage() {
                                 </Grid>
                                 <Grid item >
                                     <TextField
+                                        fullWidth
                                         id="activeFilter"
+                                        select
                                         label="Aktywny"
                                         name="activeFilter"
-                                    />
+                                        value={currency}
+                                        onChange={handleChange}
+                                        SelectProps={{
+                                            native: true,
+                                        }}
+                                    >
+                                        {currencies.map((option) => (
+                                            <option key={option.value} value={option.value}>
+                                                {option.label}
+                                            </option>
+                                        ))}
+                                    </TextField>
                                 </Grid>
                             </Grid>
-                            <Button variant='outlined' onClick={() => { navigate("/admin/vaccines/addVaccine") }}>
+                            <Button variant='outlined' onClick={() => { navigate("/admin/vaccines/addVaccine", { state: { action: "add" } }) }}>
                                 Dodaj nową szczepionkę
                             </Button>
                         </Box>
-                        <Box
-                            sx={{
-                                width: '100%',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                '& .active.positive': {
-                                    backgroundColor: 'rgba(157, 255, 118, 0.49)',
-                                    color: '#1a3e72',
-                                    fontWeight: '600',
-                                },
-                                '& .active.negative': {
-                                    backgroundColor: '#d47483',
-                                    color: '#1a3e72',
-                                    fontWeight: '600',
-                                },
-                            }}
-                        >
-                            <DataGrid
-                                onCellEditCommit={async (params, event) => {
-                                    const result = await confirm("Czy na pewno chcesz edytować szczepionkę?", confirmOptionsInPolish);
-                                    if (result) {
-                                        console.log("You click yes!");
-                                        rows[params.id] = params.value;
-                                        filteredRows[params.id] = params.value;
-                                        setRows(rows);
-                                        setFilteredRows(filteredRows);
-                                        return;
-                                    }
-                                    else {
-                                        rows[params.id] = params.value;
-                                        filteredRows[params.id] = params.value;
-                                        setFilteredRows(filteredRows);
-                                    }
-                                    setFilteredRows(filteredRows);
-                                    console.log("You click No!");
-
-                                    if (!event.ctrlKey) {
-                                        event.defaultMuiPrevented = true;
-                                    }
-                                    console.log(params.row.company);
-                                }}
-                                disableColumnFilter
-                                autoHeight
-                                pageSize={pageSize}
-                                onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
-                                rowsPerPageOptions={[5, 10, 15, 20]}
-                                pagination
-                                columns={columns}
-                                rows={filteredRows}
-                                initialState={{
-                                    columns: {
-                                        columnVisibilityModel: {
-                                            // Hide column id, the other columns will remain visible
-                                            id: false,
-                                        },
-                                    },
-                                }
-                                }
-                            />
-                        </Box>
+                        <DataDisplayArray
+                            loading={loading}
+                            onRowClick={handleRowClick}
+                            columns={columns}
+                            filteredRows={filteredRows}
+                            density="compact"
+                        />
                         <Button
                             type="submit"
                             fullWidth
@@ -427,6 +342,11 @@ export default function DoctorsPage() {
                         >
                             Powrót
                         </Button>
+                        <ErrorSnackbar
+                            error = {error}
+                            errorState = {errorState}
+                            setErrorState = {setErrorState}
+                        />
                     </Box>
                 </CssBaseline>
             </Container >

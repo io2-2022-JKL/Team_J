@@ -11,14 +11,15 @@ import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState } from 'react';
-import validator from 'validator';
-import { CoPresent } from '@mui/icons-material';
 import axios from 'axios';
 import CircularProgress from '@mui/material/CircularProgress';
 import { blue } from '@mui/material/colors';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
-import { SYSTEM_SZCZEPIEN_URL } from './Api';
+import { SYSTEM_SZCZEPIEN_URL } from '../api/Api';
+import ValidationHelpers from '../tools/ValidationHelpers';
+import { getPatientInfo } from './Patient/PatientApi';
+import { getDoctorInfo } from './Doctor/DoctorApi';
 
 const theme = createTheme();
 
@@ -32,6 +33,8 @@ export default function LoginPage() {
     const [password, setPassword] = useState('');
     const [emailError, setEmailError] = useState('');
     const [emailErrorState, setEmailErrorState] = useState(false);
+    const [passwordError, setPasswordError] = useState('');
+    const [passwordErrorState, setPasswordErrorState] = useState(false);
     const [loading, setLoading] = useState(false);
 
     const location = useLocation();
@@ -43,43 +46,16 @@ export default function LoginPage() {
         }
         setSnackbar(false);
     };
-    const handleEmialChangeWithValidation = (e) => {
-        var emailFiledValue = e.target.value
-
-        console.log({
-            emailFiledValue
-        })
-
-        if (validator.isEmail(emailFiledValue)) {
-            setEmailError('')
-            setEmailErrorState(false)
-            setEmail(emailFiledValue)
-        } else {
-            setEmailError('Wprowadź poprawny adres email!')
-            setEmailErrorState(true)
-        }
-    }
-
-    const handlePasswordChange = (e) => {
-        var passwordFiledValue = e.target.value
-
-        setPassword(passwordFiledValue);
-    }
 
     const handleSubmit = (event) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
         setEmail(data.get('email'));
         setPassword(data.get('password'));
-        console.log({
-            email: mail,
-            password: password,
-        });
     };
 
 
     const logInUser = async () => {
-
         // request i response
         if (emailError) return;
         let response;
@@ -94,42 +70,53 @@ export default function LoginPage() {
                 }
 
             });
-            console.log({
-                response
-            })
-
-
-
         } catch (error) {
             console.error(error.message);
-            setEmailError("Nieprawidłowy email lub hasło")
+            setEmailError("Logowanie nie powiodło się")
             setEmailErrorState(true)
+            setPasswordError("Logowanie nie powiodło się")
+            setPasswordErrorState(true)
             setLoading(false)
         }
 
         localStorage.setItem('userID', response.data.userId)
 
-        //console.log("local sotrage", localStorage.getItem('userID'))
+
+        axios.defaults.headers.common['authorization'] = 'Bearer ' + response.headers.authorization
+
         setLoading(false);
 
+        localStorage.setItem('isDoctor', false)
+        console.log(response.data.userType)
+        let [data, err] = [];
+        let patientId;
 
-        console.log({
-            response,
-            mail,
-            //bool: mail.includes("admin"),
-            userType: response.data.userType,
-
-        })
         switch (response.data.userType) {
             case "admin":
                 navigate("/admin");
                 break;
             case "patient":
-                navigate("/patient", { state: { name: "Jan", surname: "Kowalski" } });
+                patientId = localStorage.getItem('userID');
+                [data, err] = await getPatientInfo(patientId);
+                localStorage.setItem('userFirstName', data.firstName)
+                localStorage.setItem('userLastName', data.lastName)
+                navigate("/patient");
                 break;
             case "doctor":
-                navigate("/patient", { state: { name: "Jan", surname: "Kowalski" } });
-            //navigate("/doctor",);
+
+                localStorage.setItem('isDoctor', true)
+                let doctorId = localStorage.getItem('userID');
+                console.log(doctorId)
+                let [doctorData, DoctorErr] = await getDoctorInfo(doctorId);
+                patientId = doctorData.patientId
+                [data, err] = await getPatientInfo(patientId);
+                localStorage.setItem('userFirstName', data.firstName)
+                localStorage.setItem('userLastName', data.lastName)
+                navigate("/doctor/redirection");
+                break;
+            default:
+                break;
+
         }
     }
 
@@ -162,7 +149,7 @@ export default function LoginPage() {
                             name="email"
                             autoComplete="email"
                             autoFocus
-                            onChange={(e) => handleEmialChangeWithValidation(e)}
+                            onChange={(e) => { setEmail(e.target.value); ValidationHelpers.validateEmail(e, setEmailError, setEmailErrorState) }}
                             helperText={emailError}
                         />
                         <TextField
@@ -174,7 +161,9 @@ export default function LoginPage() {
                             type="password"
                             id="password"
                             autoComplete="current-password"
-                            onChange={(e) => handlePasswordChange(e)}
+                            onChange={(e) => { setPassword(e.target.value); ValidationHelpers.validatePassword(e, setPasswordError, setPasswordErrorState) }}
+                            error={passwordErrorState}
+                            helperText={passwordError}
                         />
                         <Button
                             type="submit"
@@ -183,6 +172,7 @@ export default function LoginPage() {
                             sx={{ mt: 3, mb: 2 }}
                             disabled={loading}
                             onClick={() => { logInUser(mail, password) }}
+                            name="submitButton"
                         >
                             Zaloguj się
                         </Button>
@@ -193,9 +183,8 @@ export default function LoginPage() {
                                     size={24}
                                     sx={{
                                         color: blue,
-                                        position: 'absolute',
+                                        position: 'relative',
                                         alignSelf: 'center',
-                                        bottom: '37%',
                                         left: '50%'
                                     }}
                                 />

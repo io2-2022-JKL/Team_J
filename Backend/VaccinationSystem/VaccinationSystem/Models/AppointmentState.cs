@@ -9,6 +9,7 @@ namespace VaccinationSystem.Models
     {
         Cancelled,
         Planned,
-        Finished
+        Finished,
+        Expired
     }
 }

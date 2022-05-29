@@ -63,6 +63,9 @@ namespace VaccinationSystem.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("CertifyState")
+                        .HasColumnType("int");
+
                     b.Property<Guid>("PatientId")
                         .HasColumnType("uniqueidentifier");
 

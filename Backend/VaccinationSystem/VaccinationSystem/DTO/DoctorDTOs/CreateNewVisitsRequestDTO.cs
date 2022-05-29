@@ -2,8 +2,8 @@
 {
     public class CreateNewVisitsRequestDTO
     {
-        public string from { get; set; }
-        public string to { get; set; }
+        public string windowBegin { get; set; }
+        public string windowEnd { get; set; }
         public int timeSlotDurationInMinutes { get; set; }
     }
 }

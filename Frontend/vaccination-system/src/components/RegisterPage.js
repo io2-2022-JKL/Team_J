@@ -1,7 +1,5 @@
 import * as React from 'react';
-import { Fragment } from 'react';
 import { useState } from 'react';
-import validator from 'validator';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -21,7 +19,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { blue } from '@mui/material/colors';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
-import { SYSTEM_SZCZEPIEN_URL } from './Api';
+import { SYSTEM_SZCZEPIEN_URL } from '../api/Api';
+import ValidationHelpers from '../tools/ValidationHelpers';
 
 const theme = createTheme();
 
@@ -31,50 +30,37 @@ const Alert = React.forwardRef(function Alert(props, ref) {
 
 export default function SignUp() {
   const [emailError, setEmailError] = useState('');
-  const [password, setPassword] = useState('');
-  const [password2Error, setPassword2Error] = useState('');
   const [emailErrorState, setEmailErrorState] = useState(false);
+  const [password, setPassword] = useState('');
+  const [password2, setPassword2] = useState('');
+  const [password2Error, setPassword2Error] = useState('');
+  const [password1Error, setPassword1Error] = useState('');
+  const [password1ErrorState, setPassword1ErrorState] = useState(false);
   const [password2ErrorState, setPassword2ErrorState] = useState(false);
   const [loading, setLoading] = useState(false);
   const [date, setDate] = useState(null);
   const [registerError, setRegisterError] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [peselError, setPeselError] = useState('');
+  const [peselErrorState, setPeselErrorState] = useState(false);
+  const [firstNameError, setFirstNameError] = useState('');
+  const [firstNameErrorState, setFirstNameErrorState] = useState(false);
+  const [lastNameError, setLastNameError] = useState('');
+  const [lastNameErrorState, setLastNameErrorState] = useState(false);
+  const [phoneNumberError, setPhoneNumberError] = useState('');
+  const [phoneNumberErrorState, setPhoneNumberErrorState] = useState('');
 
   const navigate = useNavigate();
-
-  const validateEmail = (e) => {
-    var email = e.target.value
-
-    if (validator.isEmail(email)) {
-      setEmailError('')
-      setEmailErrorState(false)
-    } else {
-      setEmailError('Wprowadź poprawny adres email!')
-      setEmailErrorState(true)
-    }
-  }
-
-  const holdPassword = (e) => {
-    var pass = e.target.value
-    setPassword(pass)
-  }
-
-  const validatePassword2 = (e) => {
-    var password2 = e.target.value;
-    if (validator.equals(password2, password)) {
-      setPassword2Error('')
-      setPassword2ErrorState(false)
-    }
-    else {
-      setPassword2Error('Hasła się nie pokrywają ze sobą')
-      setPassword2ErrorState(true)
-    }
-  }
 
   const signInUser = async (pesel, firstName, lastName, mail, dateOfBirth, password, phoneNumber) => {
     // request i response
     if (emailErrorState) return;
     if (password2ErrorState) return;
+    if (password1ErrorState) return;
+    if (peselErrorState) return;
+    if (firstNameErrorState) return;
+    if (lastNameErrorState) return;
+
     setLoading(true);
     try {
       const { data: response } = await axios({
@@ -153,6 +139,9 @@ export default function SignUp() {
                   id="PESEL"
                   label="PESEL"
                   autoFocus
+                  onChange={(e) => ValidationHelpers.validatePESEL(e, setPeselError, setPeselErrorState)}
+                  helperText={peselError}
+                  error={peselErrorState}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -164,6 +153,9 @@ export default function SignUp() {
                   id="firstName"
                   label="Imię"
                   autoFocus
+                  onChange={(e) => ValidationHelpers.validateName(e, setFirstNameError, setFirstNameErrorState)}
+                  helperText={firstNameError}
+                  error={firstNameErrorState}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -174,6 +166,9 @@ export default function SignUp() {
                   label="Nazwisko"
                   name="lastName"
                   autoComplete="family-name"
+                  onChange={(e) => ValidationHelpers.validateLastName(e, setLastNameError, setLastNameErrorState)}
+                  helperText={lastNameError}
+                  error={lastNameErrorState}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -186,13 +181,13 @@ export default function SignUp() {
                   name="mail"
                   autoComplete="email"
                   type="email"
-                  onChange={(e) => validateEmail(e)}
+                  onChange={(e) => ValidationHelpers.validateEmail(e, setEmailError, setEmailErrorState)}
                   helperText={emailError}
                 />
               </Grid>
               <Grid item xs={12}>
                 <TextField
-                  error={password2ErrorState}
+                  error={password1ErrorState}
                   required
                   fullWidth
                   name="password"
@@ -200,7 +195,11 @@ export default function SignUp() {
                   type="password"
                   id="password"
                   autoComplete="new-password"
-                  onChange={(e) => holdPassword(e)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    ValidationHelpers.validatePassword(e, setPassword1Error, setPassword1ErrorState)
+                  }}
+                  helperText={password1Error}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -212,8 +211,13 @@ export default function SignUp() {
                   label="Wprowadź ponownie hasło"
                   type="password"
                   id="password2"
-                  onChange={(e) => validatePassword2(e)}
+                  onChange={(e) => {
+                    setPassword2(e.target.value);
+                    ValidationHelpers.validateRepeatPassword(e, setPassword2Error, setPassword2ErrorState, password)
+                  }}
                   helperText={password2Error}
+                  disabled={password1ErrorState || password.length === 0}
+                  value={password2}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -224,14 +228,19 @@ export default function SignUp() {
                     inputFormat="dd-MM-yyyy"
                     mask="__-__-____"
                     value={date}
+                    minDate={new Date("01/01/1900")}
+                    maxDate={new Date()}
                     onChange={(newDate) => {
                       setDate(newDate);
                     }}
+                    //onError={()=>{setDateError(true)}}
                     renderInput={(params) => <TextField
                       {...params}
                       fullWidth
                       id='dateOfBirth'
                       name='dateOfBirth'
+                    //onBlur={() => {setDateError(false)}}
+                    //helperText = {dateError?"Błędna data":""}    
                     />}
                   />
                 </LocalizationProvider>
@@ -244,7 +253,10 @@ export default function SignUp() {
                   id="phoneNumber"
                   label="Numer telefonu"
                   autoFocus
-                  type="tel"
+                  //type="tel"
+                  onChange={(e) => ValidationHelpers.validatePhoneNumber(e, setPhoneNumberError, setPhoneNumberErrorState)}
+                  helperText={phoneNumberError}
+                  error={phoneNumberErrorState}
                 />
               </Grid>
             </Grid>
@@ -262,10 +274,9 @@ export default function SignUp() {
                 size={24}
                 sx={{
                   color: blue,
-                  position: 'absolute',
+                  position: 'relative',
                   alignSelf: 'center',
-                  bottom: '37%',
-                  left: '50%'
+                  left: '50%',
                 }}
               />
             )}

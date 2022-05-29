@@ -1,64 +1,412 @@
-import * as React from 'react';
-import Button from '@mui/material/Button';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { Container, CssBaseline, TextField } from '@mui/material';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import { useNavigate } from "react-router-dom";
-import Grid from "@material-ui/core/Grid";
-import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid';
 import { randomDate, randomEmail, randomId, randomPhoneNumber, randomTraderName, randomBoolean, randomInt } from '@mui/x-data-grid-generator';
 import dateFormat from 'dateformat';
-import DeleteIcon from '@mui/icons-material/Delete';
-import clsx from 'clsx';
-import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
-import Avatar from '@mui/material/Avatar';
-import { confirm } from "react-confirm-box";
-import { PlayCircleFilledWhiteRounded } from '@mui/icons-material';
 import axios from 'axios';
-import LinearProgress from '@mui/material/LinearProgress';
-import DataDisplayArray from '../DataDisplayArray';
-import { SYSTEM_SZCZEPIEN_URL } from '../Api';
+import { SYSTEM_SZCZEPIEN_URL } from '../../api/Api';
 
 export async function getPatientsData() {
+    let response;
+    let errCode = '200';
     try {
-        const { data: response } = await axios.get(SYSTEM_SZCZEPIEN_URL + '/admin/patients');
-        return response;
+        response = await axios({
+            method: 'get',
+            url: SYSTEM_SZCZEPIEN_URL + '/admin/patients',
+            timeout: 2000
+        });
+        console.log('udało się pobrac dane')
+        return [response.data, errCode];
+
     } catch (error) {
         console.error(error.message);
-        return [];
+        if (error.response != null)
+            return [response, error.response.status.toString()];
+        return [response, error.code];
     }
 }
 
-export function getRandomPatientData() {
+export async function getVaccinesData() {
+    let response;
+    let errCode = '200';
+    try {
+        response = await axios({
+            method: 'get',
+            url: SYSTEM_SZCZEPIEN_URL + '/admin/vaccines',
+            timeout: 2000,
+        });
+        console.log('udało się pobrac dane')
+        const result = response.data.map(obj => {
+            const newObj = {
+                id: obj.vaccineId,
+                company: obj.company,
+                name: obj.name,
+                numberOfDoses: obj.numberOfDoses,
+                minDaysBetweenDoses: obj.minDaysBetweenDoses,
+                maxDaysBetweenDoses: obj.maxDaysBetweenDoses,
+                virus: obj.virus,
+                minPatientAge: obj.minPatientAge,
+                maxPatientAge: obj.maxPatientAge,
+                active: obj.active
+            }
+            return newObj;
+        })
+        return [result, errCode];
 
-    return [createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()
-        , createRandomRow()]
+    } catch (error) {
+        console.error(error.message);
+        if (error.response != null)
+            return [response, error.response.status.toString()];
+        return [response, error.code];
+    }
 }
 
-const createRandomRow = () => {
-    return {
-        id: randomId(),
-        PESEL: randomInt(10000000000, 100000000000).toString(),
-        firstName: randomTraderName().split(' ')[0],
-        lastName: randomTraderName().split(' ')[1],
-        email: randomEmail(),
-        dateOfBirth: dateFormat(randomDate(new Date(50, 1), new Date("1/1/30")), "isoDate").toString(),
-        phoneNumber: randomPhoneNumber(),
-        active: randomBoolean()
+export async function getDoctorsData() {
+    let response;
+    let errCode = '200';
+    try {
+        response = await axios({
+            method: 'get',
+            url: SYSTEM_SZCZEPIEN_URL + '/admin/doctors',
+            timeout: 2000
+        });
+        console.log('udało się pobrać dane')
+        return [response.data, errCode];
+
+    } catch (error) {
+        console.error(error.message);
+        if (error.response != null)
+            return [response, error.response.status.toString()];
+        return [response, error.code];
     }
-};
+}
+
+export async function addVaccine(company, name, numberOfDoses, minDaysBetweenDoses, maxDaysBetweenDoses, virus, minPatientAge, maxPatientAge, active) {
+    let response;
+    let err = '200';
+    try {
+        response = await axios({
+            method: 'post',
+            url: SYSTEM_SZCZEPIEN_URL + '/admin/vaccines/addVaccine',
+            data:
+            {
+                company: company,
+                name: name,
+                numberOfDoses: numberOfDoses,
+                minDaysBetweenDoses: minDaysBetweenDoses,
+                maxDaysBetweenDoses: maxDaysBetweenDoses,
+                virus: virus,
+                minPatientAge: minPatientAge,
+                maxPatientAge: maxPatientAge,
+                active: active === 'aktywny' ? true : false
+            },
+            timeout: 2000
+        });
+        //console.log(response)
+        return err;
+
+    } catch (error) {
+        console.error(error.message);
+        console.error(error.code);
+        if (error.response == null)
+            return error.code;
+        return error.response.status.toString();
+    }
+}
+
+export async function editVaccine(id, company, name, numberOfDoses, minDaysBetweenDoses, maxDaysBetweenDoses, virus, minPatientAge, maxPatientAge, active) {
+    let response;
+    let err = '200';
+    try {
+        response = await axios({
+            method: 'post',
+            url: SYSTEM_SZCZEPIEN_URL + '/admin/vaccines/editVaccine',
+            data:
+            {
+                vaccineId: id,
+                company: company,
+                name: name,
+                numberOfDoses: numberOfDoses,
+                minDaysBetweenDoses: minDaysBetweenDoses,
+                maxDaysBetweenDoses: maxDaysBetweenDoses,
+                virus: virus,
+                minPatientAge: minPatientAge,
+                maxPatientAge: maxPatientAge,
+                active: active === 'aktywny' ? true : false
+            },
+            timeout: 2000
+        });
+        console.log(response)
+        return err;
+
+    } catch (error) {
+        console.error(error.message);
+        console.error(error.code);
+        if (error.response == null)
+            return error.code;
+        return error.response.status.toString();
+    }
+}
+
+export async function editPatient(id, pesel, firstName, lastName, mail, dateOfBirth, phoneNumber, active) {
+    let response;
+    let err = '200';
+
+    try {
+        response = await axios({
+            method: 'post',
+            url: SYSTEM_SZCZEPIEN_URL + '/admin/patients/editPatient',
+            data:
+            {
+                id: id,
+                PESEL: pesel,
+                firstName: firstName,
+                lastName: lastName,
+                mail: mail,
+                dateOfBirth: dateOfBirth,
+                phoneNumber: phoneNumber,
+                active: active === 'aktywny' ? true : false
+            },
+            timeout: 2000
+        });
+        console.log(response)
+        return err;
+
+    } catch (error) {
+        console.error(error.message);
+        console.error(error.code);
+        if (error.response == null)
+            return error.code;
+        return error.response.status.toString();
+    }
+}
+
+export async function deletePatient(patientId) {
+    let response;
+    let err = '200';
+    try {
+        response = await axios({
+            method: 'delete',
+            url: SYSTEM_SZCZEPIEN_URL + '/admin/doctors/deleteDoctor/' + patientId,
+            timeout: 2000
+        });
+        console.log(response)
+        return err;
+
+    } catch (error) {
+        console.error(error.message);
+        console.error(error.code);
+        if (error.response == null)
+            return error.code;
+        return error.response.status.toString();
+    }
+}
+
+export async function addDoctor(patientId, vaccinationCenterId) {
+    console.log(patientId, vaccinationCenterId);
+    return;
+
+    let response;
+    let err = '200';
+
+    try {
+        response = await axios({
+            method: 'post',
+            url: SYSTEM_SZCZEPIEN_URL + '/admin/doctors/addDoctor',
+            data:
+            {
+                patientId: patientId,
+                vaccinationCenterId: vaccinationCenterId
+            },
+            timeout: 2000
+        });
+        console.log(response)
+        return err;
+
+    } catch (error) {
+        console.error(error.message);
+        console.error(error.code);
+        if (error.response == null)
+            return error.code;
+        return error.response.status.toString();
+    }
+}
+
+export async function editDoctor(doctorId, pesel, firstName, lastName, mail, dateOfBirth, phoneNumber, vaccinationCenterId, active) {
+    let response;
+    let err = '200';
+
+    try {
+        response = await axios({
+            method: 'post',
+            url: SYSTEM_SZCZEPIEN_URL + '/admin/doctors/editDoctor',
+            data:
+            {
+                doctorId: doctorId,
+                PESEL: pesel,
+                firstName: firstName,
+                lastName: lastName,
+                mail: mail,
+                dateOfBirth: dateOfBirth,
+                phoneNumber: phoneNumber,
+                vaccinationCenterId: vaccinationCenterId,
+                active: active === "aktywny" ? true : false
+            },
+            timeout: 3000
+        });
+        console.log(response)
+        return err;
+
+    } catch (error) {
+        console.error(error.message);
+        console.error(error.code);
+        if (error.response == null)
+            return error.code;
+        return error.response.status.toString();
+    }
+}
+
+export async function deleteDoctor(doctorId) {
+    let response;
+    let err = '200';
+    try {
+        response = await axios({
+            method: 'delete',
+            url: SYSTEM_SZCZEPIEN_URL + '/admin/doctors/deleteDoctor/' + doctorId,
+            timeout: 2000
+        });
+        console.log(response)
+        return err;
+
+    } catch (error) {
+        console.error(error.message);
+        console.error(error.code);
+        if (error.response == null)
+            return error.code;
+        return error.response.status.toString();
+    }
+}
+
+export async function getVaccinationCentersData() {
+    let response;
+    let errCode = '200';
+    try {
+        response = await axios({
+            method: 'get',
+            url: SYSTEM_SZCZEPIEN_URL + '/admin/vaccinationCenters',
+            timeout: 2000
+        });
+        console.log('udało się pobrac dane')
+        return [response.data, errCode];
+
+    } catch (error) {
+        console.error(error.message);
+        if (error.response != null)
+            return [response, error.response.status.toString()];
+        return [response, error.code];
+    }
+}
+
+export async function addVaccinationCenter(name, city, street, vaccineIds, openingHoursDays, active) {
+    let response;
+    let err = '200';
+
+    try {
+        response = await axios({
+            method: 'post',
+            url: SYSTEM_SZCZEPIEN_URL + '/admin/vaccinationCenters/addVaccinationCenter',
+            data:
+            {
+                name: name,
+                city: city,
+                street: street,
+                vaccineIds: vaccineIds,
+                openingHoursDays: openingHoursDays,
+                active: active
+            },
+            timeout: 2000
+        });
+        console.log(response)
+        return err;
+
+    } catch (error) {
+        console.error(error.message);
+        console.error(error.code);
+        if (error.response == null)
+            return error.code;
+        return error.response.status.toString();
+    }
+}
+
+export async function editVaccinationCenter(id, name, city, street, vaccineIds, openingHoursDays, active) {
+    let response;
+    let err = '200';
+
+    try {
+        response = await axios({
+            method: 'post',
+            url: SYSTEM_SZCZEPIEN_URL + '/admin/vaccinationCenters/editVaccinationCenter',
+            data:
+            {
+                id: id,
+                name: name,
+                city: city,
+                street: street,
+                vaccineIds: vaccineIds,
+                openingHoursDays: openingHoursDays,
+                active: active
+            },
+            timeout: 2000
+        });
+        console.log(response)
+        return err;
+
+    } catch (error) {
+        console.error(error.message);
+        console.error(error.code);
+        if (error.response == null)
+            return error.code;
+        return error.response.status.toString();
+    }
+}
+
+export async function deleteVaccinationCenter(vaccinationCenterId) {
+    let response;
+    let err = '200';
+    try {
+        response = await axios({
+            method: 'delete',
+            url: SYSTEM_SZCZEPIEN_URL + '/admin/vaccinationCenters/deleteVaccinationCenter/' + vaccinationCenterId,
+            timeout: 2000
+        });
+        console.log(response)
+        return err;
+
+    } catch (error) {
+        console.error(error.message);
+        console.error(error.code);
+        console.error(error.response.status)
+        if (error.response == null)
+            return error.code;
+        return error.response.status.toString();
+    }
+}
+
+export async function deleteVaccine(vaccineId) {
+    let response;
+    let err = '200';
+    try {
+        response = await axios({
+            method: 'delete',
+            url: SYSTEM_SZCZEPIEN_URL + '/admin/vaccines/deleteVaccine/' + vaccineId,
+            timeout: 2000
+        });
+        console.log(response)
+        return err;
+
+    } catch (error) {
+        console.error(error.message);
+        console.error(error.code);
+        console.error(error.response.status)
+        if (error.response == null)
+            return error.code;
+        return error.response.status.toString();
+    }
+}
