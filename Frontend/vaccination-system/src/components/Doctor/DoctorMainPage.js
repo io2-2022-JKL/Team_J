@@ -1,15 +1,13 @@
 import * as React from 'react';
 import Button from '@mui/material/Button';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { Container, CssBaseline, Tab, Tabs } from '@mui/material';
+import { Container, CssBaseline } from '@mui/material';
 import AccountBoxRoundedIcon from '@mui/icons-material/AccountBoxRounded';
 import Typography from '@mui/material/Typography';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import { useNavigate } from "react-router-dom";
 import LoginHelpers from '../../tools/LoginHelpers';
-import PropTypes from 'prop-types';
-import PatientMainPage from '../Patient/PatientMainPage';
 
 const theme = createTheme();
 
@@ -48,7 +46,7 @@ export default function DoctorMainPage() {
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
                             onClick={() => {
-                                navigate("/doctor/timeSlots") 
+                                navigate("/doctor/timeSlots")
                             }}
                         >
                             Twoje okna godzinowe
@@ -70,29 +68,7 @@ export default function DoctorMainPage() {
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
                             onClick={() => {
-                                //navigate("") 
-                            }}
-                        >
-                            Przeglądaj pacjentów
-                        </Button>
-                        <Button
-                            type="submit"
-                            fullWidth
-                            variant="contained"
-                            sx={{ mt: 3, mb: 2 }}
-                            onClick={() => {
-                                //navigate("") 
-                            }}
-                        >
-                            Aktualna wizyta
-                        </Button>
-                        <Button
-                            type="submit"
-                            fullWidth
-                            variant="contained"
-                            sx={{ mt: 3, mb: 2 }}
-                            onClick={() => {
-                                navigate("/doctor/formerAppointments") 
+                                navigate("/doctor/formerAppointments")
                             }}
                         >
                             Wystaw certyfikat szczepienia
