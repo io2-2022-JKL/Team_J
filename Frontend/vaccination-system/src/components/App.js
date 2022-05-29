@@ -21,7 +21,7 @@ import DoctorIncomingAppointments from './Doctor/IncomingAppointments';
 import Redirection from './Doctor/Redirection';
 import BrowsingTimeSLots from './Doctor/BrowsingTimeSlots';
 import ModifyCreateTimeSlot from './Doctor/ModifyCreateTimeSlots';
-
+import DoctorFormerAppointments from './Doctor/FormerAppointments';
 
 function App() {
   return (
@@ -40,6 +40,7 @@ function App() {
           <Route exact path='/doctor/timeSlots' element={<BrowsingTimeSLots />} />
           <Route exact path='/doctor/timeSlots/modify' element={<ModifyCreateTimeSlot />} />
           <Route exact path='/doctor/timeSlots/create' element={<ModifyCreateTimeSlot />} />
+          <Route exact path='/doctor/formerAppointments' element={<DoctorFormerAppointments />} />
           <Route exact path='/admin' element={<AdminMainPage />} />
           <Route exact path='/admin/patients' element={<PatientsPage />} />
           <Route exact path='/admin/patients/editPatient' element={<EditPatient />} />
