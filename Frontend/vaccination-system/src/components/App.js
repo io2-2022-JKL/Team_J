@@ -39,6 +39,7 @@ function App() {
           <Route exact path='/doctor/incomingAppointments' element={<DoctorIncomingAppointments />} />
           <Route exact path='/doctor/timeSlots' element={<BrowsingTimeSLots />} />
           <Route exact path='/doctor/timeSlots/modify' element={<ModifyCreateTimeSlot />} />
+          <Route exact path='/doctor/timeSlots/create' element={<ModifyCreateTimeSlot />} />
           <Route exact path='/admin' element={<AdminMainPage />} />
           <Route exact path='/admin/patients' element={<PatientsPage />} />
           <Route exact path='/admin/patients/editPatient' element={<EditPatient />} />

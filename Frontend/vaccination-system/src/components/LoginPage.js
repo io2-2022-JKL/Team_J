@@ -105,10 +105,10 @@ export default function LoginPage() {
                 let doctorId = localStorage.getItem('userID');
                 console.log(doctorId)
                 let [doctorData, DoctorErr] = await getDoctorInfo(doctorId);
-                //console.log(doctorData)
-                //patientId = doctorData.patientId
-                //console.log(doctorData.patientId)
-                [data, err] = await getPatientInfo("690fb24f-1116-4a80-a2d4-479207be3706");
+                console.log(doctorData)
+                patientId = doctorData.patientId
+                console.log(patientId)
+                [data, err] = await getPatientInfo(patientId);
                 localStorage.setItem('userFirstName', data.firstName)
                 localStorage.setItem('userLastName', data.lastName)
 

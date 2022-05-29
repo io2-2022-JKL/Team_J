@@ -27,6 +27,7 @@ export default function BrowsingTimeSLots() {
     const [cancelError, setErrorCancel] = React.useState('');
     const [errorCancelState, setErrorCancelState] = React.useState(false);
     const [success, setSuccess] = React.useState(false);
+    let userID = localStorage.getItem('userID');
 
     React.useEffect(() => {
         const fetchData = async () => {
@@ -51,15 +52,16 @@ export default function BrowsingTimeSLots() {
     function renderRow(props) {
         const { index, style, data } = props;
         const item = data[index];
-        let date = item.from.substring(0,10)
-        let from = item.from.substring(12,16)
-        let to = item.to.substring(12,16)
+        let dateFrom = item.from.substring(0, 10)
+        let from = item.from.substring(12, 16)
+        let dateTo = item.to.substring(0, 10)
+        let to = item.to.substring(12, 16)
         return (
             <ListItem style={style} key={index} component="div" disablePadding divider>
-                <ListItemText primary={"Data: "+ date +" godziny: " + from + " - " + to} secondary={"Wolne: " + (item.isFree ? "Tak" : "Nie")} />
+                <ListItemText primary={"Data: " + dateFrom + " godziny: " + from + " - " + to} secondary={"Wolne: " + (item.isFree ? "Tak" : "Nie")} />
                 <Button
                     onClick={async () => {
-                        let userID = localStorage.getItem('userID');
+                        //let userID = localStorage.getItem('userID');
                         let timeSlotId = item.id;
                         const result = window.confirm("Czy na pewno chcesz anulować wizytę?", confirmOptionsInPolish);
                         if (result) {
@@ -81,10 +83,10 @@ export default function BrowsingTimeSLots() {
                 </Button>
                 <Button
                     onClick={async () => {
-                        let userID = localStorage.getItem('userID');
-                        console.log(userID)
+                        //let userID = localStorage.getItem('userID');
+                        //console.log(userID)
                         let timeSlotId = item.id;
-                        navigate("/doctor/timeSlots/modify", {state: {doctorId: userID, timeSlotId: timeSlotId, date: date, timeFrom: from, timeTo: to }})
+                        navigate("/doctor/timeSlots/modify", { state: { doctorId: userID, timeSlotId: timeSlotId, dateFrom: dateFrom, timeFrom: from, dateTo: dateTo, timeTo: to, action: "modify" } })
                     }}
                 >
                     Modyfiukuj okno
@@ -123,7 +125,14 @@ export default function BrowsingTimeSLots() {
                         >
                             {renderRow}
                         </FixedSizeList>
-
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            sx={{ mt: 3, mb: 2 }}
+                            onClick={() => { navigate("/doctor/timeSlots/create", {state:{doctorId: userID, action:"create"}}) }}
+                        >
+                            Dodaj nowe okno
+                        </Button>
                         <Button
                             type="submit"
                             variant="contained"

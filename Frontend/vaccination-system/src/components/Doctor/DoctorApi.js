@@ -77,3 +77,27 @@ export async function modifyTimeSlots(doctorId,timeSlotId,timeFrom,timeTo) {
         return error.code;
     }
 }
+
+export async function createTimeSlots(doctorId,timeFrom,timeTo,duration) {
+    let response;
+    let errCode = '200';
+    try {
+        response = await axios({
+            method: 'post',
+            url: SYSTEM_SZCZEPIEN_URL + '/doctor/timeSlots/create/' + doctorId,
+            timeout: 4000,
+            data:
+            {
+                windowBegin: timeFrom,
+                windowEnd: timeTo,
+                timeSlotDurationInMinutes: duration 
+            }
+        });
+        return errCode;
+    } catch (error) {
+        console.error(error.message);
+        if (error.response != null)
+            return error.response.status.toString();
+        return error.code;
+    }
+}
