@@ -11,13 +11,13 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import clsx from 'clsx';
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
 import Avatar from '@mui/material/Avatar';
-import { confirm } from "react-confirm-box";
 import DataDisplayArray from '../DataDisplayArray';
-import { deleteDoctor, getDoctorsData, getPatientsData, getRandomPatientData } from './AdminApi';
+import { deleteDoctor, getDoctorsData } from './AdminApi';
 import FilteringHelepers from '../../tools/FilteringHelepers';
-import Autocomplete from '@mui/material/Autocomplete';
 import { activeOptionsEmptyPossible } from '../../tools/ActiveOptions';
-import {ErrorSnackbar} from '../../tools/Snackbars';
+import { ErrorSnackbar } from '../Snackbars';
+import DropDownSelect from '../DropDownSelect';
+import { citiesEmptyPossible } from '../../api/Cities';
 
 const theme = createTheme();
 
@@ -150,20 +150,18 @@ export default function DoctorsPage() {
 
     const deactivateDoctor = React.useCallback(
         (id) => async () => {
-            let error = await deleteDoctor(id); 
+            let error = await deleteDoctor(id);
             console.log(error)
-            if(error !== '200')
-            {
+            if (error !== '200') {
                 setError(error)
                 setErrorState(true)
             }
-            else
-            {
-               setTimeout(() => {
-                setRows((prevRows) => prevRows.map((row) => row.id === id ? {...row,active: false} : row));
-                setFilteredRows((prevRows) => prevRows.map((row) => row.id === id ? {...row,active: false}: row));    
-                }); 
-            } 
+            else {
+                setTimeout(() => {
+                    setRows((prevRows) => prevRows.map((row) => row.id === id ? { ...row, active: false } : row));
+                    setFilteredRows((prevRows) => prevRows.map((row) => row.id === id ? { ...row, active: false } : row));
+                });
+            }
         },
         [],
     );
@@ -189,19 +187,16 @@ export default function DoctorsPage() {
         result = FilteringHelepers.filterDate(result, data.get('dateOfBirthFilter'));
         result = FilteringHelepers.filterPhoneNumber(result, data.get('phoneNumberFilter'));
         result = FilteringHelepers.filterActive(result, data.get('activeFilter'));
-        result = FilteringHelepers.filterId(result, data.get('vaccinationCenterIdFilter'));
+        result = FilteringHelepers.filterVaccinationCenterId(result, data.get('vaccinationCenterIdFilter'));
         result = FilteringHelepers.filterName(result, data.get('nameFilter'));
-        result = FilteringHelepers.filterName(result, data.get('cityFilter'));
-        result = FilteringHelepers.filterName(result, data.get('vaccinationCenterIdFilter'));
+        result = FilteringHelepers.filterCity(result, data.get('cityFilter'));
+        result = FilteringHelepers.filterStreet(result, data.get('streetFilter'));
         setFilteredRows(result);
     };
 
 
     const [option, setOption] = React.useState('');
-
-    const handleChange = (event) => {
-        setOption(event.target.value);
-    };
+    const [selectedCity, setSelectedCity] = React.useState('')
 
     return (
         <ThemeProvider theme={theme}>
@@ -289,24 +284,7 @@ export default function DoctorsPage() {
                                     />
                                 </Grid>
                                 <Grid item xs={3}>
-                                    <TextField
-                                        fullWidth
-                                        id="activeFilter"
-                                        select
-                                        label="Aktywny"
-                                        name="activeFilter"
-                                        value={option}
-                                        onChange={handleChange}
-                                        SelectProps={{
-                                            native: true,
-                                        }}
-                                    >
-                                        {activeOptionsEmptyPossible.map((option) => (
-                                            <option key={option.value} value={option.value}>
-                                                {option.label}
-                                            </option>
-                                        ))}
-                                    </TextField>
+                                    {DropDownSelect("activeFilter", "Aktywny", activeOptionsEmptyPossible, option, setOption)}
                                 </Grid>
                                 <Grid item xs={3}>
                                     <TextField
@@ -325,12 +303,7 @@ export default function DoctorsPage() {
                                     />
                                 </Grid>
                                 <Grid item xs={3}>
-                                    <TextField
-                                        fullWidth
-                                        id="city"
-                                        label="Miasto Centrum Szczepień"
-                                        name="cityFilter"
-                                    />
+                                    {DropDownSelect("cityFilter", "Miasto Centrum Szczepień", citiesEmptyPossible, selectedCity, setSelectedCity)}
                                 </Grid>
                                 <Grid item xs={3}>
                                     <TextField
@@ -367,9 +340,9 @@ export default function DoctorsPage() {
                             Powrót
                         </Button>
                         <ErrorSnackbar
-                            error = {error}
-                            errorState = {errorState}
-                            setErrorState = {setErrorState}
+                            error={error}
+                            errorState={errorState}
+                            setErrorState={setErrorState}
                         />
                     </Box>
                 </CssBaseline>

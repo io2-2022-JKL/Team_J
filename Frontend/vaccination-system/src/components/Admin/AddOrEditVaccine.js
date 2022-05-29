@@ -12,11 +12,14 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { addVaccine, editVaccine } from './AdminApi';
 import ValidationHelpers from '../../tools/ValidationHelpers';
 import { activeOptions } from '../../tools/ActiveOptions';
-import {ErrorSnackbar,SuccessSnackbar} from '../../tools/Snackbars';
+import { ErrorSnackbar, SuccessSnackbar } from '../Snackbars';
+import DropDownSelect from '../DropDownSelect';
+import getViruses, { viruses } from '../../api/Viruses';
 
 const theme = createTheme();
 
 export default function AddOrEditVaccine() {
+    const location = useLocation();
     const navigate = useNavigate();
     const [nODErrorState, setNODErrorState] = useState(false);
     const [nODError, setNODError] = useState('');
@@ -43,7 +46,17 @@ export default function AddOrEditVaccine() {
     const [operationError, setOperationError] = useState('');
     const [operationErrorState, setOperationErrorState] = useState(false);
     const [success, setSuccess] = useState(false);
-    const location = useLocation();
+    const [selectedVirus, setSelectedVirus] = useState()
+
+    React.useEffect(async () => {
+        /*let [data, err] = await getViruses();
+        console.log(data.map(virus => { return { value: virus, label: virus } }))
+        if (data != null) {
+            setViruses(data);
+        }
+
+        setSelectedVirus(location.state != null ? location.state.action == "edit" ? location.state.virusName : data[0] : data[0])*/
+    }, [])
 
     React.useEffect(() => {
         if (maxDBD >= 0 && maxDBD < minDBD) {
@@ -72,6 +85,8 @@ export default function AddOrEditVaccine() {
             setMinPAError2("");
         }
 
+
+        //console.log(JSON.parse(localStorage.getItem('viruses')).map(virus => ({ value: virus.virus, label: virus.virus })))
     }, [minDBD, maxDBD, minPA, maxPA]);
 
     const handleSubmit = async (event) => {
@@ -105,10 +120,6 @@ export default function AddOrEditVaccine() {
     };
 
     const [activeOption, setActiveOption] = React.useState(location.state != null ? location.state.active ? 'aktywny' : 'nieaktywny' : '');
-
-    const handleChange = (event) => {
-        setActiveOption(event.target.value);
-    };
 
     return (
         <ThemeProvider theme={theme}>
@@ -193,14 +204,7 @@ export default function AddOrEditVaccine() {
                                 />
                             </Grid>
                             <Grid item xs={12}>
-                                <TextField
-                                    defaultValue={location.state != null ? location.state.action == "edit" ? location.state.virusName : null : null}
-                                    name="virus"
-                                    required
-                                    fullWidth
-                                    id="virus"
-                                    label="Nazwa wirusa"
-                                />
+                                {viruses && DropDownSelect("virus", "Nazwa wirusa", viruses, selectedVirus, setSelectedVirus)}
                             </Grid>
                             <Grid item xs={12}>
                                 <TextField
@@ -235,24 +239,7 @@ export default function AddOrEditVaccine() {
                                 />
                             </Grid>
                             <Grid item xs={12}>
-                                <TextField
-                                    fullWidth
-                                    id="active"
-                                    select
-                                    label="Aktywny"
-                                    name="active"
-                                    value={activeOption}
-                                    onChange={handleChange}
-                                    SelectProps={{
-                                        native: true,
-                                    }}
-                                >
-                                    {activeOptions.map((option) => (
-                                        <option key={option.value} value={option.value}>
-                                            {option.label}
-                                        </option>
-                                    ))}
-                                </TextField>
+                                {DropDownSelect("active", "Aktywny", activeOptions, activeOption, setActiveOption)}
                             </Grid>
                         </Grid>
                         <Button
@@ -274,13 +261,13 @@ export default function AddOrEditVaccine() {
                         Powrót
                     </Button>
                     <ErrorSnackbar
-                        error = {operationError}
-                        errorState = {operationErrorState}
-                        setErrorState = {setOperationErrorState}
+                        error={operationError}
+                        errorState={operationErrorState}
+                        setErrorState={setOperationErrorState}
                     />
                     <SuccessSnackbar
-                        success = {success}
-                        setSuccess = {setSuccess}
+                        success={success}
+                        setSuccess={setSuccess}
                     />
                 </Box>
             </Container>

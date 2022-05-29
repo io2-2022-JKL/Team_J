@@ -36,7 +36,7 @@ export default function DoctorMainPage() {
                             <AccountBoxRoundedIcon />
                         </Avatar>
                         <Typography component="h1" variant="h4">
-                            Lekarz {localStorage.getItem('userFirstName') != null && localStorage.getItem('userLastName') != null
+                            Witaj {localStorage.getItem('userFirstName') != null && localStorage.getItem('userLastName') != null
                                 && (localStorage.getItem('userFirstName') + ' ' + localStorage.getItem('userLastName'))}
                         </Typography>
                         <Typography component="h1" variant="h6">

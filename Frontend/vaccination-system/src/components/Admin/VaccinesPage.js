@@ -6,19 +6,18 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import { useNavigate } from "react-router-dom";
 import Grid from "@material-ui/core/Grid";
-import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid';
+import { GridActionsCellItem } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
 import clsx from 'clsx';
 import VaccinesIcon from '@mui/icons-material/Vaccines';
 import Avatar from '@mui/material/Avatar';
-import { confirm } from "react-confirm-box";
 import FilteringHelepers from '../../tools/FilteringHelepers';
 import DataDisplayArray from '../DataDisplayArray';
-import { getVaccinesData,deleteVaccine } from './AdminApi';
-import Snackbar from '@mui/material/Snackbar';
+import { getVaccinesData, deleteVaccine } from './AdminApi';
 import MuiAlert from '@mui/material/Alert';
-import LoginHelpers from '../../tools/LoginHelpers';
-import {ErrorSnackbar} from '../../tools/Snackbars';
+import { ErrorSnackbar } from '../Snackbars';
+import DropDownSelect from '../DropDownSelect';
+import { virusesEmptyPossible } from '../../api/Viruses';
 
 const theme = createTheme();
 
@@ -129,8 +128,22 @@ export default function DoctorsPage() {
             setLoading(true);
             let [data, err] = await getVaccinesData();
             if (data != null) {
-                setRows(data);
-                setFilteredRows(data)
+                const result = data.map(obj => {
+                    return {
+                        id: obj.vaccineId,
+                        company: obj.company,
+                        name: obj.name,
+                        numberOfDoses: obj.numberOfDoses,
+                        minDaysBetweenDoses: obj.minDaysBetweenDoses,
+                        maxDaysBetweenDoses: obj.maxDaysBetweenDoses,
+                        virus: obj.virus,
+                        minPatientAge: obj.minPatientAge,
+                        maxPatientAge: obj.maxPatientAge,
+                        active: obj.active
+                    }
+                })
+                setRows(result);
+                setFilteredRows(result)
             }
             else {
                 setError(err);
@@ -144,20 +157,18 @@ export default function DoctorsPage() {
 
     const deactivateVaccine = React.useCallback(
         (id) => async () => {
-            let error = await deleteVaccine(id); 
+            let error = await deleteVaccine(id);
             console.log(error)
-            if(error !== '200')
-            {
+            if (error !== '200') {
                 setError(error)
                 setErrorState(true)
             }
-            else
-            {
-               setTimeout(() => {
-                setRows((prevRows) => prevRows.map((row) => row.id === id ? {...row,active: false} : row));
-                setFilteredRows((prevRows) => prevRows.map((row) => row.id === id ? {...row,active: false}: row));    
-                }); 
-            } 
+            else {
+                setTimeout(() => {
+                    setRows((prevRows) => prevRows.map((row) => row.id === id ? { ...row, active: false } : row));
+                    setFilteredRows((prevRows) => prevRows.map((row) => row.id === id ? { ...row, active: false } : row));
+                });
+            }
         },
         [],
     );
@@ -178,13 +189,9 @@ export default function DoctorsPage() {
         result = FilteringHelepers.filterMaxPatientAge(result, data.get('maxPatientAgeFilter'));
         setFilteredRows(result);
     };
-    const [currency, setCurrency] = React.useState('');
+    const [activeOption, setActiveOption] = React.useState('');
 
-    const handleChange = (event) => {
-        setCurrency(event.target.value);
-    };
-
-    const currencies = [
+    const activeOptions = [
         {
             value: 'aktywny',
             label: 'aktywny',
@@ -198,7 +205,9 @@ export default function DoctorsPage() {
             label: '',
         }
     ];
-    
+
+    const [virus, setVirus] = React.useState('')
+
     function handleRowClick(row) {
         navigate('/admin/vaccines/editVaccine', {
             state: {
@@ -241,7 +250,7 @@ export default function DoctorsPage() {
                                 <Grid item>
                                     <TextField
                                         id="vaccineIdFilter"
-                                        label="vaccineID"
+                                        label="ID"
                                         name="vaccineIdFilter"
                                     />
                                 </Grid>
@@ -281,11 +290,7 @@ export default function DoctorsPage() {
                                     />
                                 </Grid>
                                 <Grid item>
-                                    <TextField
-                                        id="virusFilter"
-                                        label="Nazwa wirusa"
-                                        name="virusFilter"
-                                    />
+                                    {DropDownSelect("virusFilter", "Nazwa wirusa", virusesEmptyPossible, virus, setVirus)}
                                 </Grid>
                                 <Grid item>
                                     <TextField
@@ -302,24 +307,7 @@ export default function DoctorsPage() {
                                     />
                                 </Grid>
                                 <Grid item >
-                                    <TextField
-                                        fullWidth
-                                        id="activeFilter"
-                                        select
-                                        label="Aktywny"
-                                        name="activeFilter"
-                                        value={currency}
-                                        onChange={handleChange}
-                                        SelectProps={{
-                                            native: true,
-                                        }}
-                                    >
-                                        {currencies.map((option) => (
-                                            <option key={option.value} value={option.value}>
-                                                {option.label}
-                                            </option>
-                                        ))}
-                                    </TextField>
+                                    {DropDownSelect("activeFilter", "Aktywny", activeOptions, activeOption, setActiveOption)}
                                 </Grid>
                             </Grid>
                             <Button variant='outlined' onClick={() => { navigate("/admin/vaccines/addVaccine", { state: { action: "add" } }) }}>
@@ -343,20 +331,13 @@ export default function DoctorsPage() {
                             Powrót
                         </Button>
                         <ErrorSnackbar
-                            error = {error}
-                            errorState = {errorState}
-                            setErrorState = {setErrorState}
+                            error={error}
+                            errorState={errorState}
+                            setErrorState={setErrorState}
                         />
                     </Box>
                 </CssBaseline>
             </Container >
         </ThemeProvider >
     );
-}
-
-const confirmOptionsInPolish = {
-    labels: {
-        confirmable: "Tak",
-        cancellable: "Nie"
-    }
 }

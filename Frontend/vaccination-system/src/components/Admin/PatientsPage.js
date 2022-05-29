@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Button from '@mui/material/Button';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { Container, CssBaseline, Snackbar, TextField } from '@mui/material';
+import { Container, CssBaseline, TextField } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import { useLocation, useNavigate } from "react-router-dom";
@@ -19,7 +19,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import { activeOptionsEmptyPossible } from '../../tools/ActiveOptions';
-import {ErrorSnackbar} from '../../tools/Snackbars';
+import { ErrorSnackbar } from '../Snackbars';
 
 const theme = createTheme();
 
@@ -130,20 +130,18 @@ export default function PatientsPage() {
 
     const deactivatePatient = React.useCallback(
         (id) => async () => {
-            let error = await deletePatient(id); 
+            let error = await deletePatient(id);
             console.log(error)
-            if(error !== '200')
-            {
+            if (error !== '200') {
                 setSnackBarMessage(error)
                 setOpenSnackBar(true)
             }
-            else
-            {
-               setTimeout(() => {
-                setRows((prevRows) => prevRows.map((row) => row.id === id ? {...row,active: false} : row));
-                setFilteredRows((prevRows) => prevRows.map((row) => row.id === id ? {...row,active: false}: row));    
-                }); 
-            } 
+            else {
+                setTimeout(() => {
+                    setRows((prevRows) => prevRows.map((row) => row.id === id ? { ...row, active: false } : row));
+                    setFilteredRows((prevRows) => prevRows.map((row) => row.id === id ? { ...row, active: false } : row));
+                });
+            }
         },
         [],
     );
@@ -370,9 +368,9 @@ export default function PatientsPage() {
                         </DialogActions>
                     </Dialog>
                     <ErrorSnackbar
-                        error = {snackBarMessage}
-                        errorState = {openSnackBar}
-                        setErrorState = {setOpenSnackBar}
+                        error={snackBarMessage}
+                        errorState={openSnackBar}
+                        setErrorState={setOpenSnackBar}
                     />
                 </CssBaseline>
             </Container >

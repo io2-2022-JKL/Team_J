@@ -1,15 +1,15 @@
-export default async function getViruses() {
-    let response;
-    let errCode = '200';
-    try {
-        response = await axios({
-            method: 'get',
-            url: SYSTEM_SZCZEPIEN_URL + '/viruses',
-        });
-        return [response.data, errCode];
+import { getRequest } from "./Api";
 
-    } catch (error) {
-        console.error(error.message);
-        return [response, error.response.status.toString()];
-    }
+export default async function getViruses() {
+    return getRequest('/viruses')
 }
+
+export async function downloadViruses() {
+    const [data, err] = await getViruses()
+    viruses = data.map(virus => ({ value: virus.virus, label: virus.virus }))
+    virusesEmptyPossible = data.map(virus => ({ value: virus.virus, label: virus.virus }))
+    virusesEmptyPossible.push({ value: '', label: '' })
+}
+
+export var viruses = []
+export var virusesEmptyPossible = []

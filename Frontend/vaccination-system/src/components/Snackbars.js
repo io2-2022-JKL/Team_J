@@ -3,7 +3,7 @@ import MuiAlert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
-import LoginHelpers from './LoginHelpers';
+import LoginHelpers from '../tools/LoginHelpers';
 
 const Alert = React.forwardRef(function Alert(props, ref) {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -60,7 +60,7 @@ export function SuccessSnackbar(props) {
         }
         props.setSuccess(false);
     };
-    
+
     return (
         <Snackbar open={props.success} autoHideDuration={2000} onClose={handleClose2}>
             <Alert onClose={handleClose2} severity="success" sx={{ width: '100%' }}>
