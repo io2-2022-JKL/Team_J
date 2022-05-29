@@ -52,9 +52,9 @@ export default function BrowsingTimeSLots() {
         const { index, style, data } = props;
         const item = data[index];
         let dateFrom = item.from.substring(0, 10)
-        let from = item.from.substring(12, 16)
+        let from = item.from.substring(11, 16)
         let dateTo = item.to.substring(0, 10)
-        let to = item.to.substring(12, 16)
+        let to = item.to.substring(11, 16)
         return (
             <ListItem style={style} key={index} component="div" disablePadding divider>
                 <ListItemText primary={"Data: " + dateFrom + " godziny: " + from + " - " + to} secondary={"Wolne: " + (item.isFree ? "Tak" : "Nie")} />
