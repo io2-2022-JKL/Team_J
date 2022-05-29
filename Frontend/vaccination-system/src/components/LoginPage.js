@@ -81,6 +81,7 @@ export default function LoginPage() {
 
         localStorage.setItem('userID', response.data.userId)
 
+
         axios.defaults.headers.common['authorization'] = 'Bearer ' + response.headers.authorization
 
         setLoading(false);
@@ -89,6 +90,7 @@ export default function LoginPage() {
         console.log(response.data.userType)
         let [data, err] = [];
         let patientId;
+
         switch (response.data.userType) {
             case "admin":
                 navigate("/admin");
@@ -101,6 +103,7 @@ export default function LoginPage() {
                 navigate("/patient");
                 break;
             case "doctor":
+
                 localStorage.setItem('isDoctor', true)
                 let doctorId = localStorage.getItem('userID');
                 console.log(doctorId)
@@ -113,6 +116,7 @@ export default function LoginPage() {
                 break;
             default:
                 break;
+
         }
     }
 

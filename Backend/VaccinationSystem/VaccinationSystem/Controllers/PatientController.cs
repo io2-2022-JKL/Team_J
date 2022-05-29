@@ -361,6 +361,7 @@ namespace VaccinationSystem.Controllers
             }
             return result;
         }
+
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]

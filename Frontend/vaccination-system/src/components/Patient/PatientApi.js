@@ -123,6 +123,7 @@ export async function cancelAppointment(patientId, appointmentId) {
             return error.response.status.toString();
         return error.code;
     }
+
 }
 
 export async function getCertificates(patientId) {

@@ -98,6 +98,7 @@ export default function FilterTimeSlots() {
         })[0])
     }
 
+
     const handleVaccinesClose = () => {
         setOpenVaccinesDialog(false)
     }
@@ -127,6 +128,7 @@ export default function FilterTimeSlots() {
         setOpenConfrimDialog(false)
     }
 
+
     const bookTimeSlotTrue = async () => {
         const errCode = await bookTimeSlot(timeSlot, vaccine)
 
@@ -145,10 +147,12 @@ export default function FilterTimeSlots() {
     }
 
     function getDayFromDate(date) {
+
         return date.substring(0, 10)
     }
 
     function divideCenterIntoDays(center) {
+
         const days = center.reduce((days, item) => {
             const day = getDayFromDate(item.from)
             const group = (days[day] || []);
@@ -165,6 +169,7 @@ export default function FilterTimeSlots() {
     }
 
     const submitSearch = async () => {
+
         const [data, code] = await getFreeTimeSlots(city, dateFrom, dateTo, virus)
 
         if (code != "200") {
@@ -183,14 +188,18 @@ export default function FilterTimeSlots() {
         let centersDays = []
 
         for (let c in centers) {
+
             let days = divideCenterIntoDays(centers[c]);
             for (let d in days) {
+
                 centersDays.push({ d: days[d] })
             }
         }
 
+
         setDaysInCenters(centersDays)
         setShowDaysList(true);
+
     }
 
     function getWeekDayNumberForDate(date) {
