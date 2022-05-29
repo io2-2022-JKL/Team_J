@@ -663,10 +663,11 @@ namespace VaccinationSystem.Controllers
 
             var appointment = _context.Appointments.Where(ap => ap.Id == apId && ap.State == AppointmentState.Planned)
                 .Include(ap => ap.Patient).Include(ap => ap.TimeSlot).Include(ap => ap.Vaccine).SingleOrDefault();
+            if (appointment == null) return null;
             var patient = _context.Patients.Where(p => p.Id == appointment.PatientId).FirstOrDefault();
             var timeSlot = _context.TimeSlots.Where(ts => ts.Id == appointment.TimeSlotId).FirstOrDefault();
             var vaccine = _context.Vaccines.Where(v => v.Id == appointment.VaccineId).FirstOrDefault();
-            if (appointment == null || timeSlot.Active == false ||
+            if (timeSlot.Active == false ||
                 vaccine.Active == false || timeSlot.DoctorId != docId) return null;
 
             DoctorConfirmVaccinationResponseDTO result = new DoctorConfirmVaccinationResponseDTO();
@@ -742,10 +743,11 @@ namespace VaccinationSystem.Controllers
 
             var appointment = _context.Appointments.Where(ap => ap.Id == apId && ap.State == AppointmentState.Planned)
                 .Include(ap => ap.TimeSlot).Include(ap => ap.Vaccine).Include(ap => ap.Patient).SingleOrDefault();
+            if (appointment == null) return false;
             var patient = _context.Patients.Where(p => p.Id == appointment.PatientId).FirstOrDefault();
             var timeSlot = _context.TimeSlots.Where(ts => ts.Id == appointment.TimeSlotId).FirstOrDefault();
             var vaccine = _context.Vaccines.Where(v => v.Id == appointment.VaccineId).FirstOrDefault();
-            if (appointment == null || timeSlot.Active == false ||
+            if (timeSlot.Active == false ||
                 vaccine.Active == false || timeSlot.DoctorId != docId) return false;
             appointment.State = AppointmentState.Cancelled; // At least I assume so
             _context.SaveChanges();
@@ -808,10 +810,11 @@ namespace VaccinationSystem.Controllers
 
             var appointment = _context.Appointments.Where(ap => ap.Id == apId && ap.State == AppointmentState.Finished && ap.CertifyState == CertifyState.LastNotCertified
             && ap.VaccineBatchNumber != null).Include(ap => ap.TimeSlot).Include(ap => ap.Patient).Include(ap => ap.Vaccine).SingleOrDefault();
+            if (appointment == null) return false;
             var patient = _context.Patients.Where(p => p.Id == appointment.PatientId).FirstOrDefault();
             var timeSlot = _context.TimeSlots.Where(ts => ts.Id == appointment.TimeSlotId).FirstOrDefault();
             var vaccine = _context.Vaccines.Where(v => v.Id == appointment.VaccineId).FirstOrDefault();
-            if (appointment == null || timeSlot.Active == false || patient.Active == false ||
+            if (timeSlot.Active == false || patient.Active == false ||
                 vaccine.Active == false || timeSlot.DoctorId != docId) return false;
             Certificate newCert = new Certificate()
             {
