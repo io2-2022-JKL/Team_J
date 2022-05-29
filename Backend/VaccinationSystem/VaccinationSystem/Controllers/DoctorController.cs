@@ -12,7 +12,6 @@ using VaccinationSystem.Models;
 using System.Data.Entity;
 using Microsoft.AspNetCore.Authorization;
 using VaccinationSystem.DTO.Errors;
-using EmailService.Models;
 using PdfSharp.Pdf;
 using PdfSharp;
 using PdfSharp.Drawing;
@@ -25,6 +24,7 @@ using QRCoder;
 using System.Drawing;
 using System.IO;
 using Microsoft.Extensions.Configuration;
+using VaccinationSystem.MailStuff;
 
 namespace VaccinationSystem.Controllers
 {

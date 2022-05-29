@@ -8,7 +8,7 @@ using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Options;
 
-namespace EmailService.Models
+namespace VaccinationSystem.MailStuff
 {
     public class MailService : IMailService
     {

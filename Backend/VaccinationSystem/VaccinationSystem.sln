@@ -9,8 +9,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VaccinationSystem.UnitTests
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer", "IdentityServer\IdentityServer.csproj", "{995EE3FE-471C-4AC6-ABF1-04DF2DAE445F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmailService", "EmailService\EmailService.csproj", "{2FFA02A6-29C6-495A-A514-E9EF25E9E1D4}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,10 +27,6 @@ Global
 		{995EE3FE-471C-4AC6-ABF1-04DF2DAE445F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{995EE3FE-471C-4AC6-ABF1-04DF2DAE445F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{995EE3FE-471C-4AC6-ABF1-04DF2DAE445F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2FFA02A6-29C6-495A-A514-E9EF25E9E1D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2FFA02A6-29C6-495A-A514-E9EF25E9E1D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2FFA02A6-29C6-495A-A514-E9EF25E9E1D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2FFA02A6-29C6-495A-A514-E9EF25E9E1D4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

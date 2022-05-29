@@ -17,7 +17,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.OpenApi.Models;
 using System;
 using Microsoft.Net.Http.Headers;
-using EmailService.Models;
+using VaccinationSystem.MailStuff;
 
 namespace VaccinationSystem
 {
