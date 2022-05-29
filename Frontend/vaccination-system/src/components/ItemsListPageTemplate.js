@@ -9,7 +9,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { blue } from '@mui/material/colors';
 import SummarizeIcon from '@mui/icons-material/Summarize';
 import Avatar from '@mui/material/Avatar';
-import { ErrorSnackbar } from './Snackbars';
+import { ErrorSnackbar, SuccessSnackbar } from './Snackbars';
 
 const theme = createTheme();
 
@@ -73,6 +73,15 @@ export default function ItemListPageTemplate(props) //title, data, renderRow, re
                         error={props.error}
                         errorState={props.errorState}
                         setErrorState={props.setErrorState}
+                    />
+                    <ErrorSnackbar
+                        error={props.error2}
+                        errorState={props.errorState2}
+                        setErrorState={props.setErrorState2}
+                    />
+                    <SuccessSnackbar
+                        success = {props.success}
+                        setSuccess = {props.setSuccess}
                     />
                 </CssBaseline>
             </Container>
