@@ -20,6 +20,8 @@ import { SYSTEM_SZCZEPIEN_URL } from '../api/Api';
 import ValidationHelpers from '../tools/ValidationHelpers';
 import { getPatientInfo } from './Patient/PatientApi';
 import { getDoctorInfo } from './Doctor/DoctorApi';
+import getViruses from '../api/Viruses';
+import getCities from '../api/Cities';
 
 const theme = createTheme();
 
@@ -78,6 +80,11 @@ export default function LoginPage() {
             setPasswordErrorState(true)
             setLoading(false)
         }
+
+        const [viruses, virusesError] = await getViruses();
+        localStorage.setItem('viruses', JSON.stringify(viruses))
+        const [cities, citiesError] = await getCities();
+        localStorage.setItem('cities', JSON.stringify(cities))
 
         localStorage.setItem('userID', response.data.userId)
 

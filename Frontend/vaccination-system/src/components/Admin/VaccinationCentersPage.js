@@ -17,10 +17,12 @@ import DataDisplayArray from '../DataDisplayArray';
 import { getVaccinationCentersData, deleteVaccinationCenter } from './AdminApi';
 import { activeOptionsEmptyPossible } from '../../tools/ActiveOptions';
 import { ErrorSnackbar } from '../Snackbars';
+import DropDownSelect from '../DropDownSelect';
 
 const theme = createTheme();
 
 const daysOfTheWeek = ["pon", "wt", "śr", "czw", "pt", "sob", "niedz"]
+
 
 export default function VaccinationCentersPage() {
 
@@ -118,6 +120,8 @@ export default function VaccinationCentersPage() {
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState('');
     const [errorState, setErrorState] = React.useState(false);
+    const cities = JSON.parse(localStorage.getItem('cities')).map(city => ({ value: city.city, label: city.city }))
+    const [selectedCity, setSelectedCity] = React.useState('')
 
     React.useEffect(() => {
         const fetchData = async () => {
@@ -168,10 +172,10 @@ export default function VaccinationCentersPage() {
         console.log(result);
         setFilteredRows(result);
     };
-    const [currency, setCurrency] = React.useState('');
+    const [activeOption, setActiveOption] = React.useState('');
 
     const handleChange = (event) => {
-        setCurrency(event.target.value);
+        setActiveOption(event.target.value);
     };
 
     function handleRowClick(row) {
@@ -227,11 +231,8 @@ export default function VaccinationCentersPage() {
                                     />
                                 </Grid>
                                 <Grid item>
-                                    <TextField
-                                        id="cityFilter"
-                                        label="Miasto"
-                                        name="cityFilter"
-                                    />
+
+                                    {DropDownSelect("cityFilter", "Miasto", cities, selectedCity, setSelectedCity)}
                                 </Grid>
                                 <Grid item>
                                     <TextField
@@ -241,24 +242,7 @@ export default function VaccinationCentersPage() {
                                     />
                                 </Grid>
                                 <Grid item >
-                                    <TextField
-                                        fullWidth
-                                        id="activeFilter"
-                                        select
-                                        label="Aktywny"
-                                        name="activeFilter"
-                                        value={currency}
-                                        onChange={handleChange}
-                                        SelectProps={{
-                                            native: true,
-                                        }}
-                                    >
-                                        {activeOptionsEmptyPossible.map((option) => (
-                                            <option key={option.value} value={option.value}>
-                                                {option.label}
-                                            </option>
-                                        ))}
-                                    </TextField>
+                                    {DropDownSelect("activeFilter", "Aktywny", activeOptionsEmptyPossible, activeOption, setActiveOption)}
                                 </Grid>
                             </Grid>
                             <Button variant='outlined' onClick={() => { navigate("/admin/vaccinationCenters/addVaccinationCenter", { state: { action: "add" } }) }}>

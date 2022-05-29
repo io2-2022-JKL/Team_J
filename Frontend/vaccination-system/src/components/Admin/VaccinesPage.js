@@ -253,7 +253,7 @@ export default function DoctorsPage() {
                                 <Grid item>
                                     <TextField
                                         id="vaccineIdFilter"
-                                        label="vaccineID"
+                                        label="ID"
                                         name="vaccineIdFilter"
                                     />
                                 </Grid>
@@ -364,11 +364,4 @@ export default function DoctorsPage() {
             </Container >
         </ThemeProvider >
     );
-}
-
-const confirmOptionsInPolish = {
-    labels: {
-        confirmable: "Tak",
-        cancellable: "Nie"
-    }
 }
