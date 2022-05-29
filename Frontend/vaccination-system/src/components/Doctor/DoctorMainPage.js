@@ -63,6 +63,7 @@ export default function DoctorMainPage() {
                             Przeglądaj przyszłe szczepienia
                         </Button>
                         <Button
+                            name="certificatesButton"
                             type="submit"
                             fullWidth
                             variant="contained"

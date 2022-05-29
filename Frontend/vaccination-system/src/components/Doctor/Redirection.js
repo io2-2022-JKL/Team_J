@@ -1,10 +1,7 @@
 import * as React from 'react';
-import Button from '@mui/material/Button';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { Container, CssBaseline, Tab, Tabs } from '@mui/material';
-import AccountBoxRoundedIcon from '@mui/icons-material/AccountBoxRounded';
+import { createTheme } from '@mui/material/styles';
+import { Tab, Tabs } from '@mui/material';
 import Typography from '@mui/material/Typography';
-import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import { useNavigate } from "react-router-dom";
 import LoginHelpers from '../../tools/LoginHelpers';
@@ -67,10 +64,10 @@ export default function Redirection() {
                     <Tab label="Strona lekarza" {...a11yProps(1)} />
                 </Tabs>
             </Box>
-            <TabPanel value={value} index={0}>
+            <TabPanel name="patientTab" value={value} index={0}>
                 <PatientMainPage />
             </TabPanel>
-            <TabPanel value={value} index={1}>
+            <TabPanel name="doctorTab" value={value} index={1}>
                 <DoctorMainPage />
             </TabPanel>
         </Box>

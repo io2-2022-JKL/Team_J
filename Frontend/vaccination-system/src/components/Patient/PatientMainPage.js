@@ -90,6 +90,7 @@ export default function PatientMainPage() {
                             Twoje certyfikaty szczepień
                         </Button>
                         <Button
+                            name="logoutButton"
                             type="submit"
                             fullWidth
                             variant="contained"
