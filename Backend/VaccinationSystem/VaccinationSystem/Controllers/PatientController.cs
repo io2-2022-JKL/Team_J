@@ -296,16 +296,20 @@ namespace VaccinationSystem.Controllers
             _context.Appointments.Add(appointment);
             timeSlot.IsFree = false;
             _context.SaveChanges();
-            MailRequest request = new MailRequest();
-            request.Subject = "Visit booking successful";
-            request.Body = "You have successfully booked a visit!";
-            try
+            if(_mailService != null)
             {
-                _mailService.SendEmailAsync(request);
-            }
-            catch (Exception ex)
-            {
-                throw;
+                MailRequest request = new MailRequest();
+                request.Subject = "Visit booking successful";
+                request.Body = "You have successfully booked a visit!";
+                request.ToEmail = patient.Mail;
+                try
+                {
+                    _mailService.SendEmailAsync(request);
+                }
+                catch
+                {
+                    throw;
+                }
             }
             return true;
         }
@@ -423,6 +427,21 @@ namespace VaccinationSystem.Controllers
             appointment.State = Models.AppointmentState.Cancelled;
             timeSlot.IsFree = true;
             this._context.SaveChanges();
+            if (_mailService != null)
+            {
+                MailRequest request = new MailRequest();
+                request.Subject = "Visit cancellation successful";
+                request.Body = "You have successfully cancelled a visit!";
+                request.ToEmail = checkIfPatientIsActive.Mail;
+                try
+                {
+                    _mailService.SendEmailAsync(request);
+                }
+                catch
+                {
+                    throw;
+                } 
+            }
             return true;
         }
         [ProducesResponseType(typeof(IEnumerable<FormerAppointmentDTO>), 200)]
