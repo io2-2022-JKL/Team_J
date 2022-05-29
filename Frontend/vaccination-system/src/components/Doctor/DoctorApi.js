@@ -55,7 +55,7 @@ export async function getTimeSlots(doctorId) {
     }
 }
 
-export async function modifyTimeSlots(doctorId,timeSlotId,timeFrom,timeTo) {
+export async function modifyTimeSlots(doctorId, timeSlotId, timeFrom, timeTo) {
     let response;
     let errCode = '200';
     try {
@@ -66,7 +66,7 @@ export async function modifyTimeSlots(doctorId,timeSlotId,timeFrom,timeTo) {
             data:
             {
                 timeFrom: timeFrom,
-                timeTo: timeTo 
+                timeTo: timeTo
             }
         });
         return errCode;
@@ -78,7 +78,7 @@ export async function modifyTimeSlots(doctorId,timeSlotId,timeFrom,timeTo) {
     }
 }
 
-export async function createTimeSlots(doctorId,timeFrom,timeTo,duration) {
+export async function createTimeSlots(doctorId, timeFrom, timeTo, duration) {
     let response;
     let errCode = '200';
     try {
@@ -90,8 +90,30 @@ export async function createTimeSlots(doctorId,timeFrom,timeTo,duration) {
             {
                 windowBegin: timeFrom,
                 windowEnd: timeTo,
-                timeSlotDurationInMinutes: duration 
+                timeSlotDurationInMinutes: duration
             }
+        });
+        return errCode;
+    } catch (error) {
+        console.error(error.message);
+        if (error.response != null)
+            return error.response.status.toString();
+        return error.code;
+    }
+}
+
+export async function deleteTimeSlots(doctorId, id) {
+    let response;
+    let errCode = '200';
+    try {
+        response = await axios({
+            method: 'post',
+            url: SYSTEM_SZCZEPIEN_URL + '/doctor/timeSlots/delete/' + doctorId,
+            timeout: 4000,
+            data:
+                [
+                    id
+                ]
         });
         return errCode;
     } catch (error) {

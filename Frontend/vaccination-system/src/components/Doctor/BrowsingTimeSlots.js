@@ -1,19 +1,18 @@
 import * as React from 'react';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import { Box, Grid } from '@mui/material';
+import { Box } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { FixedSizeList } from 'react-window';
 import Button from '@mui/material/Button';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Container, CssBaseline } from '@mui/material';
 import Typography from '@mui/material/Typography';
-import { getTimeSlots } from './DoctorApi';
+import { deleteTimeSlots, getTimeSlots } from './DoctorApi';
 import CircularProgress from '@mui/material/CircularProgress';
 import { blue } from '@mui/material/colors';
 import SummarizeIcon from '@mui/icons-material/Summarize';
 import Avatar from '@mui/material/Avatar';
-//import { handleBack } from './General';
 import { ErrorSnackbar, SuccessSnackbar } from '../../tools/Snackbars';
 
 const theme = createTheme();
@@ -61,14 +60,13 @@ export default function BrowsingTimeSLots() {
                 <ListItemText primary={"Data: " + dateFrom + " godziny: " + from + " - " + to} secondary={"Wolne: " + (item.isFree ? "Tak" : "Nie")} />
                 <Button
                     onClick={async () => {
-                        //let userID = localStorage.getItem('userID');
                         let timeSlotId = item.id;
-                        const result = window.confirm("Czy na pewno chcesz anulować wizytę?", confirmOptionsInPolish);
+                        const result = window.confirm("Czy na pewno chcesz usunąć okno?", confirmOptionsInPolish);
                         if (result) {
                             console.log("You click yes!");
-                            let err = "200"//await cancelAppointment(userID, appointmentId);
+                            let err = await deleteTimeSlots(userID, timeSlotId);
+                            setErrorCancel(err);
                             if (err !== '200') {
-                                setErrorCancel(err);
                                 setErrorCancelState(true);
                             }
                             else
@@ -83,8 +81,6 @@ export default function BrowsingTimeSLots() {
                 </Button>
                 <Button
                     onClick={async () => {
-                        //let userID = localStorage.getItem('userID');
-                        //console.log(userID)
                         let timeSlotId = item.id;
                         navigate("/doctor/timeSlots/modify", { state: { doctorId: userID, timeSlotId: timeSlotId, dateFrom: dateFrom, timeFrom: from, dateTo: dateTo, timeTo: to, action: "modify" } })
                     }}
