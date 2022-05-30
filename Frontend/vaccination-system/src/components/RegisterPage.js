@@ -266,6 +266,7 @@ export default function SignUp() {
               variant="contained"
               disabled={loading}
               sx={{ mt: 3, mb: 2 }}
+              name="registerButton"
             >
               Zarejestruj się
             </Button>
