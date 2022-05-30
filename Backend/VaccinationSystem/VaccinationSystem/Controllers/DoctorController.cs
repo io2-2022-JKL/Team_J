@@ -356,33 +356,32 @@ namespace VaccinationSystem.Controllers
             if (timeSlotToChange == null) return false;
 
             // Check if there is a collision
-            var collidingTimeSlot = _context.TimeSlots.Where(ts => ts.DoctorId == docId && ts.Active == true && 
+            var collidingTimeSlot = _context.TimeSlots.Where(ts => ts.DoctorId == docId && ts.Active == true && ts.Id != tsId &&
                                 ((ts.From <= newFrom && newFrom < ts.To) ||
                                  (ts.From < newTo && newTo <= ts.To) ||
                                  (newFrom <= ts.From && ts.To <= newTo) ||
-                                 (ts.From <= newFrom && newTo <= ts.To)) && ts.Id != tsId).ToList();
+                                 (ts.From <= newFrom && newTo <= ts.To))).ToList();
             // All time slots which are active, belong to this doctor, collide with new time slot start and end times and are NOT the time slot we're changing
-            if (collidingTimeSlot == null || collidingTimeSlot.Count == 0) throw new BadRequestException(); // There are collisions
+            if (collidingTimeSlot != null && collidingTimeSlot.Count > 0) throw new BadRequestException(); // There are collisions
 
             oldFrom = timeSlotToChange.From;
             oldTo = timeSlotToChange.To;
             timeSlotToChange.From = newFrom;
             timeSlotToChange.To = newTo;
             _context.SaveChanges();
-            /*var possibleAppointment = this._context.Appointments.Include(a => a.Patient).
-                    Where(a => a.TimeSlotId == timeSlotToChange.Id && a.State == Models.AppointmentState.Planned).SingleOrDefault();*/
-            var possibleAppointment = this._context.Appointments.Where(a => a.TimeSlotId == timeSlotToChange.Id && a.State == Models.AppointmentState.Planned)
-                .Include(a => a.Patient).SingleOrDefault();
+            var possibleAppointment = this._context.Appointments.Where(a => a.TimeSlotId == timeSlotToChange.Id &&
+            a.State == Models.AppointmentState.Planned).Include(a => a.Patient).SingleOrDefault();
             if (possibleAppointment != null)
             {
                 possibleAppointment.State = Models.AppointmentState.Cancelled;
                 if (_mailService != null)
                 {
+                    var patient = _context.Patients.Where(p => p.Id == possibleAppointment.PatientId).SingleOrDefault();
                     MailRequest request = new MailRequest();
                     request.Subject = "Visit modified";
                     request.Body = "Your visit from " + oldFrom + " to " + oldTo + " has been changed. " +
                         "It's now from " + timeSlotToChange.From + " to " + timeSlotToChange.To + ".";
-                    request.ToEmail = possibleAppointment.Patient.Mail;
+                    request.ToEmail = patient.Mail;
                     try
                     {
                         _mailService.SendEmailAsync(request);
