@@ -202,7 +202,7 @@ export default function LoginPage() {
                             )
                         }
                         <Snackbar open={snackbar} autoHideDuration={6000} onClose={handleClose}>
-                            <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
+                            <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }} name="snackbar">
                                 Rejestarcja powiodła się
                             </Alert>
                         </Snackbar>
@@ -210,7 +210,7 @@ export default function LoginPage() {
 
                         <Grid container>
                             <Grid item>
-                                <Link to='/register' variant="body2">
+                                <Link to='/register' variant="body2" name="link">
                                     {"Nie masz konta pacjenckiego? Zarejestruj się."}
                                 </Link>
                             </Grid>
