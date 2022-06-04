@@ -162,7 +162,7 @@ export default function DoctorIncomingAppointment() {
                             type="submit"
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
-                            onClick={() => { navigate('/doctor/redirection') }}
+                            onClick={() => { navigate("/doctor/redirection", { state: { page: "doctor" } }) }}
                         >
                             Powrót
                         </Button>

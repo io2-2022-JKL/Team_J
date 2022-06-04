@@ -18,7 +18,7 @@ export default function DoctorFormerAppointments() {
     const [errorState, setErrorState] = React.useState(false);
     const [errorCertify, setErrorCertify] = React.useState('');
     const [errorCertifyState, setErrorCertifyState] = React.useState(false);
-    const [success,setSuccess] = React.useState(false);
+    const [success, setSuccess] = React.useState(false);
 
     let userID = localStorage.getItem('userID');
 
@@ -40,11 +40,11 @@ export default function DoctorFormerAppointments() {
         fetchData();
     }, [errorCertify]);
 
-    const handleBackClick = () => { handleBack(navigate) }
+    const handleBackClick = () => { { navigate("/doctor/redirection", { state: { page: "doctor" } }) } }
     function renderRow(props) {
         const { index, style, data } = props;
         const item = data[index];
-        
+
         return (
             <ListItem style={style} key={index} component="div" disablePadding divider>
                 <Grid container direction={"row"} spacing={1}>
@@ -94,11 +94,11 @@ export default function DoctorFormerAppointments() {
             handleBack={handleBackClick}
             loading={loading}
             setErrorState={setErrorState}
-            success = {success}
-            setSuccess = {setSuccess}
-            error2 = {errorCertify}
-            errorState2 = {errorCertifyState}
-            setErrorState2 = {setErrorCertifyState}
+            success={success}
+            setSuccess={setSuccess}
+            error2={errorCertify}
+            errorState2={errorCertifyState}
+            setErrorState2={setErrorCertifyState}
         />
     );
 }

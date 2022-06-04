@@ -15,7 +15,7 @@ import DataDisplayArray from '../DataDisplayArray';
 import { deleteDoctor, getDoctorsData } from './AdminApi';
 import FilteringHelepers from '../../tools/FilteringHelepers';
 import { activeOptionsEmptyPossible } from '../../tools/ActiveOptions';
-import { ErrorSnackbar } from '../Snackbars';
+import { ErrorSnackbar, SuccessSnackbar } from '../Snackbars';
 import DropDownSelect from '../DropDownSelect';
 import { citiesEmptyPossible } from '../../api/Cities';
 
@@ -127,6 +127,7 @@ export default function DoctorsPage() {
     const [rows, setRows] = React.useState([]);
     const [error, setError] = React.useState('');
     const [errorState, setErrorState] = React.useState(false);
+    const [successState, setSuccessState] = React.useState(false)
 
     React.useEffect(() => {
 
@@ -161,6 +162,7 @@ export default function DoctorsPage() {
                     setRows((prevRows) => prevRows.map((row) => row.id === id ? { ...row, active: false } : row));
                     setFilteredRows((prevRows) => prevRows.map((row) => row.id === id ? { ...row, active: false } : row));
                 });
+                setSuccessState(true)
             }
         },
         [],
@@ -343,6 +345,10 @@ export default function DoctorsPage() {
                             error={error}
                             errorState={errorState}
                             setErrorState={setErrorState}
+                        />
+                        <SuccessSnackbar
+                            success={successState}
+                            setSuccess={setSuccessState}
                         />
                     </Box>
                 </CssBaseline>

@@ -59,6 +59,10 @@ export async function deletePatient(patientId) {
 }
 
 export async function addDoctor(patientId, vaccinationCenterId) {
+    console.log({
+        patientId: patientId,
+        vaccinationCenterId: vaccinationCenterId
+    })
     return postRequest('/admin/doctors/addDoctor', {
         patientId: patientId,
         vaccinationCenterId: vaccinationCenterId

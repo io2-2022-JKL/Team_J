@@ -125,7 +125,7 @@ export default function BrowsingTimeSLots() {
                             type="submit"
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
-                            onClick={() => { navigate("/doctor/timeSlots/create", {state:{doctorId: userID, action:"create"}}) }}
+                            onClick={() => { navigate("/doctor/timeSlots/create", { state: { doctorId: userID, action: "create" } }) }}
                         >
                             Dodaj nowe okno
                         </Button>
@@ -133,7 +133,7 @@ export default function BrowsingTimeSLots() {
                             type="submit"
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
-                            onClick={() => { navigate("/doctor/redirection") }}
+                            onClick={() => { navigate("/doctor/redirection", { state: { page: "doctor" } }) }}
                         >
                             Powrót
                         </Button>

@@ -123,7 +123,7 @@ export default function LoginPage() {
                 localStorage.setItem('userFirstName', data.firstName)
                 localStorage.setItem('userLastName', data.lastName)
 
-                navigate("/doctor/redirection");
+                navigate("/doctor/redirection", { state: { page: "doctor" } });
                 break;
             default:
                 break;
