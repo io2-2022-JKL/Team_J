@@ -20,7 +20,9 @@ async function doctorTest() {
         await driver.wait(until.urlIs("http://localhost:3000/doctor/redirection"));
 
         let doctorTab = await driver.findElement(By.name('doctorTab'));
-        await doctorTab.click();
+        const actions = driver.actions({ async: true });
+        await actions.move({ origin: doctorTab }).press().perform();
+        //await doctorTab.click();
 
         let certificatesButton = await driver.findElement(By.name('certificatesButton'));
         await certificatesButton.click();
