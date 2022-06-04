@@ -126,7 +126,7 @@ export default function BrowsingTimeSLots() {
                             sx={{ mt: 3, mb: 2 }}
                             onClick={() => { navigate("/doctor/timeSlots/create", { state: { doctorId: userID, action: "create" } }) }}
                         >
-                            Dodaj nowe okno
+                            Dodaj nowe okna godzinowe
                         </Button>
                         <Button
                             type="submit"

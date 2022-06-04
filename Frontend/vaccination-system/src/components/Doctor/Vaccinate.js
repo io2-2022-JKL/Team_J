@@ -31,6 +31,7 @@ export default function Vaccinate() {
         if (batchNumber == '') return
 
         let code = confirmVaccination(localStorage.getItem('doctorID'), location.state.appointmentId, batchNumber)
+        console.log(code)
         if (code == '200') {
             setSuccess(true)
         }
@@ -44,6 +45,7 @@ export default function Vaccinate() {
 
     const handleCancelConfirmation = () => {
         let code = vaccinationDidNotHappen(localStorage.getItem('doctorID'), location.state.appointmentId)
+        console.log(code)
         if (code == '200') {
             setSuccess(true)
         }

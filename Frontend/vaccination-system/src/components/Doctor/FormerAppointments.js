@@ -8,8 +8,6 @@ import ItemListPageTemplate from '../ItemsListPageTemplate';
 import { handleBack } from "../Patient/General"
 import Button from '@mui/material/Button';
 
-
-
 export default function DoctorFormerAppointments() {
     const navigate = useNavigate();
     const [data, setData] = React.useState([]);
@@ -39,6 +37,17 @@ export default function DoctorFormerAppointments() {
         fetchData();
     }, [errorCertify]);
 
+    function stateToPolish(state) {
+        switch (state) {
+            case "Finished":
+                return "Zakończono"
+            case "Cancelled":
+                return "Odwołano"
+            default:
+                return state
+        }
+    }
+
     const handleBackClick = () => { { navigate("/doctor/redirection", { state: { page: "doctor" } }) } }
     function renderRow(props) {
         const { index, style, data } = props;
@@ -54,7 +63,7 @@ export default function DoctorFormerAppointments() {
                         <ListItemText primary={"Pacjent: " + item.patientFirstName + " " + item.patientLastName} secondary={"Data szczepienia: " + item.to} />
                     </Grid>
                     <Grid item xs={4}>
-                        <ListItemText primary={"Status: " + item.state} secondary={"Wystawiony certyfikat: " + (item.certifyState === "Certified" ? "Tak" : "Nie")} />
+                        <ListItemText primary={"Status: " + stateToPolish(item.state)} secondary={"Wystawiono certyfikat: " + (item.certifyState === "Certified" ? "Tak" : "Nie")} />
                     </Grid>
                 </Grid>
                 <Button

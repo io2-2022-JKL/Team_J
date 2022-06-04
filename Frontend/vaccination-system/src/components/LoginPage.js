@@ -119,7 +119,8 @@ export default function LoginPage() {
                 let doctorId = localStorage.getItem('userID');
                 console.log(doctorId);
                 [doctorData, DoctorErr] = await getDoctorInfo(doctorId);
-                localStorage.setItem('patientID', doctorData.patientId)
+                console.log(doctorData.patientId);
+                localStorage.setItem('patientID', doctorData.patientId);
                 //console.log('doctorData')
                 //patientId = doctorData.patientId
                 [data, err] = await getPatientInfo(doctorData.patientId);
