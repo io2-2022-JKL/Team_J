@@ -375,7 +375,7 @@ export default function PatientsPage() {
                     />
                     <SuccessSnackbar
                         success={successState}
-                        setScuccess={setSuccessState}
+                        setSuccess={setSuccessState}
                     />
                 </CssBaseline>
             </Container >

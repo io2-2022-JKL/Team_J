@@ -26,12 +26,11 @@ export default function BrowsingTimeSLots() {
     const [cancelError, setErrorCancel] = React.useState('');
     const [errorCancelState, setErrorCancelState] = React.useState(false);
     const [success, setSuccess] = React.useState(false);
-    let userID = localStorage.getItem('userID');
+    let userID = localStorage.getItem('doctorID');
 
     React.useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
-            let userID = localStorage.getItem('userID');
             let [doctorData, err] = await getTimeSlots(userID);
             if (doctorData != null) {
                 setData(doctorData);
