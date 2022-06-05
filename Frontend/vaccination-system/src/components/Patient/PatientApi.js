@@ -2,16 +2,19 @@ import Moment from 'moment';
 import { deleteRequest, getRequest, postRequest, postRequestNoBody } from '../../api/Api';
 
 export async function getFreeTimeSlots(city, dateFrom, dateTo, virus) {
+    let from = Moment(dateFrom).format('DD-MM-YYYY')
+    let to = Moment(dateTo).format('DD-MM-YYYY')
+
     console.log({
         city: city,
-        dateFrom: Moment(dateFrom).format('DD-MM-YYYY'),
-        dateTo: Moment(dateTo).format('DD-MM-YYYY'),
+        dateFrom: from,
+        dateTo: to,
         virus: virus
     })
     return postRequest('/patient/timeSlots/filter', {
         city: city,
-        dateFrom: Moment(dateFrom).format('DD-MM-YYYY'),
-        dateTo: Moment(dateTo).format('DD-MM-YYYY'),
+        dateFrom: from,
+        dateTo: to,
         virus: virus
     })
 }

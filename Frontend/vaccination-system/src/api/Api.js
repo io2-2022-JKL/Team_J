@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const SYSTEM_SZCZEPIEN_URL = //'https://localhost:5001'
-'https://systemszczepien.azurewebsites.net'
+    'https://systemszczepien.azurewebsites.net'
 //'https://vaccinationsystemteaml.azurewebsites.net'
 // j.nowak@mail.com password123()
 //'https://vaccinationsystemapi.azurewebsites.net'
