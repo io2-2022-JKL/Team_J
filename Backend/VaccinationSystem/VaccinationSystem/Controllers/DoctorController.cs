@@ -233,7 +233,7 @@ namespace VaccinationSystem.Controllers
         [ProducesResponseType(403)]
         [ProducesResponseType(404)]
         [HttpPost("timeSlots/delete/{doctorId}")]
-        public IActionResult DeleteTimeSlot(string doctorId, IEnumerable<string> ids)
+        public IActionResult DeleteTimeSlot(string doctorId, IEnumerable<TimeSlotToDeleteDTO> ids)
         {
             // TODO: Token verification for 401 and 403 error codes
             bool result;
@@ -249,7 +249,7 @@ namespace VaccinationSystem.Controllers
             return Ok();
         }
 
-        private bool tryDeleteTimeSlot(string doctorId, IEnumerable<string> ids)
+        private bool tryDeleteTimeSlot(string doctorId, IEnumerable<TimeSlotToDeleteDTO> ids)
         {
             // Disallow deleting timeSlots that already passed?
             int changedTimeSlots = 0;
@@ -258,9 +258,9 @@ namespace VaccinationSystem.Controllers
             try
             {
                 docId = Guid.Parse(doctorId);
-                foreach(string id in ids)
+                foreach(TimeSlotToDeleteDTO id in ids)
                 {
-                    Guid newGuid = Guid.Parse(id);
+                    Guid newGuid = Guid.Parse(id.id);
                     parsedIDs.Add(newGuid);
                 }
             }
@@ -281,8 +281,7 @@ namespace VaccinationSystem.Controllers
 
                 /*var possibleAppointment = this._context.Appointments.Include(a => a.Patient).
                     Where(a => a.TimeSlotId == tempTimeSlot.Id && a.State == Models.AppointmentState.Planned).SingleOrDefault();*/
-                var possibleAppointment = this._context.Appointments.Where(a => a.TimeSlotId == tempTimeSlot.Id && a.State == Models.AppointmentState.Planned)
-                    .Include(a => a.Patient).SingleOrDefault();
+                var possibleAppointment = this._context.Appointments.Where(a => a.TimeSlotId == tempTimeSlot.Id && a.State == Models.AppointmentState.Planned).SingleOrDefault();
                 if (possibleAppointment != null)
                 {
                     possibleAppointment.State = Models.AppointmentState.Cancelled;
