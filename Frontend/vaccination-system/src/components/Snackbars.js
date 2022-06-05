@@ -26,27 +26,27 @@ export function ErrorSnackbar(props) {
         props.setErrorState(false);
     };
 
-    function renderError(param) {
+    function renderError(param,message) {
         switch (param) {
             case '400':
-                return '400: złe dane';
+                return '400: złe dane, '+message;
             case '401':
-                return '401: Użytkownik nieuprawniony do przeglądania danych'
+                return '401: Użytkownik nieuprawniony do przeglądania danych, '+message;
             case '403':
-                return '403: Użytkownikowi zabroniono dostępu do danych'
+                return '403: Użytkownikowi zabroniono dostępu do danych, '+message;
             case '404':
-                return '404: Nie znaleziono danych'
+                return '404: Nie znaleziono danych, '+message;
             case 'ECONNABORTED':
-                return 'Przekroczono limit połączenia'
+                return 'Przekroczono limit połączenia, '+message;
             default:
-                return 'Wystąpił błąd!';
+                return 'Wystąpił błąd!, '+message;
         }
     }
 
     return (
         <Snackbar open={props.errorState} autoHideDuration={2000} onClose={handleClose}>
             <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
-                {renderError(props.error)}
+                {renderError(props.error,props.message)}
             </Alert>
         </Snackbar>
     )
@@ -64,7 +64,7 @@ export function SuccessSnackbar(props) {
     return (
         <Snackbar open={props.success} autoHideDuration={2000} onClose={handleClose2}>
             <Alert onClose={handleClose2} severity="success" sx={{ width: '100%' }}>
-                Pomyślnie wykonano akcję
+                {"Pomyślnie wykonano akcję: "+props.message}
             </Alert>
         </Snackbar>
     )
