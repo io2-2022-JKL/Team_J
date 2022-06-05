@@ -329,6 +329,8 @@ namespace VaccinationSystem.Controllers
             if (result == false) return NotFound();
             return Ok();
         }
+
+        [NonAction]
         public bool tryModifyAppointment(string doctorId, string timeSlotId, ModifyTimeSlotRequestDTO modifyVisitRequestDTO)
         {
             Guid docId, tsId;
