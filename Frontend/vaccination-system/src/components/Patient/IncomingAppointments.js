@@ -31,7 +31,7 @@ export default function IncomingAppointment() {
     React.useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
-            let userID = localStorage.getItem('userID');
+            let userID = localStorage.getItem('patientID');
             let [patientData, err] = await getIncomingAppointments(userID);
             if (patientData != null) {
                 setData(patientData);
@@ -66,12 +66,12 @@ export default function IncomingAppointment() {
                 </Grid>
                 <Button
                     onClick={async () => {
-                        let userID = localStorage.getItem('userID');
+                        let patientID = localStorage.getItem('patientID');
                         let appointmentId = item.appointmentId;
                         const result = window.confirm("Czy na pewno chcesz anulować wizytę?", confirmOptionsInPolish);
                         if (result) {
                             console.log("You click yes!");
-                            let err = await cancelAppointment(userID, appointmentId);
+                            let err = await cancelAppointment(patientID, appointmentId);
                             if (err !== '200') {
                                 setErrorCancel(err);
                                 setErrorCancelState(true);

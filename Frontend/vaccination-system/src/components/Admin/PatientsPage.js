@@ -19,7 +19,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import { activeOptionsEmptyPossible } from '../../tools/ActiveOptions';
-import { ErrorSnackbar } from '../Snackbars';
+import { ErrorSnackbar, SuccessSnackbar } from '../Snackbars';
 
 const theme = createTheme();
 
@@ -107,11 +107,12 @@ export default function PatientsPage() {
     const [filteredRows, setFilteredRows] = React.useState(rows);
     const [openCentersDialog, setOpenCentersDialog] = React.useState(false)
     const [vaccinationCenters, setVaccinationCenters] = React.useState()
-    const [openSnackBar, setOpenSnackBar] = React.useState(false)
+    const [openSnackBar, setOpenErrorSnackBar] = React.useState(false)
     const [snackBarMessage, setSnackBarMessage] = React.useState('')
     const [option, setOption] = React.useState('');
     const [selectedRow, setSelectedRow] = React.useState();
     const [selectedCenterId, setSelectedCenterId] = React.useState();
+    const [successState, setSuccessState] = React.useState(false)
 
     React.useEffect(() => {
 
@@ -134,7 +135,7 @@ export default function PatientsPage() {
             console.log(error)
             if (error !== '200') {
                 setSnackBarMessage(error)
-                setOpenSnackBar(true)
+                setOpenErrorSnackBar(true)
             }
             else {
                 setTimeout(() => {
@@ -151,13 +152,13 @@ export default function PatientsPage() {
             setSelectedRow(row)
             const [data, err] = await getVaccinationCentersData()
             if (err != '200') {
-                setOpenSnackBar(true)
+                setOpenErrorSnackBar(true)
                 setSnackBarMessage('Nie udało się pobrac danych')
             }
             else {
                 setVaccinationCenters(data)
-                console.log(data)
                 setOpenCentersDialog(true)
+                setSelectedCenterId(data[0].id)
             }
         }
         else
@@ -173,11 +174,11 @@ export default function PatientsPage() {
         const err = await addDoctor(selectedRow.id, selectedCenterId)
         if (err != '200') {
             setSnackBarMessage('Nie udało się dodać lekarza')
-            setOpenSnackBar(true)
+            setOpenErrorSnackBar(true)
         }
         else {
             setSnackBarMessage('Dodano lekarza lekarza')
-            setOpenSnackBar(true)
+            setSuccessState(true)
         }
         setOpenCentersDialog(false)
     }
@@ -349,7 +350,7 @@ export default function PatientsPage() {
                                         select
                                         name="centerSelection"
                                         value={selectedCenterId}
-                                        onChange={(e) => setSelectedCenterId(e.target.value)}
+                                        onChange={(e) => { setSelectedCenterId(e.target.value); }}
                                         SelectProps={{
                                             native: true,
                                         }}
@@ -370,7 +371,11 @@ export default function PatientsPage() {
                     <ErrorSnackbar
                         error={snackBarMessage}
                         errorState={openSnackBar}
-                        setErrorState={setOpenSnackBar}
+                        setErrorState={setOpenErrorSnackBar}
+                    />
+                    <SuccessSnackbar
+                        success={successState}
+                        setSuccess={setSuccessState}
                     />
                 </CssBaseline>
             </Container >
