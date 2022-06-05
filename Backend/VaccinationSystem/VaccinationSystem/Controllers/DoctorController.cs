@@ -862,7 +862,9 @@ namespace VaccinationSystem.Controllers
                 throw new BadRequestException();
 
             //string urlPatient = patient.FirstName.Replace(" ", "%20") + "_" + patient.LastName.Replace(" ", "%20");
-            string urlPatient = patient.FirstName + "_" + patient.LastName;
+            string urlPatient = (patient.FirstName + "_" + patient.LastName).Replace('ą', 'a').Replace('Ą', 'A').Replace('ć', 'c').Replace('Ć', 'C').Replace('ę', 'e')
+                .Replace('Ę', 'E').Replace('ł', 'l').Replace('Ł', 'L').Replace('ó', 'o').Replace('Ó', 'O').Replace('ń', 'n').Replace('Ń', 'N').Replace('ś', 's')
+                .Replace('Ś', 'S').Replace('ź', 'z').Replace('Ź', 'Z').Replace('ż', 'z').Replace('Ż', 'Z');
             string pdfName = Guid.NewGuid().ToString() + ".pdf";
             string url = _storageUrlBase + urlPatient + "/" + pdfName;
             //string url = _storageUrlBase + urlPatient + "/";
