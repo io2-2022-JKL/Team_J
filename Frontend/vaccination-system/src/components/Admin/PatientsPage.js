@@ -112,7 +112,7 @@ export default function PatientsPage() {
     const [option, setOption] = React.useState('');
     const [selectedRow, setSelectedRow] = React.useState();
     const [selectedCenterId, setSelectedCenterId] = React.useState();
-    const [error,SetError] = React.useState('');
+    const [error, SetError] = React.useState('');
     const [successState, setSuccessState] = React.useState(false)
 
     React.useEffect(() => {
@@ -137,7 +137,7 @@ export default function PatientsPage() {
             if (error !== '200') {
                 setSnackBarMessage("Nie udało się usunąć lekarza")
                 SetError(error);
-                setOpenSnackBar(true)
+                setOpenErrorSnackBar(true)
             }
             else {
                 setTimeout(() => {
@@ -380,13 +380,9 @@ export default function PatientsPage() {
                         setErrorState={setOpenErrorSnackBar}
                     />
                     <SuccessSnackbar
+                        message={snackBarMessage}
                         success={successState}
                         setSuccess={setSuccessState}
-                    />
-                    <SuccessSnackbar
-                        message={snackBarMessage}
-                        success={success}
-                        setSuccess={setSuccess}
                     />
                 </CssBaseline>
             </Container >
