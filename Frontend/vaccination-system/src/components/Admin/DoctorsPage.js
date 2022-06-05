@@ -329,6 +329,7 @@ export default function DoctorsPage() {
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
                             onClick={async () => { navigate("/admin/patients", { state: true }) }}
+                            name="addDoctorButton"
                         >
                             Dodaj lekarza
                         </Button>

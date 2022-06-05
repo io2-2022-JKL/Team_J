@@ -112,6 +112,7 @@ export default function PatientsPage() {
     const [option, setOption] = React.useState('');
     const [selectedRow, setSelectedRow] = React.useState();
     const [selectedCenterId, setSelectedCenterId] = React.useState();
+    const [error,SetError] = React.useState('');
     const [successState, setSuccessState] = React.useState(false)
 
     React.useEffect(() => {
@@ -134,8 +135,9 @@ export default function PatientsPage() {
             let error = await deletePatient(id);
             console.log(error)
             if (error !== '200') {
-                setSnackBarMessage(error)
-                setOpenErrorSnackBar(true)
+                setSnackBarMessage("Nie udało się usunąć lekarza")
+                SetError(error);
+                setOpenSnackBar(true)
             }
             else {
                 setTimeout(() => {
@@ -172,12 +174,13 @@ export default function PatientsPage() {
 
     const handleCenterChoice = async () => {
         const err = await addDoctor(selectedRow.id, selectedCenterId)
+        SetError(err);
         if (err != '200') {
             setSnackBarMessage('Nie udało się dodać lekarza')
             setOpenErrorSnackBar(true)
         }
         else {
-            setSnackBarMessage('Dodano lekarza lekarza')
+            setSnackBarMessage('Dodano nowego lekarza')
             setSuccessState(true)
         }
         setOpenCentersDialog(false)
@@ -224,6 +227,7 @@ export default function PatientsPage() {
                             component='form'
                             noValidate
                             onChange={handleSubmit}
+                            onBlur={handleSubmit}
                             sx={{
                                 marginTop: 2,
                                 marginBottom: 2,
@@ -322,6 +326,7 @@ export default function PatientsPage() {
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
                             onClick={async () => { navigate("/admin") }}
+                            name="backButton"
                         >
                             Powrót
                         </Button>
@@ -365,17 +370,23 @@ export default function PatientsPage() {
                         </DialogContent>
                         <DialogActions>
                             <Button onClick={() => setOpenCentersDialog(false)}>Wróc</Button>
-                            <Button onClick={handleCenterChoice}>Wybierz</Button>
+                            <Button name="chooseButton" onClick={handleCenterChoice}>Wybierz</Button>
                         </DialogActions>
                     </Dialog>
                     <ErrorSnackbar
-                        error={snackBarMessage}
+                        error={error}
+                        message={snackBarMessage}
                         errorState={openSnackBar}
                         setErrorState={setOpenErrorSnackBar}
                     />
                     <SuccessSnackbar
                         success={successState}
                         setSuccess={setSuccessState}
+                    />
+                    <SuccessSnackbar
+                        message={snackBarMessage}
+                        success={success}
+                        setSuccess={setSuccess}
                     />
                 </CssBaseline>
             </Container >
