@@ -91,7 +91,7 @@ namespace VaccinationSystem.Controllers
 
             GetDoctorInfoResponse result = new GetDoctorInfoResponse()
             {
-                patientId = patientAccountId.ToString(),
+                patientAccountId = patientAccountId.ToString(),
                 vaccinationCenterId = doctorAccount.VaccinationCenterId.ToString(),
                 vaccinationCenterCity = vaccianationCenter.City,
                 vaccinationCenterName = vaccianationCenter.Name,
@@ -141,6 +141,7 @@ namespace VaccinationSystem.Controllers
             var timeSlots = _context.TimeSlots.Where(ts => ts.DoctorId == docId && ts.Active == true).ToList();
             foreach(TimeSlot timeSlot in timeSlots)
             {
+                if (timeSlot.From < DateTime.Now) continue;
                 ExistingTimeSlotDTO existingTimeSlotDTO = new ExistingTimeSlotDTO();
                 existingTimeSlotDTO.id = timeSlot.Id.ToString();
                 existingTimeSlotDTO.from = timeSlot.From.ToString(_dateTimeFormat);
@@ -328,7 +329,7 @@ namespace VaccinationSystem.Controllers
             if (result == false) return NotFound();
             return Ok();
         }
-        private bool tryModifyAppointment(string doctorId, string timeSlotId, ModifyTimeSlotRequestDTO modifyVisitRequestDTO)
+        public bool tryModifyAppointment(string doctorId, string timeSlotId, ModifyTimeSlotRequestDTO modifyVisitRequestDTO)
         {
             Guid docId, tsId;
             DateTime newFrom, newTo, oldFrom, oldTo;
@@ -347,7 +348,7 @@ namespace VaccinationSystem.Controllers
             {
                 throw new BadRequestException();
             }
-
+            if (newTo <= newFrom) throw new BadRequestException();
             var checkIfDoctorActive = _context.Doctors.Where(doc => doc.Id == docId && doc.Active == true).FirstOrDefault();
             if (checkIfDoctorActive == null) return false;
 
@@ -940,7 +941,7 @@ namespace VaccinationSystem.Controllers
 
                 string connectionString = _configuration.GetConnectionString("AppStorage");
                 string containerName = "certificates";
-                var serviceClient = new BlobServiceClient(connectionString);
+                var serviceClient = new BlobServiceClient(connectionString); // here
                 var containerClient = serviceClient.GetBlobContainerClient(containerName);
                 var blobClient = containerClient.GetBlobClient(urlPatient + "/" + pdfName);
                 await blobClient.UploadAsync(stream, true);
