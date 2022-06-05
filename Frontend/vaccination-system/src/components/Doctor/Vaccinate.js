@@ -27,11 +27,10 @@ export default function Vaccinate() {
         setOpenConfrimDialog(false)
     }
 
-    const handleVaccineConfirmation = () => {
+    const handleVaccineConfirmation = async () => {
         if (batchNumber == '') return
 
-        let code = confirmVaccination(localStorage.getItem('doctorID'), location.state.appointmentId, batchNumber)
-        console.log(code)
+        let code = await confirmVaccination(localStorage.getItem('doctorID'), location.state.appointmentId, batchNumber)
         if (code == '200') {
             setSuccess(true)
         }
@@ -43,9 +42,8 @@ export default function Vaccinate() {
         setOpenConfrimDialog(false)
     }
 
-    const handleCancelConfirmation = () => {
-        let code = vaccinationDidNotHappen(localStorage.getItem('doctorID'), location.state.appointmentId)
-        console.log(code)
+    const handleCancelConfirmation = async () => {
+        let code = await vaccinationDidNotHappen(localStorage.getItem('doctorID'), location.state.appointmentId)
         if (code == '200') {
             setSuccess(true)
         }

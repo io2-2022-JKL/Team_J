@@ -55,7 +55,7 @@ export async function editPatient(id, pesel, firstName, lastName, mail, dateOfBi
 }
 
 export async function deletePatient(patientId) {
-    return deleteRequest('/admin/doctors/deleteDoctor/' + patientId);
+    return deleteRequest('/admin/doctors/deletePatient/' + patientId);
 }
 
 export async function addDoctor(patientId, vaccinationCenterId) {
