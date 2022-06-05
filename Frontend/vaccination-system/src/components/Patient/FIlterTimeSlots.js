@@ -168,6 +168,7 @@ export default function FilterTimeSlots() {
     }
 
     const submitSearch = async () => {
+        console.log({ city, dateFrom, dateTo, virus })
         const [data, code] = await getFreeTimeSlots(city, dateFrom, dateTo, virus)
 
         if (code != "200") {

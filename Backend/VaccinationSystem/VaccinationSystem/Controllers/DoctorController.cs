@@ -91,7 +91,7 @@ namespace VaccinationSystem.Controllers
 
             GetDoctorInfoResponse result = new GetDoctorInfoResponse()
             {
-                patientId = patientAccountId.ToString(),
+                patientAccountId = patientAccountId.ToString(),
                 vaccinationCenterId = doctorAccount.VaccinationCenterId.ToString(),
                 vaccinationCenterCity = vaccianationCenter.City,
                 vaccinationCenterName = vaccianationCenter.Name,
@@ -141,6 +141,7 @@ namespace VaccinationSystem.Controllers
             var timeSlots = _context.TimeSlots.Where(ts => ts.DoctorId == docId && ts.Active == true).ToList();
             foreach(TimeSlot timeSlot in timeSlots)
             {
+                //if (timeSlot.From < DateTime.Now) continue;
                 ExistingTimeSlotDTO existingTimeSlotDTO = new ExistingTimeSlotDTO();
                 existingTimeSlotDTO.id = timeSlot.Id.ToString();
                 existingTimeSlotDTO.from = timeSlot.From.ToString(_dateTimeFormat);
@@ -328,7 +329,9 @@ namespace VaccinationSystem.Controllers
             if (result == false) return NotFound();
             return Ok();
         }
-        private bool tryModifyAppointment(string doctorId, string timeSlotId, ModifyTimeSlotRequestDTO modifyVisitRequestDTO)
+
+        [NonAction]
+        public bool tryModifyAppointment(string doctorId, string timeSlotId, ModifyTimeSlotRequestDTO modifyVisitRequestDTO)
         {
             Guid docId, tsId;
             DateTime newFrom, newTo, oldFrom, oldTo;
@@ -347,7 +350,7 @@ namespace VaccinationSystem.Controllers
             {
                 throw new BadRequestException();
             }
-
+            if (newTo <= newFrom) throw new BadRequestException();
             var checkIfDoctorActive = _context.Doctors.Where(doc => doc.Id == docId && doc.Active == true).FirstOrDefault();
             if (checkIfDoctorActive == null) return false;
 
@@ -356,33 +359,32 @@ namespace VaccinationSystem.Controllers
             if (timeSlotToChange == null) return false;
 
             // Check if there is a collision
-            var collidingTimeSlot = _context.TimeSlots.Where(ts => ts.DoctorId == docId && ts.Active == true && 
+            var collidingTimeSlot = _context.TimeSlots.Where(ts => ts.DoctorId == docId && ts.Active == true && ts.Id != tsId &&
                                 ((ts.From <= newFrom && newFrom < ts.To) ||
                                  (ts.From < newTo && newTo <= ts.To) ||
                                  (newFrom <= ts.From && ts.To <= newTo) ||
-                                 (ts.From <= newFrom && newTo <= ts.To)) && ts.Id != tsId).ToList();
+                                 (ts.From <= newFrom && newTo <= ts.To))).ToList();
             // All time slots which are active, belong to this doctor, collide with new time slot start and end times and are NOT the time slot we're changing
-            if (collidingTimeSlot == null || collidingTimeSlot.Count == 0) throw new BadRequestException(); // There are collisions
+            if (collidingTimeSlot != null && collidingTimeSlot.Count > 0) throw new BadRequestException(); // There are collisions
 
             oldFrom = timeSlotToChange.From;
             oldTo = timeSlotToChange.To;
             timeSlotToChange.From = newFrom;
             timeSlotToChange.To = newTo;
             _context.SaveChanges();
-            /*var possibleAppointment = this._context.Appointments.Include(a => a.Patient).
-                    Where(a => a.TimeSlotId == timeSlotToChange.Id && a.State == Models.AppointmentState.Planned).SingleOrDefault();*/
-            var possibleAppointment = this._context.Appointments.Where(a => a.TimeSlotId == timeSlotToChange.Id && a.State == Models.AppointmentState.Planned)
-                .Include(a => a.Patient).SingleOrDefault();
+            var possibleAppointment = this._context.Appointments.Where(a => a.TimeSlotId == timeSlotToChange.Id &&
+            a.State == Models.AppointmentState.Planned).Include(a => a.Patient).SingleOrDefault();
             if (possibleAppointment != null)
             {
                 possibleAppointment.State = Models.AppointmentState.Cancelled;
                 if (_mailService != null)
                 {
+                    var patient = _context.Patients.Where(p => p.Id == possibleAppointment.PatientId).SingleOrDefault();
                     MailRequest request = new MailRequest();
                     request.Subject = "Visit modified";
                     request.Body = "Your visit from " + oldFrom + " to " + oldTo + " has been changed. " +
                         "It's now from " + timeSlotToChange.From + " to " + timeSlotToChange.To + ".";
-                    request.ToEmail = possibleAppointment.Patient.Mail;
+                    request.ToEmail = patient.Mail;
                     try
                     {
                         _mailService.SendEmailAsync(request);
@@ -863,7 +865,9 @@ namespace VaccinationSystem.Controllers
                 throw new BadRequestException();
 
             //string urlPatient = patient.FirstName.Replace(" ", "%20") + "_" + patient.LastName.Replace(" ", "%20");
-            string urlPatient = patient.FirstName + "_" + patient.LastName;
+            string urlPatient = (patient.FirstName + "_" + patient.LastName).Replace('ą', 'a').Replace('Ą', 'A').Replace('ć', 'c').Replace('Ć', 'C').Replace('ę', 'e')
+                .Replace('Ę', 'E').Replace('ł', 'l').Replace('Ł', 'L').Replace('ó', 'o').Replace('Ó', 'O').Replace('ń', 'n').Replace('Ń', 'N').Replace('ś', 's')
+                .Replace('Ś', 'S').Replace('ź', 'z').Replace('Ź', 'Z').Replace('ż', 'z').Replace('Ż', 'Z');
             string pdfName = Guid.NewGuid().ToString() + ".pdf";
             string url = _storageUrlBase + urlPatient + "/" + pdfName;
             //string url = _storageUrlBase + urlPatient + "/";
@@ -941,7 +945,7 @@ namespace VaccinationSystem.Controllers
 
                 string connectionString = _configuration.GetConnectionString("AppStorage");
                 string containerName = "certificates";
-                var serviceClient = new BlobServiceClient(connectionString);
+                var serviceClient = new BlobServiceClient(connectionString); // here
                 var containerClient = serviceClient.GetBlobContainerClient(containerName);
                 var blobClient = containerClient.GetBlobClient(urlPatient + "/" + pdfName);
                 await blobClient.UploadAsync(stream, true);

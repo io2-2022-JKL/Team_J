@@ -6,6 +6,6 @@
         public string vaccinationCenterName { get; set; }
         public string vaccinationCenterCity { get; set; }
         public string vaccinationCenterStreet { get; set; }
-        public string patientId { get; set; }
+        public string patientAccountId { get; set; }
     }
 }

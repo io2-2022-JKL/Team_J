@@ -26,12 +26,11 @@ export default function BrowsingTimeSLots() {
     const [cancelError, setErrorCancel] = React.useState('');
     const [errorCancelState, setErrorCancelState] = React.useState(false);
     const [success, setSuccess] = React.useState(false);
-    let userID = localStorage.getItem('userID');
+    let userID = localStorage.getItem('doctorID');
 
     React.useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
-            let userID = localStorage.getItem('userID');
             let [doctorData, err] = await getTimeSlots(userID);
             if (doctorData != null) {
                 setData(doctorData);
@@ -125,15 +124,15 @@ export default function BrowsingTimeSLots() {
                             type="submit"
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
-                            onClick={() => { navigate("/doctor/timeSlots/create", {state:{doctorId: userID, action:"create"}}) }}
+                            onClick={() => { navigate("/doctor/timeSlots/create", { state: { doctorId: userID, action: "create" } }) }}
                         >
-                            Dodaj nowe okno
+                            Dodaj nowe okna godzinowe
                         </Button>
                         <Button
                             type="submit"
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
-                            onClick={() => { navigate("/doctor/redirection") }}
+                            onClick={() => { navigate("/doctor/redirection", { state: { page: "doctor" } }) }}
                         >
                             Powrót
                         </Button>

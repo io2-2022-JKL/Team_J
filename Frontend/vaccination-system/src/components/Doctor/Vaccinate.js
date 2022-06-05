@@ -21,7 +21,7 @@ export default function Vaccinate() {
     const [batchNumber, setBatchNumber] = React.useState(null)
 
     const [openConfirmDialog, setOpenConfrimDialog] = React.useState(false)
-    const [openCancelDialog, setOpenCancelDialog] = React.useState()
+    const [openCancelDialog, setOpenCancelDialog] = React.useState(false)
 
     function handleConfrimClose() {
         setOpenConfrimDialog(false)
@@ -30,7 +30,8 @@ export default function Vaccinate() {
     const handleVaccineConfirmation = () => {
         if (batchNumber == '') return
 
-        let code = confirmVaccination(localStorage.getItem('userID'), location.state.appointmentData.appointmentId, batchNumber)
+        let code = confirmVaccination(localStorage.getItem('doctorID'), location.state.appointmentId, batchNumber)
+        console.log(code)
         if (code == '200') {
             setSuccess(true)
         }
@@ -43,7 +44,8 @@ export default function Vaccinate() {
     }
 
     const handleCancelConfirmation = () => {
-        let code = vaccinationDidNotHappen(localStorage.getItem('userID'), location.appointmentId)
+        let code = vaccinationDidNotHappen(localStorage.getItem('doctorID'), location.state.appointmentId)
+        console.log(code)
         if (code == '200') {
             setSuccess(true)
         }
@@ -55,6 +57,11 @@ export default function Vaccinate() {
         setOpenCancelDialog(false)
     }
 
+    function handleUnlimited(num) {
+        if (num < 0)
+            return "brak limitu"
+        else return num
+    }
 
     return (
         <ThemeProvider theme={theme}>
@@ -100,9 +107,11 @@ export default function Vaccinate() {
                         <Box> {location.state.appointmentData.vaccineName} </Box>
                         <Box> {'Firma: ' + location.state.appointmentData.vaccineCompany} </Box>
                         <Box> {'Wirus: ' + location.state.appointmentData.virusName} </Box>
-                        <Box> {'Wiek pacjenta: ' + location.state.appointmentData.minPatientAge + ' - ' + location.state.appointmentData.maxPatientAge} </Box>
-                        <Box> {'Liczba dawek: ' + location.state.appointmentData.numberOfDoses} </Box>
-                        <Box> {'Dni pomiędzy dawkami: ' + location.state.appointmentData.minDaysBetweenDoses + ' - ' + location.state.appointmentData.maxDaysBetweenDoses} </Box>
+                        <Box> {'Wiek pacjenta: ' + handleUnlimited(location.state.appointmentData.minPatientAge) + ' - '
+                            + handleUnlimited(location.state.appointmentData.maxPatientAge)} </Box>
+                        <Box> {'Liczba dawek: ' + handleUnlimited(location.state.appointmentData.numberOfDoses)} </Box>
+                        <Box> {'Dni pomiędzy dawkami: ' + handleUnlimited(location.state.appointmentData.minDaysBetweenDoses) + ' - '
+                            + handleUnlimited(location.state.appointmentData.maxDaysBetweenDoses)} </Box>
                         <Box sx={{ m: 2 }} />
 
                         <Grid

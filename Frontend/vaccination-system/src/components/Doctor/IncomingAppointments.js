@@ -67,7 +67,7 @@ export default function DoctorIncomingAppointment() {
     React.useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
-            let userID = localStorage.getItem('userID');
+            let userID = localStorage.getItem('doctorID');
             let [appointmentsData, err] = await getIncomingAppointments(userID);
             if (appointmentsData != null) {
                 setData(appointmentsData);
@@ -102,8 +102,8 @@ export default function DoctorIncomingAppointment() {
                     <Button
                         onClick={async () => {
                             const appointmentId = item.appointmentId
-                            const [appointmentData, err] = await getAppointmetInfo(localStorage.getItem('userID'), item.appointmentId)
-                            console.log({ state: appointmentData, appointmentId })
+                            const [appointmentData, err] = await getAppointmetInfo(localStorage.getItem('doctorID'), item.appointmentId)
+                            console.log({ state: { appointmentData, appointmentId } })
                             navigate("/doctor/vaccinate", { state: { appointmentData, appointmentId } })
                         }}
                     >
@@ -162,7 +162,7 @@ export default function DoctorIncomingAppointment() {
                             type="submit"
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
-                            onClick={() => { navigate('/doctor/redirection') }}
+                            onClick={() => { navigate("/doctor/redirection", { state: { page: "doctor" } }) }}
                         >
                             Powrót
                         </Button>

@@ -41,8 +41,8 @@ export default function FormerAppointments() {
 
         const fetchData = async () => {
             setLoading(true);
-            let userID = localStorage.getItem('userID');
-            let [patientData, err] = await getFormerAppointments(userID);
+            let patientID = localStorage.getItem('patientID');
+            let [patientData, err] = await getFormerAppointments(patientID);
             if (patientData != null) {
                 setData(patientData);
             }
@@ -60,14 +60,14 @@ export default function FormerAppointments() {
     return (
         //ItemListPageTemplate("Historia szczpień", data, renderRow, renderError, errorState, error, handleClose, handleBackClick, loading)
         <ItemListPageTemplate
-            title = {"Historia szczpień"}
-            data = {data}
-            renderRow = {renderRow}
-            errorState = {errorState}
-            error = {error}
-            handleBack = {handleBackClick}
-            loading = {loading}
-            setErrorState = {setErrorState}
+            title={"Historia szczpień"}
+            data={data}
+            renderRow={renderRow}
+            errorState={errorState}
+            error={error}
+            handleBack={handleBackClick}
+            loading={loading}
+            setErrorState={setErrorState}
         />
     );
 }

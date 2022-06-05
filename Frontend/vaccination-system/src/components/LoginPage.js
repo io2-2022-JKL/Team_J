@@ -107,23 +107,28 @@ export default function LoginPage() {
             case "Patient":
                 patientId = localStorage.getItem('userID');
                 [data, err] = await getPatientInfo(patientId);
+                localStorage.setItem('patientID', patientId)
                 localStorage.setItem('userFirstName', data.firstName)
                 localStorage.setItem('userLastName', data.lastName)
                 navigate("/patient");
                 break;
             case "doctor":
             case "Doctor":
+                let [doctorData, DoctorErr] = []
                 localStorage.setItem('isDoctor', true)
                 let doctorId = localStorage.getItem('userID');
-                console.log(doctorId)
-                let [doctorData, DoctorErr] = await getDoctorInfo(doctorId);
+                console.log(doctorId);
+                [doctorData, DoctorErr] = await getDoctorInfo(doctorId);
+                console.log(doctorData.patientId);
+                localStorage.setItem('patientID', doctorData.patientId);
                 //console.log('doctorData')
                 //patientId = doctorData.patientId
                 [data, err] = await getPatientInfo(doctorData.patientId);
                 localStorage.setItem('userFirstName', data.firstName)
                 localStorage.setItem('userLastName', data.lastName)
+                localStorage.setItem('doctorID', doctorId)
 
-                navigate("/doctor/redirection");
+                navigate("/doctor/redirection", { state: { page: "doctor" } });
                 break;
             default:
                 break;
