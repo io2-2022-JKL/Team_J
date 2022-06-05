@@ -141,7 +141,7 @@ namespace VaccinationSystem.Controllers
             var timeSlots = _context.TimeSlots.Where(ts => ts.DoctorId == docId && ts.Active == true).ToList();
             foreach(TimeSlot timeSlot in timeSlots)
             {
-                if (timeSlot.From < DateTime.Now) continue;
+                //if (timeSlot.From < DateTime.Now) continue;
                 ExistingTimeSlotDTO existingTimeSlotDTO = new ExistingTimeSlotDTO();
                 existingTimeSlotDTO.id = timeSlot.Id.ToString();
                 existingTimeSlotDTO.from = timeSlot.From.ToString(_dateTimeFormat);

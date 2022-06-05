@@ -96,7 +96,7 @@ namespace VaccinationSystem.UnitTests
             // Assert
             Assert.IsType<BadRequestResult>(result.Result);
         }
-        /*[Theory]
+        [Theory]
         [InlineData("e0d50915-5548-4993-dddd-edddab4e1df1")]
         [InlineData("e0d50915-5548-4993-dddd-edddab4e1df3")]
         public void GetExistingTimeSlotsTest(string doctorId)
@@ -126,7 +126,7 @@ namespace VaccinationSystem.UnitTests
             var timeSlots = list.Value as List<ExistingTimeSlotDTO>;
             int count = timeSlotData.Where(ts => ts.DoctorId.ToString() == doctorId && ts.Active == true).Count();
             Assert.Equal(count, timeSlots.Count());
-        }*/
+        }
         [Theory]
         [InlineData("e0d50915-5548-4993-dddd-edddab4e1df2")]
         [InlineData("e0d50915-5548-4993-dddd-edddab4e1df4")]
