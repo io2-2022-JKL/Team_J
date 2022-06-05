@@ -941,7 +941,7 @@ namespace VaccinationSystem.Controllers
 
                 string connectionString = _configuration.GetConnectionString("AppStorage");
                 string containerName = "certificates";
-                var serviceClient = new BlobServiceClient(connectionString);
+                var serviceClient = new BlobServiceClient(connectionString); // here
                 var containerClient = serviceClient.GetBlobContainerClient(containerName);
                 var blobClient = containerClient.GetBlobClient(urlPatient + "/" + pdfName);
                 await blobClient.UploadAsync(stream, true);

@@ -1296,7 +1296,7 @@ namespace VaccinationSystem.UnitTests
 
             var certificateNumberAfter = certificatesData.Count();
             Assert.Equal(certificateNumberAfter, certificateNumberBefore + 1);
-        }
+        }*/
         [Theory]
         [InlineData("e0d50915-5548-4993-dddd-edddab4e1df1", "baa16325-e151-4cd6-a829-254c0314faad", true)]
         [InlineData("baa16325-e151-4cd6-a829-254c0314faad", "baa16325-e151-4cd6-a829-254c0314faad", true)]
@@ -1414,6 +1414,6 @@ namespace VaccinationSystem.UnitTests
             var certificateNumberAfter = certificatesData.Count();
             Assert.Equal(certificateNumberAfter, certificateNumberBefore);
 
-        }*/
+        }
     }
 }
