@@ -63,7 +63,7 @@ export default function BrowsingTimeSLots() {
                         const result = window.confirm("Czy na pewno chcesz usunąć okno?", confirmOptionsInPolish);
                         if (result) {
                             console.log("You click yes!");
-                            let err = await deleteTimeSlots(userID, timeSlotId);
+                            let err = await deleteTimeSlots(userID, [timeSlotId]);
                             setErrorCancel(err);
                             if (err !== '200') {
                                 setErrorCancelState(true);

@@ -11,18 +11,18 @@ export async function getFreeTimeSlots(city, dateFrom, dateTo, virus) {
         dateTo: to,
         virus: virus
     })
-    return postRequest('/patient/timeSlots/filter', {
-        city: city,
-        dateFrom: from,
-        dateTo: to,
-        virus: virus
-    })
+    return getRequest('/patient/timeSlots/filter' +
+        '?city=' + city +
+        '&dateFrom=' + from +
+        '&dateTo=' + to +
+        '&virus=' + virus)
+
 }
 
-export async function bookTimeSlot(timeSlot, vaccine) {
+export async function bookTimeSlot(timeSlotId, vaccineId) {
     let patientID = localStorage.getItem('patientID')
-    let timeSlotId = timeSlot.timeSlotId
-    let vaccineId = vaccine.vaccineId
+
+    console.log('/patient/timeSlots/book/' + patientID + '/' + timeSlotId + '/' + vaccineId)
 
     return postRequestNoBody('/patient/timeSlots/Book/' + patientID + '/' + timeSlotId + '/' + vaccineId)
 }

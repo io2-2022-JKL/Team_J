@@ -25,15 +25,12 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
 import Snackbar from '@mui/material/Snackbar';
 import { handleBack } from './General';
 import DropDownSelect from '../DropDownSelect';
 import { virusesEmptyPossible } from '../../api/Viruses';
 import { citiesEmptyPossible } from '../../api/Cities';
+import WeekDays from '../../tools/WeekDays';
 
 const theme = createTheme();
 
@@ -49,7 +46,7 @@ export default function FilterTimeSlots() {
     const [openTimeSlotsDialog, setOpenTimeSlotsDialog] = React.useState(false);
     const [openVaccinesDialog, setOpenVaccinesDialog] = React.useState(false);
     const [dayTimeSlots, setDayTimeSlots] = React.useState();
-    const [possibleVaccines, setPossibleVaccines] = React.useState();
+    const [possibleVaccines, setPossibleVaccines] = React.useState([]);
     const [vaccine, setVaccine] = React.useState();
     const [timeSlot, setTimeSlot] = React.useState()
     const [openConfirmDialog, setOpenConfrimDialog] = React.useState(false)
@@ -87,19 +84,14 @@ export default function FilterTimeSlots() {
         }
     }
 
-    const handleDayChoice = (dayInCenter) => {
+    function handleDayChoice(dayInCenter) {
         setDayTimeSlots(dayInCenter[Object.keys(dayInCenter)[0]].sort(function (a, b) { // non-anonymous as you ordered...
             return b.from < a.from ? 1 : -1
         }))
         setPossibleVaccines(dayInCenter[Object.keys(dayInCenter)[0]][0].availableVaccines);
+        setVaccine(dayInCenter[Object.keys(dayInCenter)[0]][0].availableVaccines[0].vaccineId)
         setOpenTimeSlotsDialog(true);
     };
-
-    const handleVaccineChange = (e) => {
-        setVaccine(possibleVaccines.filter(vaccine => {
-            return vaccine.name === e.target.value
-        })[0])
-    }
 
     const handleVaccinesClose = () => {
         setOpenVaccinesDialog(false)
@@ -119,21 +111,12 @@ export default function FilterTimeSlots() {
         setOpenVaccinesDialog(true)
     }
 
-    const handleSubmit = (event) => {
-        const data = new FormData(event.currentTarget);
-
-        setCity(data.get('cityFilter'))
-        setVirus(data.get('virusFilter'))
-    };
-
     const handleConfrimClose = () => {
         setOpenConfrimDialog(false)
     }
 
     const bookTimeSlotTrue = async () => {
-        const errCode = await bookTimeSlot(timeSlot, vaccine)
-
-        console.log(vaccine)
+        const errCode = await bookTimeSlot(timeSlot.timeSlotId, vaccine)
 
         setOpenConfrimDialog(false)
 
@@ -168,7 +151,6 @@ export default function FilterTimeSlots() {
     }
 
     const submitSearch = async () => {
-        console.log({ city, dateFrom, dateTo, virus })
         const [data, code] = await getFreeTimeSlots(city, dateFrom, dateTo, virus)
 
         if (code != "200") {
@@ -204,9 +186,12 @@ export default function FilterTimeSlots() {
     }
 
     function getWeekDayName(num) {
-        const weekdays = ["Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota", "Niedziela"];
-        return weekdays[num];
+        return WeekDays[num];
     }
+
+    const handleChange = (event) => {
+        setVaccine(event.target.value);
+    };
 
     return (
         <ThemeProvider theme={theme}>
@@ -376,6 +361,7 @@ export default function FilterTimeSlots() {
                                 dayTimeSlots.map(dayTimeSlot =>
                                     <ListItemButton
                                         onClick={() => { handleTimeSlotChoice(dayTimeSlot) }}
+                                        key={dayTimeSlot.id}
                                     >
                                         <ListItemText
                                             primary={"Lekarz " + dayTimeSlot.doctorFirstName + " " + dayTimeSlot.doctorLastName + ", " + getDayFromDate(dayTimeSlot.from) + ", " +
@@ -398,6 +384,7 @@ export default function FilterTimeSlots() {
                         <DialogTitle>Wybierz szczepionkę</DialogTitle>
                         <DialogContent>
                             <Box
+                                fullWidth
                                 noValidate
                                 component="form"
                                 sx={{
@@ -407,18 +394,24 @@ export default function FilterTimeSlots() {
                                     width: 'fit-content',
                                 }}
                             >
-                                {openVaccinesDialog && <FormControl sx={{ mt: 2, minWidth: 120 }}>
-                                    <InputLabel htmlFor="max-width">Wybierz</InputLabel>
-                                    <Select
-                                        value={possibleVaccines[0].name}
-                                        autoFocus
-                                        onChange={handleVaccineChange}
-                                        label="maxWidth"
-                                    >
-                                        {possibleVaccines && possibleVaccines.map(possibleVaccine =>
-                                            <MenuItem value={possibleVaccine.name}>{possibleVaccine.name + ", firma: " + possibleVaccine.company}</MenuItem>)}
-                                    </Select>
-                                </FormControl>}
+                                {possibleVaccines && <TextField
+                                    fullWidth
+                                    id={'vaccines'}
+                                    select
+                                    label={'Wybierz szczepionkę'}
+                                    name={'vaccines'}
+                                    value={vaccine}
+                                    onChange={handleChange}
+                                    SelectProps={{
+                                        native: true,
+                                    }}
+                                >
+                                    {possibleVaccines.map((option) => (
+                                        <option key={option.vaccineId} value={option.vaccineId}>
+                                            {option.name + ", firma: " + option.company}
+                                        </option>
+                                    ))}
+                                </TextField>}
                             </Box>
                         </DialogContent>
                         <DialogActions>
@@ -438,7 +431,7 @@ export default function FilterTimeSlots() {
                         </DialogTitle>
                         <DialogContent>
                             <DialogContentText id="alert-dialog-description">
-                                {"Czy na pewno chcesz zapisać się na szczepienie? Data: " + timeSlot.from + ', Szczepionka: ' + vaccine.name}
+                                {"Czy na pewno chcesz zapisać się na szczepienie?"}
                             </DialogContentText>
                         </DialogContent>
                         <DialogActions>
@@ -455,12 +448,11 @@ export default function FilterTimeSlots() {
                         onClose={() => { setOpenSnackBar(false) }}
                         message={snackBarMessage}
                     />
-
                 </CssBaseline>
             </Container >
         </ThemeProvider >
-
     );
+
 }
 
 const Transition = React.forwardRef(function Transition(props, ref) {
