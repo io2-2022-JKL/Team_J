@@ -76,9 +76,6 @@ export default function SignUp() {
           phoneNumber: phoneNumber
         }
       });
-      console.log({
-        response
-      })
       setSuccess(true);
     } catch (error) {
       console.error(error.message);
@@ -91,15 +88,6 @@ export default function SignUp() {
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
-      PESEL: data.get('PESEL'),
-      firstName: data.get('firstName'),
-      lastName: data.get('lastName'),
-      mail: data.get('mail'),
-      dateOfBirth: data.get('dateOfBirth'),
-      password: data.get('password'),
-      phoneNumber: data.get('phoneNumber')
-    });
     signInUser(data.get('PESEL'), data.get('firstName'), data.get('lastName'), data.get('mail'), data.get('dateOfBirth'), data.get('password'), data.get('phoneNumber'));
   };
 
@@ -233,14 +221,11 @@ export default function SignUp() {
                     onChange={(newDate) => {
                       setDate(newDate);
                     }}
-                    //onError={()=>{setDateError(true)}}
                     renderInput={(params) => <TextField
                       {...params}
                       fullWidth
                       id='dateOfBirth'
                       name='dateOfBirth'
-                    //onBlur={() => {setDateError(false)}}
-                    //helperText = {dateError?"Błędna data":""}    
                     />}
                   />
                 </LocalizationProvider>

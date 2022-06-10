@@ -142,7 +142,6 @@ export default function FilterTimeSlots() {
             days[day] = group;
             return days;
         }, {});
-        console.log(days)
         return days;
     }
 

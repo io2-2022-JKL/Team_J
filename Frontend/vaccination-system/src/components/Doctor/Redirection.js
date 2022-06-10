@@ -1,12 +1,9 @@
 import * as React from 'react';
-import Button from '@mui/material/Button';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { Container, CssBaseline, Tab, Tabs } from '@mui/material';
-import AccountBoxRoundedIcon from '@mui/icons-material/AccountBoxRounded';
+import { createTheme } from '@mui/material/styles';
+import { Tab, Tabs } from '@mui/material';
 import Typography from '@mui/material/Typography';
-import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import LoginHelpers from '../../tools/LoginHelpers';
 import PropTypes from 'prop-types';
 import PatientMainPage from '../Patient/PatientMainPage';

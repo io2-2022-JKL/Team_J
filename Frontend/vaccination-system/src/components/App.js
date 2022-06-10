@@ -23,8 +23,14 @@ import BrowsingTimeSLots from './Doctor/BrowsingTimeSlots';
 import ModifyCreateTimeSlot from './Doctor/ModifyCreateTimeSlots';
 import Vaccinate from './Doctor/Vaccinate';
 import DoctorFormerAppointments from './Doctor/FormerAppointments';
+import { useEffect } from 'react';
 
 function App() {
+  useEffect(() => {
+    document.title = "System Szczepień"
+    document.description = "System służący do internetowego zapisu na szczepienia."
+  }, [])
+
   return (
     <div className="App">
       <BrowserRouter>

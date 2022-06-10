@@ -5,7 +5,6 @@ import { Grid } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { certify, getFormerAppointments } from './DoctorApi';
 import ItemListPageTemplate from '../ItemsListPageTemplate';
-import { handleBack } from "../Patient/General"
 import Button from '@mui/material/Button';
 
 export default function DoctorFormerAppointments() {
@@ -72,7 +71,6 @@ export default function DoctorFormerAppointments() {
                         let appointmentId = item.appointmentId;
                         const result = window.confirm("Czy na pewno chcesz wystawić certyfikat?", confirmOptionsInPolish);
                         if (result) {
-                            console.log("You click yes!");
                             let err = await certify(userID, appointmentId);
                             setErrorCertify(err);
                             if (err !== '200') {

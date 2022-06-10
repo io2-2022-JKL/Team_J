@@ -8,13 +8,13 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { addVaccine, editVaccine } from './AdminApi';
 import ValidationHelpers from '../../tools/ValidationHelpers';
 import { activeOptions } from '../../tools/ActiveOptions';
 import { ErrorSnackbar, SuccessSnackbar } from '../Snackbars';
 import DropDownSelect from '../DropDownSelect';
-import getViruses, { viruses } from '../../api/Viruses';
+import { viruses } from '../../api/Viruses';
 
 const theme = createTheme();
 
@@ -48,16 +48,6 @@ export default function AddOrEditVaccine() {
     const [success, setSuccess] = useState(false);
     const [selectedVirus, setSelectedVirus] = useState()
 
-    React.useEffect(async () => {
-        /*let [data, err] = await getViruses();
-        console.log(data.map(virus => { return { value: virus, label: virus } }))
-        if (data != null) {
-            setViruses(data);
-        }
-
-        setSelectedVirus(location.state != null ? location.state.action == "edit" ? location.state.virusName : data[0] : data[0])*/
-    }, [])
-
     React.useEffect(() => {
         if (maxDBD >= 0 && maxDBD < minDBD) {
             setMinDBDErrorState2(true);
@@ -85,8 +75,6 @@ export default function AddOrEditVaccine() {
             setMinPAError2("");
         }
 
-
-        //console.log(JSON.parse(localStorage.getItem('viruses')).map(virus => ({ value: virus.virus, label: virus.virus })))
     }, [minDBD, maxDBD, minPA, maxPA]);
 
     const handleSubmit = async (event) => {
@@ -99,7 +87,6 @@ export default function AddOrEditVaccine() {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
         let error;
-        console.log(location.state.action)
 
         if (location.state.action === "add")
             error = await addVaccine(data.get('company'), data.get('name'), Number.parseInt(data.get('numberOfDoses')),

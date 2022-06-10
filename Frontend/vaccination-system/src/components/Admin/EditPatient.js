@@ -11,7 +11,6 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useLocation, useNavigate } from "react-router-dom";
 import { editPatient } from './AdminApi';
 import ValidationHelpers from '../../tools/ValidationHelpers';
-import MuiAlert from '@mui/material/Alert';
 import { activeOptions } from '../../tools/ActiveOptions';
 import { ErrorSnackbar, SuccessSnackbar } from '../Snackbars';
 
@@ -43,7 +42,6 @@ export default function EditPatient() {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
 
-        console.log(data.get('firstName'))
         let error = await editPatient(location.state.id, data.get('pesel'), data.get('firstName'), data.get('lastName'),
             data.get('mail'), data.get('dateOfBirth'), data.get('phoneNumber'), data.get('active'));
         setOperationError(error);
@@ -51,10 +49,6 @@ export default function EditPatient() {
             setOperationErrorState(true);
         else
             setSuccess(true);
-
-        console.log(location.state.dateOfBirth)
-        console.log('po replace:')
-        console.log(location.state.dateOfBirth.replaceAll('-', '/'))
     };
 
     const handleChange = (event) => {

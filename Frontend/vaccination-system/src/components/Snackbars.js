@@ -1,6 +1,5 @@
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
 import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
 import LoginHelpers from '../tools/LoginHelpers';

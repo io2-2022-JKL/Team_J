@@ -9,7 +9,7 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useLocation, useNavigate } from "react-router-dom";
-import { DatePicker, LocalizationProvider, TimePicker, StaticTimePicker, DateTimePicker } from '@mui/x-date-pickers';
+import { LocalizationProvider, DateTimePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { ErrorSnackbar, SuccessSnackbar } from '../Snackbars';
 import { createTimeSlots, modifyTimeSlots } from './DoctorApi';
@@ -29,13 +29,6 @@ export default function ModifyCreateTimeSlot() {
     const handleSubmit = async (event) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
-        console.log({
-            doctorID: location.state.doctorId,
-            timeSlotId: location.state.timeSlotId,
-            date: data.get('date'),
-            timeFrom: data.get('timeFrom'),
-            timeTo: data.get('timeTo')
-        })
 
         let error
         if (location.state.action === "modify")
