@@ -9,13 +9,12 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useLocation, useNavigate } from "react-router-dom";
-import { addVaccinationCenter, addVaccine, editVaccinationCenter, editVaccine, getVaccinesData } from './AdminApi';
+import { addVaccinationCenter, editVaccinationCenter, getVaccinesData } from './AdminApi';
 import ValidationHelpers from '../../tools/ValidationHelpers';
-import LoginHelpers from '../../tools/LoginHelpers'
 import { activeOptions } from '../../tools/ActiveOptions';
 import WeekDays from '../../tools/WeekDays';
 import { Dialog } from '@material-ui/core';
-import { DialogActions, DialogContent, DialogTitle, useStepContext } from '@mui/material';
+import { DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
@@ -39,17 +38,11 @@ export default function AddOrEditVaccinationCenter() {
     const [activeOption, setActiveOption] = React.useState(location.state != null ? location.state.active ? 'aktywny' : 'nieaktywny' : '');
     const [openingHoursError, setOpeningHoursError] = useState();
     const [openingHoursErrorState, setOpeningHoursErrorState] = useState();
-
     const [chooseVaccinesDialogOpen, setChooseVaccinesDialogOpen] = useState(false);
-
     const [operationError, setOperationError] = useState('');
     const [operationErrorState, setOperationErrorState] = useState(false);
     const [success, setSuccess] = useState(false);
-
     const [selectedCity, setSelectedCity] = useState(location.state != null ? location.state.city : cities[0])
-
-    React.useEffect(() => {
-    }, []);
 
     const handleSubmit = async (event) => {
         if (nameErrorState || streetErrorState || openingHoursErrorState) {
@@ -60,21 +53,7 @@ export default function AddOrEditVaccinationCenter() {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
 
-        console.log({
-            id: location.state.id,
-            name: data.get('name'),
-            city: data.get('city'),
-            street: data.get('street'),
-            vaccineIds: checkedVaccines.map(vaccine => vaccine.vaccineId),
-            openingHoursDays: [textToOpeningHoursObject(data.get('0hours')), textToOpeningHoursObject(data.get('1hours')),
-            textToOpeningHoursObject(data.get('2hours')), textToOpeningHoursObject(data.get('3hours')), textToOpeningHoursObject(data.get('4hours')),
-            textToOpeningHoursObject(data.get('5hours')), textToOpeningHoursObject(data.get('6hours')),],
-            active: data.get('active')
-        })
-
         let error;
-        console.log(location.state.action)
-
         if (location.state.action === "add")
             error = await addVaccinationCenter(
                 data.get('name'), data.get('city'), data.get('street'),

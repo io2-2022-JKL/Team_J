@@ -6,12 +6,11 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import { useNavigate } from "react-router-dom";
 import Grid from "@material-ui/core/Grid";
-import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid';
+import { GridActionsCellItem } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
 import clsx from 'clsx';
 import ApartmentIcon from '@mui/icons-material/Apartment';
 import Avatar from '@mui/material/Avatar';
-import { confirm } from "react-confirm-box";
 import FilteringHelepers from '../../tools/FilteringHelepers';
 import DataDisplayArray from '../DataDisplayArray';
 import { getVaccinationCentersData, deleteVaccinationCenter } from './AdminApi';
@@ -128,7 +127,6 @@ export default function VaccinationCentersPage() {
             setLoading(true);
             let [data, err] = await getVaccinationCentersData();
             if (data != null) {
-                console.log(data.find((e) => e.vaccines))
                 setRows(data);
                 setFilteredRows(data)
             }

@@ -35,7 +35,6 @@ export default function IncomingAppointment() {
             let [patientData, err] = await getIncomingAppointments(userID);
             if (patientData != null) {
                 setData(patientData);
-                console.log(patientData)
             }
             else {
                 setData([]);
@@ -45,7 +44,6 @@ export default function IncomingAppointment() {
             setLoading(false);
         }
         fetchData();
-        console.log("run useEffect")
     }, [cancelError]);
 
     function renderRow(props) {
@@ -70,7 +68,6 @@ export default function IncomingAppointment() {
                         let appointmentId = item.appointmentId;
                         const result = window.confirm("Czy na pewno chcesz anulować wizytę?", confirmOptionsInPolish);
                         if (result) {
-                            console.log("You click yes!");
                             let err = await cancelAppointment(patientID, appointmentId);
                             if (err !== '200') {
                                 setErrorCancel(err);

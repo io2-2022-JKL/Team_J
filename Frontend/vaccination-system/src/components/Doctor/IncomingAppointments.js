@@ -71,7 +71,6 @@ export default function DoctorIncomingAppointment() {
             let [appointmentsData, err] = await getIncomingAppointments(userID);
             if (appointmentsData != null) {
                 setData(appointmentsData);
-                console.log(appointmentsData)
             }
             else {
                 setData([]);
@@ -81,7 +80,6 @@ export default function DoctorIncomingAppointment() {
             setLoading(false);
         }
         fetchData();
-        console.log("run useEffect")
     }, [cancelError]);
 
     function renderRow(props) {
@@ -103,7 +101,6 @@ export default function DoctorIncomingAppointment() {
                         onClick={async () => {
                             const appointmentId = item.appointmentId
                             const [appointmentData, err] = await getAppointmetInfo(localStorage.getItem('doctorID'), item.appointmentId)
-                            console.log({ state: { appointmentData, appointmentId } })
                             navigate("/doctor/vaccinate", { state: { appointmentData, appointmentId } })
                         }}
                     >

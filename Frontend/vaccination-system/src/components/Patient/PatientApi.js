@@ -1,29 +1,19 @@
 import Moment from 'moment';
-import { deleteRequest, getRequest, postRequest, postRequestNoBody } from '../../api/Api';
+import { deleteRequest, getRequest, postRequestNoBody } from '../../api/Api';
 
 export async function getFreeTimeSlots(city, dateFrom, dateTo, virus) {
     let from = Moment(dateFrom).format('DD-MM-YYYY')
     let to = Moment(dateTo).format('DD-MM-YYYY')
 
-    console.log({
-        city: city,
-        dateFrom: from,
-        dateTo: to,
-        virus: virus
-    })
-    return postRequest('/patient/timeSlots/filter', {
-        city: city,
-        dateFrom: from,
-        dateTo: to,
-        virus: virus
-    })
+    return getRequest('/patient/timeSlots/filter' +
+        '?city=' + city +
+        '&dateFrom=' + from +
+        '&dateTo=' + to +
+        '&virus=' + virus)
 }
 
-export async function bookTimeSlot(timeSlot, vaccine) {
+export async function bookTimeSlot(timeSlotId, vaccineId) {
     let patientID = localStorage.getItem('patientID')
-    let timeSlotId = timeSlot.timeSlotId
-    let vaccineId = vaccine.vaccineId
-
     return postRequestNoBody('/patient/timeSlots/Book/' + patientID + '/' + timeSlotId + '/' + vaccineId)
 }
 

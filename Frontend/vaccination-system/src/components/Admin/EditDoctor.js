@@ -54,8 +54,6 @@ export default function EditDoctor() {
             setOperationErrorState(true);
         else
             setSuccess(true);
-
-        console.log(location.state)
     };
 
     const [activeOption, setActiveOption] = React.useState(location.state != null ? location.state.active ? 'aktywny' : 'nieaktywny' : '');
@@ -141,28 +139,6 @@ export default function EditDoctor() {
                                     error={mailErrorState}
                                 />
                             </Grid>
-                            {/*<Grid item xs={12}>
-                                <LocalizationProvider dateAdapter={AdapterDateFns}>
-                                    <DatePicker
-                                        label="Data urodzenia"
-                                        views={['year', 'month', 'day']}
-                                        inputFormat="dd-MM-yyyy"
-                                        mask="__-__-____"
-                                        value={dateOfBirth}
-                                        minDate={new Date("01/01/1900")}
-                                        maxDate={new Date()}
-                                        onChange={(newDate) => {
-                                            setDateOfBirth(newDate);
-                                        }}
-                                        renderInput={(params) => <TextField
-                                            {...params}
-                                            fullWidth
-                                            id='dateOfBirth'
-                                            name='dateOfBirth'
-                                        />}
-                                    />
-                                </LocalizationProvider>
-                                        </Grid>*/}
                             <Grid item xs={12}>
                                 <TextField
                                     defaultValue={location.state != null ? location.state.dateOfBirth : null}

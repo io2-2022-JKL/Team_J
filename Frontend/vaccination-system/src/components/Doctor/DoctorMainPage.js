@@ -71,7 +71,7 @@ export default function DoctorMainPage() {
                                 navigate("/doctor/formerAppointments")
                             }}
                         >
-                            Wystaw certyfikat szczepienia
+                            Zakończone szczepienia
                         </Button>
                         <Button
                             type="submit"

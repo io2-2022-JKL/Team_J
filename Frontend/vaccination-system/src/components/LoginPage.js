@@ -95,7 +95,6 @@ export default function LoginPage() {
         setLoading(false);
 
         localStorage.setItem('isDoctor', false)
-        console.log(response.data.userType)
         let [data, err] = [];
         let patientId;
         switch (response.data.userType) {
@@ -117,12 +116,8 @@ export default function LoginPage() {
                 let [doctorData, DoctorErr] = []
                 localStorage.setItem('isDoctor', true)
                 let doctorId = localStorage.getItem('userID');
-                console.log(doctorId);
                 [doctorData, DoctorErr] = await getDoctorInfo(doctorId);
-                console.log(doctorData);
                 localStorage.setItem('patientID', doctorData.patientAccountId);
-                //console.log('doctorData')
-                //patientId = doctorData.patientId
                 [data, err] = await getPatientInfo(doctorData.patientAccountId);
                 localStorage.setItem('userFirstName', data.firstName)
                 localStorage.setItem('userLastName', data.lastName)
