@@ -263,6 +263,10 @@ namespace VaccinationSystem.Controllers
             {
                 return BadRequest();
             }
+            catch(MailIssuesException)
+            {
+                result = true;
+            }
             if (result == false) return NotFound();
             return Ok();
         }
@@ -295,7 +299,6 @@ namespace VaccinationSystem.Controllers
                 if (booked != null) return false; // Patient already has a planned visit for this virus, he can't order a new one
             }
             
-
             var patient = _context.Patients.Where(patient => patient.Id == patId && patient.Active == true).SingleOrDefault();
             if (patient == null) return false;
             var timeSlot = _context.TimeSlots.Where(ts => ts.Id == tsId && ts.Active == true && ts.IsFree == true).SingleOrDefault();
@@ -333,7 +336,7 @@ namespace VaccinationSystem.Controllers
                 }
                 catch
                 {
-                    throw;
+                    return true;
                 }
             }
             return true;
@@ -422,6 +425,10 @@ namespace VaccinationSystem.Controllers
             {
                 return BadRequest();
             }
+            catch(MailIssuesException)
+            {
+                result = true;
+            }
             if (result == false) return NotFound();
             return Ok();
         }
@@ -464,7 +471,7 @@ namespace VaccinationSystem.Controllers
                 }
                 catch
                 {
-                    throw;
+                    return true;
                 } 
             }
             return true;
