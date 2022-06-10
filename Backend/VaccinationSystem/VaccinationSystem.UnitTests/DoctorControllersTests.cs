@@ -296,10 +296,19 @@ namespace VaccinationSystem.UnitTests
             var controller = new DoctorController(mockContext.Object, null, null);
 
             string doctorId = "e0d50915-5548-4993-dddd-edddab4e1df1";
-            List<string> timeSlotIds = new List<string>();
-            timeSlotIds.Add("a0780125-a945-4e20-b2ab-02bcf0ce8f3b");
-            timeSlotIds.Add("a1780125-a945-4e20-b2ab-02bcf0ce8f3b");
-            timeSlotIds.Add("a3780125-a945-4e20-b2ab-02bcf0ce8f3b");
+            List<TimeSlotToDeleteDTO> timeSlotIds = new List<TimeSlotToDeleteDTO>();
+            timeSlotIds.Add(new TimeSlotToDeleteDTO()
+            {
+                id = "a0780125-a945-4e20-b2ab-02bcf0ce8f3b",
+            });
+            timeSlotIds.Add(new TimeSlotToDeleteDTO()
+            {
+                id = "a1780125-a945-4e20-b2ab-02bcf0ce8f3b",
+            });
+            timeSlotIds.Add(new TimeSlotToDeleteDTO()
+            {
+                id = "a3780125-a945-4e20-b2ab-02bcf0ce8f3b",
+            });
 
             // Act
             var result = controller.DeleteTimeSlot(doctorId, timeSlotIds);
@@ -348,8 +357,11 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.Patients).Returns(patientMockSet.Object);
 
             var controller = new DoctorController(mockContext.Object, null, null);
-            List<string> list = new List<string>();
-            list.Add(timeSlotId);
+            List<TimeSlotToDeleteDTO> list = new List<TimeSlotToDeleteDTO>();
+            list.Add(new TimeSlotToDeleteDTO()
+            {
+                id = timeSlotId,
+            });
 
             // Act
             var result = controller.DeleteTimeSlot(doctorId, list);
@@ -391,8 +403,11 @@ namespace VaccinationSystem.UnitTests
             mockContext.Setup(c => c.Patients).Returns(patientMockSet.Object);
 
             var controller = new DoctorController(mockContext.Object, null, null);
-            List<string> list = new List<string>();
-            list.Add(timeSlotId);
+            List<TimeSlotToDeleteDTO> list = new List<TimeSlotToDeleteDTO>();
+            list.Add(new TimeSlotToDeleteDTO()
+            {
+                id = timeSlotId,
+            });
 
             // Act
             var result = controller.DeleteTimeSlot(doctorId, list);
