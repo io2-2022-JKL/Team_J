@@ -46,14 +46,14 @@ namespace VaccinationSystem
             services.AddAuthentication("Bearer")
                 .AddJwtBearer("Bearer", options =>
                 {
-                    options.Authority = "https://localhost:6001";
+                    options.Authority = "https://systemszczepienkonta.azurewebsites.net/";
 
                     options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
                     {
                         ValidateAudience = false,
                         ValidateLifetime = true,
                         ValidateIssuer = true,
-                        ValidIssuers = new List<string>() { "https://localhost:6001" },
+                        ValidIssuers = new List<string>() { "https://systemszczepienkonta.azurewebsites.net/" },
                         ClockSkew = TimeSpan.Zero
                     };
                 });
