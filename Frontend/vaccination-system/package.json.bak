@@ -1,0 +1,70 @@
+{
+  "name": "vaccination-system",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@date-io/date-fns": "^2.13.1",
+    "@date-io/dayjs": "^2.13.1",
+    "@date-io/luxon": "^2.13.1",
+    "@date-io/moment": "^2.13.1",
+    "@emotion/react": "^11.8.2",
+    "@emotion/styled": "^11.8.1",
+    "@material-ui/data-grid": "^4.0.0-alpha.37",
+    "@mui/icons-material": "^5.5.1",
+    "@mui/material": "^5.5.3",
+    "@mui/styled-engine-sc": "^5.5.2",
+    "@mui/styles": "^5.5.3",
+    "@mui/x-data-grid": "^5.7.0",
+    "@mui/x-data-grid-generator": "^5.7.0",
+    "@mui/x-date-pickers": "^5.0.0-alpha.1",
+    "@testing-library/jest-dom": "^5.16.3",
+    "@testing-library/react": "^12.1.4",
+    "@testing-library/user-event": "^13.5.0",
+    "@types/date-fns": "^2.6.0",
+    "axios": "^0.26.1",
+    "chromedriver": "^101.0.0",
+    "dateformat": "^5.0.3",
+<<<<<<< HEAD
+    "geckodriver": "^3.0.1",
+=======
+>>>>>>> deploy
+    "moment": "^2.29.3",
+    "react": "^17.0.2",
+    "react-confirm-box": "^1.2.0",
+    "react-dom": "^17.0.2",
+    "react-scripts": "5.0.0",
+    "react-window": "^1.8.6",
+    "selenium-webdriver": "^4.2.0",
+    "styled-components": "^5.3.5",
+    "validator": "^13.7.0",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "mocha": "^10.0.0",
+    "react-router-dom": "^6.2.2"
+  }
+}
