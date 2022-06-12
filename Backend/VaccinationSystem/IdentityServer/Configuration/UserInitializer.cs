@@ -154,10 +154,10 @@ namespace IdentityServer.Configuration
                 },
                 new ApplicationUser
                 {
-                    UserName = "01168691@pw.edu.pl",
-                    NormalizedUserName = "01168691@PW.EDU.PL",
-                    Email = "01168691@pw.edu.pl",
-                    NormalizedEmail = "01168691@PW.EDU.PL",
+                    UserName = "student@pw.edu.pl",
+                    NormalizedUserName = "STUDENT@PW.EDU.PL",
+                    Email = "student@pw.edu.pl",
+                    NormalizedEmail = "STUDENT@PW.EDU.PL",
                     PhoneNumber = "+48967123729",
                     Id = Guid.Parse("F982AAA8-4BE7-4115-A4F9-6CBAB37AE726").ToString(),
                     EmailConfirmed = true,
@@ -196,11 +196,11 @@ namespace IdentityServer.Configuration
         {
             var data = new List<string>
             {
-                "Password",
-                "AllH4ilTheQu33n",
-                "3b6L\\\"[>k4?V?x?#",
-                "5Procent",
-                "haslohaslo"
+                "1234",
+                "1234",
+                "1234",
+                "1234",
+                "1234"
             };
             return data;
         }
@@ -211,10 +211,10 @@ namespace IdentityServer.Configuration
             {
                 new ApplicationUser
                 {
-                    UserName = "aaeeshaAAR@doktor.org.pl",
-                    NormalizedUserName = "AAEESHAAAR@DOKTOR.ORG.PL",
-                    Email = "aaeeshaAAR@doktor.org.pl",
-                    NormalizedEmail = "AAEESHAAAR@DOKTOR.ORG.PL",
+                    UserName = "lekarz1@vs.org.pl",
+                    NormalizedUserName = "LEKARZ1@VS.ORG.PL",
+                    Email = "lekarz1@vs.org.pl",
+                    NormalizedEmail = "LEKARZ1@VS.ORG.PL",
                     PhoneNumber = "863928017",
                     Id = Guid.Parse("89A11879-4EDF-4A67-A6F7-23C76763A418").ToString(),
                     EmailConfirmed = true,
@@ -223,10 +223,10 @@ namespace IdentityServer.Configuration
                 },
                 new ApplicationUser
                 {
-                    UserName = "sylwesterS@doktor.org.pl",
-                    NormalizedUserName = "SYLWESTERS@DOKTOR.ORG.PL",
-                    Email = "sylwesterS@doktor.org.pl",
-                    NormalizedEmail = "SYLWESTERS@DOKTOR.ORG.PL",
+                    UserName = "lekarz2@vs.org.pl",
+                    NormalizedUserName = "LEKARZ2@VS.ORG.PL",
+                    Email = "lekarz2@vs.org.pl",
+                    NormalizedEmail = "LEKARZ2@VS.ORG.PL",
                     PhoneNumber = "+48964937619",
                     Id = Guid.Parse("9D77B5E9-2823-4274-B326-D371E5582274").ToString(),
                     EmailConfirmed = true,
@@ -241,8 +241,8 @@ namespace IdentityServer.Configuration
         {
             var data = new List<string>
             {
-                "?f$#Ybe72qnAu>7*",
-                "-EV92QbHF$!8keH="
+                "1234",
+                "1234"
             };
             return data;
         }
@@ -253,10 +253,10 @@ namespace IdentityServer.Configuration
             {
                 new ApplicationUser
                 {
-                    UserName = "admin@systemszczepien.org.pl",
-                    NormalizedUserName = "ADMIN@SYSTEMSZCZEPIEN.ORG.PL",
-                    Email = "admin@systemszczepien.org.pl",
-                    NormalizedEmail = "ADMIN@SYSTEMSZCZEPIEN.ORG.PL",
+                    UserName = "admin@vs.org.pl",
+                    NormalizedUserName = "ADMIN@VS.ORG.PL",
+                    Email = "admin@vs.org.pl",
+                    NormalizedEmail = "ADMIN@VS.ORG.PL",
                     PhoneNumber = "+48987654321",
                     Id = Guid.Parse("F72A1DDA-B5FA-4FC9-BA56-1924F93D6634").ToString(),
                     EmailConfirmed = true,
