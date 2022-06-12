@@ -49,6 +49,7 @@ export default function PatientMainPage() {
                             onClick={() => {
                                 navigate("/patient/appointments/incomingAppointments")
                             }}
+                            name="incomingAppointmentsButton"
                         >
                             Twoje szczepienia
                         </Button>
@@ -60,6 +61,7 @@ export default function PatientMainPage() {
                             onClick={() => {
                                 navigate("/patient/timeSlots")
                             }}
+                            name="registerForVaccinationButton"
                         >
                             Zapisz się na szczepienie
                         </Button>
@@ -86,6 +88,7 @@ export default function PatientMainPage() {
                             Twoje certyfikaty szczepień
                         </Button>
                         <Button
+                            name="logOutButton"
                             type="submit"
                             fullWidth
                             variant="contained"

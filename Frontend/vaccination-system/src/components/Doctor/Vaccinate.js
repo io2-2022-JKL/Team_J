@@ -124,6 +124,7 @@ export default function Vaccinate() {
                                 variant="contained"
                                 sx={{ mt: 3, mb: 2 }}
                                 onClick={() => { setOpenConfrimDialog(true) }}
+                                name="vaccinateButton"
                             >
                                 Przeprowadź szczepienie
                             </Button>
@@ -185,7 +186,7 @@ export default function Vaccinate() {
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={handleConfrimClose}>Nie</Button>
-                        <Button onClick={handleVaccineConfirmation} autoFocus>
+                        <Button name="confirmButton" onClick={handleVaccineConfirmation} autoFocus>
                             Tak
                         </Button>
                     </DialogActions>

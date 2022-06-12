@@ -59,6 +59,7 @@ export default function DoctorMainPage() {
                             onClick={() => {
                                 navigate("/doctor/incomingAppointments")
                             }}
+                            name="doctorIncomingAppointmentsButton"
                         >
                             Przeglądaj przyszłe szczepienia
                         </Button>
@@ -83,6 +84,7 @@ export default function DoctorMainPage() {
                                 navigate("/signin")
                             }
                             }
+                            name="doctorLogOutButton"
                         >
                             Wyloguj się
                         </Button>
