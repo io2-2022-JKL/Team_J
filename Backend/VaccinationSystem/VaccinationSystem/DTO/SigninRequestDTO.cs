@@ -7,7 +7,7 @@ namespace VaccinationSystem.DTO
         /// <example>james.bond@mi6.gov.uk</example>
         [Required]
         public string mail { get; set; }
-        /// <example>AllH4ilTheQu33n</example>
+        /// <example>1234</example>
         [Required]
         public string password { get; set; }
     }
