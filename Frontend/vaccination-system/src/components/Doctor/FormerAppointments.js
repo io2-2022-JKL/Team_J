@@ -66,6 +66,7 @@ export default function DoctorFormerAppointments() {
                     </Grid>
                 </Grid>
                 <Button
+                    name={item.patientFirstName+item.patientLastName}
                     disabled={item.certifyState === "LastNotCertified" ? false : true}
                     onClick={async () => {
                         let appointmentId = item.appointmentId;

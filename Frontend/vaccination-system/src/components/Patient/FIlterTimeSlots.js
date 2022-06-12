@@ -236,6 +236,7 @@ export default function FilterTimeSlots() {
                                             inputFormat="dd-MM-yyyy"
                                             mask="__-__-____"
                                             value={dateFrom}
+                                            name="dateFromPicker"
                                             onChange={(newDate) => {
                                                 setDateFrom(newDate);
                                             }}
@@ -308,6 +309,7 @@ export default function FilterTimeSlots() {
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
                             onClick={async () => { submitSearch() }}
+                            name="chooseButton"
                         >
                             Wybierz
                         </Button>}
@@ -326,6 +328,7 @@ export default function FilterTimeSlots() {
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
                             onClick={async () => { handleBack(navigate) }}
+                            name="backButton2"
                         >
                             Powrót
                         </Button>
@@ -350,7 +353,7 @@ export default function FilterTimeSlots() {
                                 <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
                                     {"Wybierz termin szczepienia"}
                                 </Typography>
-                                <Button autoFocus color="inherit" onClick={handleTimeSLotsClose}>
+                                <Button name="backButton" autoFocus color="inherit" onClick={handleTimeSLotsClose}>
                                     Wróć
                                 </Button>
                             </Toolbar>
@@ -415,7 +418,7 @@ export default function FilterTimeSlots() {
                         </DialogContent>
                         <DialogActions>
                             <Button onClick={handleVaccinesClose}>Wróc</Button>
-                            <Button onClick={handleVaccineChoice}>Wybierz</Button>
+                            <Button name="chooseVaccineButton" onClick={handleVaccineChoice}>Wybierz</Button>
                         </DialogActions>
                     </Dialog>
 
@@ -435,7 +438,7 @@ export default function FilterTimeSlots() {
                         </DialogContent>
                         <DialogActions>
                             <Button onClick={handleConfrimClose}>Nie</Button>
-                            <Button onClick={bookTimeSlotTrue} autoFocus>
+                            <Button name="confirmButton" onClick={bookTimeSlotTrue} autoFocus>
                                 Tak
                             </Button>
                         </DialogActions>

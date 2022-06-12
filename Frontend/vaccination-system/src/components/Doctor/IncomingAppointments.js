@@ -86,7 +86,7 @@ export default function DoctorIncomingAppointment() {
         const { index, style, data } = props;
         const item = data[index];
         return (
-            <ListItem style={style} key={index} component="div" disablePadding divider>
+            <ListItem style={style} key={index} component="div" disablePadding divider name="list">
                 <Grid container direction={"row"} spacing={1}>
                     <Grid item xs={4}>
                         <ListItemText primary={"Wirus: " + item.vaccineVirus} secondary={"Nazwa szczepionki: " + item.vaccineName} />
@@ -98,6 +98,7 @@ export default function DoctorIncomingAppointment() {
                         <ListItemText primary={"Początek wizyty: " + item.from} secondary={"Koniec wizyty: " + item.to} />
                     </Grid>
                     <Button
+                        name={item.patientFirstName + item.patientLastName}
                         onClick={async () => {
                             const appointmentId = item.appointmentId
                             const [appointmentData, err] = await getAppointmetInfo(localStorage.getItem('doctorID'), item.appointmentId)

@@ -63,10 +63,11 @@ export default function IncomingAppointment() {
                     </Grid>
                 </Grid>
                 <Button
+                    name="cancelButton"
                     onClick={async () => {
                         let patientID = localStorage.getItem('patientID');
                         let appointmentId = item.appointmentId;
-                        const result = window.confirm("Czy na pewno chcesz anulować wizytę?", confirmOptionsInPolish);
+                        const result = window.confirm("Czy na pewno chcesz anulować wizytę?");
                         if (result) {
                             let err = await cancelAppointment(patientID, appointmentId);
                             if (err !== '200') {
