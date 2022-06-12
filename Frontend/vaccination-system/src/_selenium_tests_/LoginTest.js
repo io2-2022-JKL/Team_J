@@ -345,5 +345,5 @@ async function RegisterForVaccinationTest(PESEL, firstName, lastName, email, pas
 //patientLoginTest('adi222@wp.pl', 'haslohaslo',"http://localhost:3000");
 //doctorLoginTest('sylwesterS@doktor.org.pl', '-EV92QbHF$!8keH=',"http://localhost:3000");
 //adminLoginTest('admin@systemszczepien.org.pl', '1234',"http://localhost:3000");
-//MakeNewDoctorTest('11111111104','Mania','Brzęczyszczykiewiczówna','MB7@onet.pl','1234','01-01-1946','801802809','admin@vs.org.pl', '1234',"https://systemszczepien.surge.sh");
-RegisterForVaccinationTest('10101010100','Pen','Brzęczyszczykiewiczówna','PB2@onet.pl','1234','01-01-1946','801802809',"lekarz1@vs.org.pl","1234","1111","http://localhost:3000");///"https://systemszczepien.surge.sh"
+MakeNewDoctorTest('10000000010','Barbara','Brzęczyszczykiewiczówna','BB@onet.pl','1234','01-01-1946','801802809','admin@vs.org.pl', '1234',"https://systemszczepien.surge.sh");
+RegisterForVaccinationTest('10101010000','Patrycja','Brzęczyszczykiewiczówna','PB3@onet.pl','1234','01-01-1946','801802809',"lekarz1@vs.org.pl","1234","1111","http://localhost:3000");///"https://systemszczepien.surge.sh"
