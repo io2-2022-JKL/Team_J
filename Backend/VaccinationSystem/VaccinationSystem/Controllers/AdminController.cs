@@ -30,7 +30,7 @@ namespace VaccinationSystem.Controllers
         private readonly string _dateTimeFormat = "dd-MM-yyyy HH\\:mm";
         private readonly string _timeSpanFormat = "hh\\:mm";
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly string _baseUri = "https://localhost:6001";
+        private readonly string _baseUri = "https://systemszczepienkonta.azurewebsites.net/";
 
         public AdminController(VaccinationSystemDbContext context, IHttpClientFactory httpClientFactory)
         {
