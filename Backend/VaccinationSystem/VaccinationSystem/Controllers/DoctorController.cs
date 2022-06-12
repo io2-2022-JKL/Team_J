@@ -169,6 +169,10 @@ namespace VaccinationSystem.Controllers
             {
                 return BadRequest();
             }
+            catch (MailIssuesException)
+            {
+                result = true;
+            }
             if (result == false) return BadRequest();
             return Ok();
         }
@@ -297,7 +301,7 @@ namespace VaccinationSystem.Controllers
                         }
                         catch
                         {
-                            throw;
+                            
                         } 
                     }
                 }
@@ -324,6 +328,10 @@ namespace VaccinationSystem.Controllers
             catch(BadRequestException)
             {
                 return BadRequest();
+            }
+            catch (MailIssuesException)
+            {
+                result = true;
             }
             if (result == false) return NotFound();
             return Ok();
@@ -390,7 +398,7 @@ namespace VaccinationSystem.Controllers
                     }
                     catch
                     {
-                        throw;
+                        return true;
                     } 
                 }
             }
@@ -698,7 +706,7 @@ namespace VaccinationSystem.Controllers
                 }
                 catch
                 {
-                    throw;
+                    return result;
                 } 
             }
             return result;

@@ -165,9 +165,11 @@ namespace VaccinationSystem.Controllers
             }
             foreach (TimeSlot timeSlot in timeSlots)
             {
+
+                if (timeSlot.Doctor.Active == false) continue;
                 Patient patientAccount = _context.Patients.Where(patient => patient.Id == timeSlot.Doctor.PatientId).SingleOrDefault();
                 TimeSlotFilterResponseDTO timeSlotFilterResponseDTO = new TimeSlotFilterResponseDTO();
-                VaccinationCenter vaccinationCenter = _context.VaccinationCenters.Where(vc => vc.Id == timeSlot.Doctor.VaccinationCenterId && vc.City == city).SingleOrDefault();
+                VaccinationCenter vaccinationCenter = _context.VaccinationCenters.Where(vc => vc.Id == timeSlot.Doctor.VaccinationCenterId && vc.City == city && vc.Active == true).SingleOrDefault();
                 if (vaccinationCenter == null) continue;
                 List<OpeningHours> openingHours;
                 List<VaccinesInVaccinationCenter> vaccineIDs;
@@ -261,6 +263,10 @@ namespace VaccinationSystem.Controllers
             {
                 return BadRequest();
             }
+            catch(MailIssuesException)
+            {
+                result = true;
+            }
             if (result == false) return NotFound();
             return Ok();
         }
@@ -283,6 +289,16 @@ namespace VaccinationSystem.Controllers
             }
             var vaccine = _context.Vaccines.Where(vac => vac.Id == vacId && vac.Active == true).SingleOrDefault();
             if (vaccine == null) return false;
+
+            // Check if the patient already has a booked visit for this virus
+            var beforeBooked = _context.Appointments.Where(ap => ap.PatientId == patId && ap.State == AppointmentState.Planned).ToList();
+            foreach(Appointment ap in beforeBooked)
+            {
+                var tempVaccine = _context.Vaccines.Where(vac => vac.Id == ap.VaccineId).FirstOrDefault();
+                var booked = beforeBooked.Where(ap => tempVaccine.Virus.ToString() == vaccine.Virus.ToString()).FirstOrDefault();
+                if (booked != null) return false; // Patient already has a planned visit for this virus, he can't order a new one
+            }
+            
             var patient = _context.Patients.Where(patient => patient.Id == patId && patient.Active == true).SingleOrDefault();
             if (patient == null) return false;
             var timeSlot = _context.TimeSlots.Where(ts => ts.Id == tsId && ts.Active == true && ts.IsFree == true).SingleOrDefault();
@@ -320,7 +336,7 @@ namespace VaccinationSystem.Controllers
                 }
                 catch
                 {
-                    throw;
+                    return true;
                 }
             }
             return true;
@@ -409,6 +425,10 @@ namespace VaccinationSystem.Controllers
             {
                 return BadRequest();
             }
+            catch(MailIssuesException)
+            {
+                result = true;
+            }
             if (result == false) return NotFound();
             return Ok();
         }
@@ -451,7 +471,7 @@ namespace VaccinationSystem.Controllers
                 }
                 catch
                 {
-                    throw;
+                    return true;
                 } 
             }
             return true;

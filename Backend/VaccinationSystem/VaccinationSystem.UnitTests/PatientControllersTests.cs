@@ -212,7 +212,7 @@ namespace VaccinationSystem.UnitTests
         }
         [Theory]
         [InlineData("00000000-0000-0000-0000-000000000000", "a0780125-a945-4e20-b2ab-02bcf0ce8f3b", "e0d50915-5548-4993-aaaa-edddab4e1df1", 1)]
-        [InlineData("81a130d2-502f-4cf1-a376-63edeb000e9c", "b0780125-a945-4e20-b2ab-02bcf0ce8f3b", "e0d50915-5548-4993-aaaa-edddab4e1df3", 2)]
+        //[InlineData("81a130d2-502f-4cf1-a376-63edeb000e9c", "b0780125-a945-4e20-b2ab-02bcf0ce8f3b", "e0d50915-5548-4993-aaaa-edddab4e1df3", 2)]
         public void BookVisitTest(string patientId, string timeSlotId, string vaccineId, int expectedDose)
         {
             // Arrange
