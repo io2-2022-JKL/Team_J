@@ -30,6 +30,7 @@ jobs:
       run: |
         dotnet build --configuration Release --no-restore
         dotnet publish -c Release -o ../dotnet-webapp -r linux-x64 --self-contained true /p:UseAppHost=true
+      working-directory: Backend/VaccinationSystem/IdentityServer
       
     - uses: azure/webapps-deploy@v2
       name: Deploy
