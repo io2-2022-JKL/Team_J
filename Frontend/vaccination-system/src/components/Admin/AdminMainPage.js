@@ -51,6 +51,7 @@ export default function AdminMainPage() {
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
                             onClick={() => { navigate("/admin/doctors") }}
+                            name="manageDoctorsButton"
                         >
                             Zarządzaj lekarzami
                         </Button>

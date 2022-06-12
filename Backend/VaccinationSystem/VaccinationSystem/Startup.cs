@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.OpenApi.Models;
 using System;
 using Microsoft.Net.Http.Headers;
+using VaccinationSystem.MailStuff;
 
 namespace VaccinationSystem
 {
@@ -45,14 +46,14 @@ namespace VaccinationSystem
             services.AddAuthentication("Bearer")
                 .AddJwtBearer("Bearer", options =>
                 {
-                    options.Authority = "https://systemszczepienkonta.azurewebsites.net";
+                    options.Authority = "https://systemszczepienkonta.azurewebsites.net/";
 
                     options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
                     {
                         ValidateAudience = false,
                         ValidateLifetime = true,
                         ValidateIssuer = true,
-                        ValidIssuers = new List<string>() { "https://systemszczepienkonta.azurewebsites.net" },
+                        ValidIssuers = new List<string>() { "https://systemszczepienkonta.azurewebsites.net/" },
                         ClockSkew = TimeSpan.Zero
                     };
                 });
@@ -143,7 +144,8 @@ namespace VaccinationSystem
             services.AddDbContext<VaccinationSystemDbContext>(x => x.UseSqlServer(connectionString));
 
             services.AddControllersWithViews();
-
+            services.Configure<MailSettings>(Configuration.GetSection("MailSettings"));
+            services.AddTransient<IMailService, MailService>();
 
             // In production, the React files will be served from this directory
             /*services.AddSpaStaticFiles(configuration =>

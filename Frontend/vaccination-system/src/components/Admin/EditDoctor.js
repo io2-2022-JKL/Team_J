@@ -10,11 +10,10 @@ import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useLocation, useNavigate } from "react-router-dom";
 import ValidationHelpers from '../../tools/ValidationHelpers';
-import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import { editDoctor } from './AdminApi';
 import { activeOptions } from '../../tools/ActiveOptions';
-import {ErrorSnackbar,SuccessSnackbar} from '../../tools/Snackbars';
+import { ErrorSnackbar, SuccessSnackbar } from '../Snackbars';
 
 const theme = createTheme();
 
@@ -55,8 +54,6 @@ export default function EditDoctor() {
             setOperationErrorState(true);
         else
             setSuccess(true);
-
-        console.log(location.state)
     };
 
     const [activeOption, setActiveOption] = React.useState(location.state != null ? location.state.active ? 'aktywny' : 'nieaktywny' : '');
@@ -142,28 +139,6 @@ export default function EditDoctor() {
                                     error={mailErrorState}
                                 />
                             </Grid>
-                            {/*<Grid item xs={12}>
-                                <LocalizationProvider dateAdapter={AdapterDateFns}>
-                                    <DatePicker
-                                        label="Data urodzenia"
-                                        views={['year', 'month', 'day']}
-                                        inputFormat="dd-MM-yyyy"
-                                        mask="__-__-____"
-                                        value={dateOfBirth}
-                                        minDate={new Date("01/01/1900")}
-                                        maxDate={new Date()}
-                                        onChange={(newDate) => {
-                                            setDateOfBirth(newDate);
-                                        }}
-                                        renderInput={(params) => <TextField
-                                            {...params}
-                                            fullWidth
-                                            id='dateOfBirth'
-                                            name='dateOfBirth'
-                                        />}
-                                    />
-                                </LocalizationProvider>
-                                        </Grid>*/}
                             <Grid item xs={12}>
                                 <TextField
                                     defaultValue={location.state != null ? location.state.dateOfBirth : null}
@@ -234,13 +209,13 @@ export default function EditDoctor() {
                         Powrót
                     </Button>
                     <ErrorSnackbar
-                        error = {operationError}
-                        errorState = {operationErrorState}
-                        setErrorState = {setOperationErrorState}
+                        error={operationError}
+                        errorState={operationErrorState}
+                        setErrorState={setOperationErrorState}
                     />
                     <SuccessSnackbar
-                        success = {success}
-                        setSuccess = {setSuccess}
+                        success={success}
+                        setSuccess={setSuccess}
                     />
                 </Box>
             </Container>

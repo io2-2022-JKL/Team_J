@@ -8,7 +8,7 @@ import Button from '@mui/material/Button';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Container, CssBaseline } from '@mui/material';
 import Typography from '@mui/material/Typography';
-import { getIncomingAppointments } from './DoctorApi';
+import { getAppointmetInfo, getIncomingAppointments } from './DoctorApi';
 import CircularProgress from '@mui/material/CircularProgress';
 import { blue } from '@mui/material/colors';
 import SummarizeIcon from '@mui/icons-material/Summarize';
@@ -67,11 +67,10 @@ export default function DoctorIncomingAppointment() {
     React.useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
-            let userID = localStorage.getItem('userID');
+            let userID = localStorage.getItem('doctorID');
             let [appointmentsData, err] = await getIncomingAppointments(userID);
             if (appointmentsData != null) {
                 setData(appointmentsData);
-                console.log(appointmentsData)
             }
             else {
                 setData([]);
@@ -81,14 +80,13 @@ export default function DoctorIncomingAppointment() {
             setLoading(false);
         }
         fetchData();
-        console.log("run useEffect")
     }, [cancelError]);
 
     function renderRow(props) {
         const { index, style, data } = props;
         const item = data[index];
         return (
-            <ListItem style={style} key={index} component="div" disablePadding divider>
+            <ListItem style={style} key={index} component="div" disablePadding divider name="list">
                 <Grid container direction={"row"} spacing={1}>
                     <Grid item xs={4}>
                         <ListItemText primary={"Wirus: " + item.vaccineVirus} secondary={"Nazwa szczepionki: " + item.vaccineName} />
@@ -99,6 +97,16 @@ export default function DoctorIncomingAppointment() {
                     <Grid item xs={4}>
                         <ListItemText primary={"Początek wizyty: " + item.from} secondary={"Koniec wizyty: " + item.to} />
                     </Grid>
+                    <Button
+                        name={item.patientFirstName + item.patientLastName}
+                        onClick={async () => {
+                            const appointmentId = item.appointmentId
+                            const [appointmentData, err] = await getAppointmetInfo(localStorage.getItem('doctorID'), item.appointmentId)
+                            navigate("/doctor/vaccinate", { state: { appointmentData, appointmentId } })
+                        }}
+                    >
+                        Rozpocznij szczepienie
+                    </Button>
                 </Grid>
             </ListItem>
         );
@@ -152,7 +160,7 @@ export default function DoctorIncomingAppointment() {
                             type="submit"
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
-                            onClick={() => { navigate('/doctor/redirection') }}
+                            onClick={() => { navigate("/doctor/redirection", { state: { page: "doctor" } }) }}
                         >
                             Powrót
                         </Button>

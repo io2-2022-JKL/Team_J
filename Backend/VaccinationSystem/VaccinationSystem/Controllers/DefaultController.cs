@@ -202,7 +202,6 @@ namespace VaccinationSystem.Controllers
                     HttpContext.Response.Headers.Add(HeaderNames.Authorization, token);
                     return result;
                 }
-
             }
             account = _context.Admins.SingleOrDefault(admin => admin.Mail == signinRequestDTO.mail && admin.Password == signinRequestDTO.password);
             if (account != null)

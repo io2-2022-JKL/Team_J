@@ -11,6 +11,7 @@ using VaccinationSystem.Config;
 using VaccinationSystem.DTO;
 using VaccinationSystem.DTO.Errors;
 using VaccinationSystem.DTO.PatientDTOs;
+using VaccinationSystem.MailStuff;
 using VaccinationSystem.Models;
 
 namespace VaccinationSystem.Controllers
@@ -21,11 +22,13 @@ namespace VaccinationSystem.Controllers
     public class PatientController : ControllerBase
     {
         private readonly VaccinationSystemDbContext _context;
+        private readonly IMailService _mailService;
         private readonly string _dateTimeFormat = "dd-MM-yyyy HH\\:mm";
         private readonly string _dateFormat = "dd-MM-yyyy";
-        public PatientController(VaccinationSystemDbContext context)
+        public PatientController(VaccinationSystemDbContext context, IMailService mailService)
         {
             _context = context;
+            _mailService = mailService;
         }
 
         [ProducesResponseType(typeof(IEnumerable<PatientInfoResponseDTO>), 200)]
@@ -88,7 +91,7 @@ namespace VaccinationSystem.Controllers
             IEnumerable<TimeSlotFilterResponseDTO> result;
             try
             {
-                string patId = User.FindFirst("sub")?.Value;
+                string patId = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
                 if (patId == null) return Unauthorized();
                 result = fetchFilteredTimeSlots(city, dateFrom, dateTo, virus, patId);
             }
@@ -123,13 +126,20 @@ namespace VaccinationSystem.Controllers
             }
             if (city == null || virus == null) throw new BadRequestException();
             List<TimeSlot> timeSlots;
+
             // Check if the patient already has a booked visit for this virus
-            var booked = _context.Appointments.Include(ap => ap.Vaccine).Where(ap => ap.PatientId == patientId && ap.Vaccine.Virus.ToString() == virus &&
-                ap.State == AppointmentState.Planned).FirstOrDefault();
+            /*var booked = _context.Appointments.Include(ap => ap.Vaccine).Where(ap => ap.PatientId == patientId && ap.Vaccine.Virus.ToString() == virus &&
+                ap.State == AppointmentState.Planned).FirstOrDefault();*/
+            var beforeBooked = _context.Appointments.Where(ap => ap.PatientId == patientId && 
+                ap.State == AppointmentState.Planned).Include(ap => ap.Vaccine).ToList();
+            var booked = beforeBooked.Where(ap => ap.Vaccine.Virus.ToString() == virus).FirstOrDefault();
             if (booked != null) return null; // Patient already has a planned visit for this virus, he can't order a new one
             // Check if the patient was already vaccinated with a dose of a vaccine
-            var vaccinated = _context.Appointments.Include(ap => ap.Vaccine).Include(ap => ap.TimeSlot).
-                Where(ap => ap.PatientId == patientId && ap.Vaccine.Virus.ToString() == virus && ap.State == AppointmentState.Finished).ToList();
+            /*var vaccinated = _context.Appointments.Include(ap => ap.Vaccine).Include(ap => ap.TimeSlot).
+                Where(ap => ap.PatientId == patientId && ap.Vaccine.Virus.ToString() == virus && ap.State == AppointmentState.Finished).ToList();*/
+            var beforeVaccinated = _context.Appointments.Where(ap => ap.PatientId == patientId && ap.State == AppointmentState.Finished)
+                .Include(ap => ap.Vaccine).Include(ap => ap.TimeSlot).ToList();
+            var vaccinated = beforeVaccinated.Where(ap => ap.Vaccine.Virus.ToString() == virus).ToList();
             Vaccine vaccineToBeUsed = null;
             if (vaccinated != null && vaccinated.Count > 0) // He did, new time slots must be only for that type of vaccine
             {
@@ -147,6 +157,7 @@ namespace VaccinationSystem.Controllers
                 timeSlot.From >= From && timeSlot.From >= minDate && timeSlot.From <= maxDate && timeSlot.To <= To)
                     .Include(timeSlot => timeSlot.Doctor).ToList();
             }
+
             else
             {
             timeSlots = _context.TimeSlots.Where(timeSlot => timeSlot.Active == true && timeSlot.IsFree == true &&
@@ -154,9 +165,11 @@ namespace VaccinationSystem.Controllers
             }
             foreach (TimeSlot timeSlot in timeSlots)
             {
+
+                if (timeSlot.Doctor.Active == false) continue;
                 Patient patientAccount = _context.Patients.Where(patient => patient.Id == timeSlot.Doctor.PatientId).SingleOrDefault();
                 TimeSlotFilterResponseDTO timeSlotFilterResponseDTO = new TimeSlotFilterResponseDTO();
-                VaccinationCenter vaccinationCenter = _context.VaccinationCenters.Where(vc => vc.Id == timeSlot.Doctor.VaccinationCenterId && vc.City == city).SingleOrDefault();
+                VaccinationCenter vaccinationCenter = _context.VaccinationCenters.Where(vc => vc.Id == timeSlot.Doctor.VaccinationCenterId && vc.City == city && vc.Active == true).SingleOrDefault();
                 if (vaccinationCenter == null) continue;
                 List<OpeningHours> openingHours;
                 List<VaccinesInVaccinationCenter> vaccineIDs;
@@ -164,11 +177,13 @@ namespace VaccinationSystem.Controllers
                 {
                     openingHours = _context.OpeningHours.Where(oh => oh.VaccinationCenterId == vaccinationCenter.Id).ToList();
                     if (openingHours.Count == 0) continue;
+
                     if (vaccineToBeUsed != null)
                     {
                         vaccineIDs = _context.VaccinesInVaccinationCenter.Where
                             (vivc => vivc.VaccinationCenterId == vaccinationCenter.Id && vivc.VaccineId == vaccineToBeUsed.Id).ToList();
                     }
+
                     else
                     {
                         vaccineIDs = _context.VaccinesInVaccinationCenter
@@ -184,7 +199,9 @@ namespace VaccinationSystem.Controllers
                 bool foundVirus = false;
                 foreach(VaccinesInVaccinationCenter vaccineID in vaccineIDs)
                 {
+
                     if (vaccineToBeUsed != null && vaccineToBeUsed.Id != vaccineID.VaccineId) continue;
+
                     var vaccine = _context.Vaccines.Where(vac => vac.Id == vaccineID.VaccineId && vac.Active == true).SingleOrDefault();
                     if (vaccine == null) continue;
                     vaccines.Add(new SimplifiedVaccineDTO()
@@ -246,6 +263,10 @@ namespace VaccinationSystem.Controllers
             {
                 return BadRequest();
             }
+            catch(MailIssuesException)
+            {
+                result = true;
+            }
             if (result == false) return NotFound();
             return Ok();
         }
@@ -268,6 +289,16 @@ namespace VaccinationSystem.Controllers
             }
             var vaccine = _context.Vaccines.Where(vac => vac.Id == vacId && vac.Active == true).SingleOrDefault();
             if (vaccine == null) return false;
+
+            // Check if the patient already has a booked visit for this virus
+            var beforeBooked = _context.Appointments.Where(ap => ap.PatientId == patId && ap.State == AppointmentState.Planned).ToList();
+            foreach(Appointment ap in beforeBooked)
+            {
+                var tempVaccine = _context.Vaccines.Where(vac => vac.Id == ap.VaccineId).FirstOrDefault();
+                var booked = beforeBooked.Where(ap => tempVaccine.Virus.ToString() == vaccine.Virus.ToString()).FirstOrDefault();
+                if (booked != null) return false; // Patient already has a planned visit for this virus, he can't order a new one
+            }
+            
             var patient = _context.Patients.Where(patient => patient.Id == patId && patient.Active == true).SingleOrDefault();
             if (patient == null) return false;
             var timeSlot = _context.TimeSlots.Where(ts => ts.Id == tsId && ts.Active == true && ts.IsFree == true).SingleOrDefault();
@@ -293,6 +324,21 @@ namespace VaccinationSystem.Controllers
             _context.Appointments.Add(appointment);
             timeSlot.IsFree = false;
             _context.SaveChanges();
+            if(_mailService != null)
+            {
+                MailRequest request = new MailRequest();
+                request.Subject = "Visit booking successful";
+                request.Body = "You have successfully booked a visit!";
+                request.ToEmail = patient.Mail;
+                try
+                {
+                    _mailService.SendEmailAsync(request);
+                }
+                catch
+                {
+                    return true;
+                }
+            }
             return true;
         }
         [ProducesResponseType(typeof(IEnumerable<FutureAppointmentDTO>), 200)]
@@ -361,7 +407,6 @@ namespace VaccinationSystem.Controllers
             }
             return result;
         }
-
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
@@ -379,6 +424,10 @@ namespace VaccinationSystem.Controllers
             catch(BadRequestException)
             {
                 return BadRequest();
+            }
+            catch(MailIssuesException)
+            {
+                result = true;
             }
             if (result == false) return NotFound();
             return Ok();
@@ -410,6 +459,21 @@ namespace VaccinationSystem.Controllers
             appointment.State = Models.AppointmentState.Cancelled;
             timeSlot.IsFree = true;
             this._context.SaveChanges();
+            if (_mailService != null)
+            {
+                MailRequest request = new MailRequest();
+                request.Subject = "Visit cancellation successful";
+                request.Body = "You have successfully cancelled a visit!";
+                request.ToEmail = checkIfPatientIsActive.Mail;
+                try
+                {
+                    _mailService.SendEmailAsync(request);
+                }
+                catch
+                {
+                    return true;
+                } 
+            }
             return true;
         }
         [ProducesResponseType(typeof(IEnumerable<FormerAppointmentDTO>), 200)]

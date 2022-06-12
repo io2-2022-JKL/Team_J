@@ -14,7 +14,7 @@ import { blue } from '@mui/material/colors';
 import SummarizeIcon from '@mui/icons-material/Summarize';
 import Avatar from '@mui/material/Avatar';
 import { handleBack } from './General';
-import { ErrorSnackbar, SuccessSnackbar } from '../../tools/Snackbars';
+import { ErrorSnackbar, SuccessSnackbar } from '../Snackbars';
 
 const theme = createTheme();
 
@@ -31,11 +31,10 @@ export default function IncomingAppointment() {
     React.useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
-            let userID = localStorage.getItem('userID');
+            let userID = localStorage.getItem('patientID');
             let [patientData, err] = await getIncomingAppointments(userID);
             if (patientData != null) {
                 setData(patientData);
-                console.log(patientData)
             }
             else {
                 setData([]);
@@ -45,7 +44,6 @@ export default function IncomingAppointment() {
             setLoading(false);
         }
         fetchData();
-        console.log("run useEffect")
     }, [cancelError]);
 
     function renderRow(props) {
@@ -65,13 +63,13 @@ export default function IncomingAppointment() {
                     </Grid>
                 </Grid>
                 <Button
+                    name="cancelButton"
                     onClick={async () => {
-                        let userID = localStorage.getItem('userID');
+                        let patientID = localStorage.getItem('patientID');
                         let appointmentId = item.appointmentId;
-                        const result = window.confirm("Czy na pewno chcesz anulować wizytę?", confirmOptionsInPolish);
+                        const result = window.confirm("Czy na pewno chcesz anulować wizytę?");
                         if (result) {
-                            console.log("You click yes!");
-                            let err = await cancelAppointment(userID, appointmentId);
+                            let err = await cancelAppointment(patientID, appointmentId);
                             if (err !== '200') {
                                 setErrorCancel(err);
                                 setErrorCancelState(true);
@@ -154,9 +152,9 @@ export default function IncomingAppointment() {
                             setErrorState={setErrorCancelState}
                         />
                         <SuccessSnackbar
-                            success = {success}
-                            setSuccess = {setSuccess}
-                        />                        
+                            success={success}
+                            setSuccess={setSuccess}
+                        />
                     </Box>
                 </CssBaseline>
             </Container>

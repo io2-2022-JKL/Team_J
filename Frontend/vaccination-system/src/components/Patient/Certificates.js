@@ -49,8 +49,8 @@ export default function Certificate() {
 
         const fetchData = async () => {
             setLoading(true);
-            let userID = localStorage.getItem('userID');
-            let [patientData, err] = await getCertificates(userID);
+            let patientID = localStorage.getItem('patientID');
+            let [patientData, err] = await getCertificates(patientID);
             if (patientData != null)
                 setData(patientData);
             else {
@@ -67,14 +67,14 @@ export default function Certificate() {
     return (
         //ItemListPageTemplate("Twoje certyfikaty", data, renderRow, renderError, errorState, error, handleClose, handleBackClick, loading, setErrorState)
         <ItemListPageTemplate
-            title = {"Twoje certyfikaty"}
-            data = {data}
-            renderRow = {renderRow}
-            errorState = {errorState}
-            error = {error}
-            handleBack = {handleBackClick}
-            loading = {loading}
-            setErrorState = {setErrorState}
+            title={"Twoje certyfikaty"}
+            data={data}
+            renderRow={renderRow}
+            errorState={errorState}
+            error={error}
+            handleBack={handleBackClick}
+            loading={loading}
+            setErrorState={setErrorState}
         />
     );
 }

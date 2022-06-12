@@ -9,20 +9,12 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useLocation, useNavigate } from "react-router-dom";
-import { addVaccine, editPatient, editVaccine } from './AdminApi';
+import { editPatient } from './AdminApi';
 import ValidationHelpers from '../../tools/ValidationHelpers';
-import Snackbar from '@mui/material/Snackbar';
-import MuiAlert from '@mui/material/Alert';
-import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { activeOptions } from '../../tools/ActiveOptions';
-import { ErrorSnackbar, SuccessSnackbar } from '../../tools/Snackbars';
+import { ErrorSnackbar, SuccessSnackbar } from '../Snackbars';
 
 const theme = createTheme();
-
-const Alert = React.forwardRef(function Alert(props, ref) {
-    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
-});
 
 export default function EditPatient() {
     const navigate = useNavigate();
@@ -50,7 +42,6 @@ export default function EditPatient() {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
 
-        console.log(data.get('firstName'))
         let error = await editPatient(location.state.id, data.get('pesel'), data.get('firstName'), data.get('lastName'),
             data.get('mail'), data.get('dateOfBirth'), data.get('phoneNumber'), data.get('active'));
         setOperationError(error);
@@ -58,44 +49,12 @@ export default function EditPatient() {
             setOperationErrorState(true);
         else
             setSuccess(true);
-
-        console.log(location.state.dateOfBirth)
-        console.log('po replace:')
-        console.log(location.state.dateOfBirth.replaceAll('-', '/'))
     };
 
     const handleChange = (event) => {
         setActiveOption(event.target.value);
     };
 
-    const handleClose = (event, reason) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setOperationErrorState(false);
-    };
-
-    const handleClose2 = (event, reason) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setSuccess(false);
-    };
-
-    function renderError(param) {
-        switch (param) {
-            case '400':
-                return 'Nieprawidłowe dane.';
-            case '401':
-                return 'Użytkownik nie posiada uprawnień do wykonania tej operacji'
-            case '403':
-                return 'Użytkownikowi zabroniono wykonania tej operacji'
-            case '404':
-                return 'Nie znaleziono takiego pacjenta'
-            default:
-                return 'Wystąpił błąd!';
-        }
-    }
     return (
         <ThemeProvider theme={theme}>
             <Container component="main" maxWidth="xs">

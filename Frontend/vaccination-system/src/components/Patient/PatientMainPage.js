@@ -6,27 +6,16 @@ import AccountBoxRoundedIcon from '@mui/icons-material/AccountBoxRounded';
 import Typography from '@mui/material/Typography';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
-import { useLocation, useNavigate } from "react-router-dom";
-import { getPatientInfo } from './PatientApi';
+import { useNavigate } from "react-router-dom";
 import LoginHelpers from '../../tools/LoginHelpers';
 
 const theme = createTheme();
 
 export default function PatientMainPage() {
     const navigate = useNavigate();
-    const [patientData, setPatientData] = React.useState();
 
     React.useEffect(() => {
         document.title = "Patient Page"
-        const fetchData = async () => {
-            let userID = localStorage.getItem('userID');
-            let [data, err] = await getPatientInfo(userID);
-            if (data != null) {
-                setPatientData(data);
-            }
-        }
-        fetchData();
-
         LoginHelpers.preventGoingBack();
     }, []);
 
@@ -59,8 +48,8 @@ export default function PatientMainPage() {
                             sx={{ mt: 3, mb: 2 }}
                             onClick={() => {
                                 navigate("/patient/appointments/incomingAppointments")
-                                console.log("/patient/appointments/incomingAppointments")
                             }}
+                            name="incomingAppointmentsButton"
                         >
                             Twoje szczepienia
                         </Button>
@@ -71,8 +60,8 @@ export default function PatientMainPage() {
                             sx={{ mt: 3, mb: 2 }}
                             onClick={() => {
                                 navigate("/patient/timeSlots")
-                                console.log("patient/timeSlot")
                             }}
+                            name="registerForVaccinationButton"
                         >
                             Zapisz się na szczepienie
                         </Button>
@@ -99,6 +88,7 @@ export default function PatientMainPage() {
                             Twoje certyfikaty szczepień
                         </Button>
                         <Button
+                            name="logOutButton"
                             type="submit"
                             fullWidth
                             variant="contained"

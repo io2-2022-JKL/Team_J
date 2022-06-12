@@ -1,4 +1,6 @@
+przed przejściem do testów należy mieć pobrane chromedriver.exe i geckodriver.exe, a ich lokalizacje dodane do zmiennej środowiskowej PATH
+
 1. uruchamiamy aplikację reactową
-2. otwieramy terminal w folderze Team_J\Frontend\vaccination-system\src
-3. uruchamiamy komendę 'node LoginTest.js'
+2. otwieramy terminal w folderze Team_J\Frontend\vaccination-system\src\_selenium_tests_
+3. uruchamiamy komendę 'node <nazwa odpowiedniego pliku testowego>', np. 'node LoginTest.js'
 4. czekamy na wynik testów

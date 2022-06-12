@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Button from '@mui/material/Button';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { Container, CssBaseline, Snackbar, TextField } from '@mui/material';
+import { Container, CssBaseline, TextField } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import { useLocation, useNavigate } from "react-router-dom";
@@ -19,7 +19,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import { activeOptionsEmptyPossible } from '../../tools/ActiveOptions';
-import {ErrorSnackbar} from '../../tools/Snackbars';
+import { ErrorSnackbar, SuccessSnackbar } from '../Snackbars';
 
 const theme = createTheme();
 
@@ -107,11 +107,13 @@ export default function PatientsPage() {
     const [filteredRows, setFilteredRows] = React.useState(rows);
     const [openCentersDialog, setOpenCentersDialog] = React.useState(false)
     const [vaccinationCenters, setVaccinationCenters] = React.useState()
-    const [openSnackBar, setOpenSnackBar] = React.useState(false)
+    const [openSnackBar, setOpenErrorSnackBar] = React.useState(false)
     const [snackBarMessage, setSnackBarMessage] = React.useState('')
     const [option, setOption] = React.useState('');
     const [selectedRow, setSelectedRow] = React.useState();
     const [selectedCenterId, setSelectedCenterId] = React.useState();
+    const [error, SetError] = React.useState('');
+    const [successState, setSuccessState] = React.useState(false)
 
     React.useEffect(() => {
 
@@ -130,20 +132,19 @@ export default function PatientsPage() {
 
     const deactivatePatient = React.useCallback(
         (id) => async () => {
-            let error = await deletePatient(id); 
+            let error = await deletePatient(id);
             console.log(error)
-            if(error !== '200')
-            {
-                setSnackBarMessage(error)
-                setOpenSnackBar(true)
+            if (error !== '200') {
+                setSnackBarMessage("Nie udało się usunąć lekarza")
+                SetError(error);
+                setOpenErrorSnackBar(true)
             }
-            else
-            {
-               setTimeout(() => {
-                setRows((prevRows) => prevRows.map((row) => row.id === id ? {...row,active: false} : row));
-                setFilteredRows((prevRows) => prevRows.map((row) => row.id === id ? {...row,active: false}: row));    
-                }); 
-            } 
+            else {
+                setTimeout(() => {
+                    setRows((prevRows) => prevRows.map((row) => row.id === id ? { ...row, active: false } : row));
+                    setFilteredRows((prevRows) => prevRows.map((row) => row.id === id ? { ...row, active: false } : row));
+                });
+            }
         },
         [],
     );
@@ -153,13 +154,13 @@ export default function PatientsPage() {
             setSelectedRow(row)
             const [data, err] = await getVaccinationCentersData()
             if (err != '200') {
-                setOpenSnackBar(true)
+                setOpenErrorSnackBar(true)
                 setSnackBarMessage('Nie udało się pobrac danych')
             }
             else {
                 setVaccinationCenters(data)
-                console.log(data)
                 setOpenCentersDialog(true)
+                setSelectedCenterId(data[0].id)
             }
         }
         else
@@ -173,13 +174,14 @@ export default function PatientsPage() {
 
     const handleCenterChoice = async () => {
         const err = await addDoctor(selectedRow.id, selectedCenterId)
+        SetError(err);
         if (err != '200') {
             setSnackBarMessage('Nie udało się dodać lekarza')
-            setOpenSnackBar(true)
+            setOpenErrorSnackBar(true)
         }
         else {
-            setSnackBarMessage('Dodano lekarza lekarza')
-            setOpenSnackBar(true)
+            setSnackBarMessage('Dodano nowego lekarza')
+            setSuccessState(true)
         }
         setOpenCentersDialog(false)
     }
@@ -225,6 +227,7 @@ export default function PatientsPage() {
                             component='form'
                             noValidate
                             onChange={handleSubmit}
+                            onBlur={handleSubmit}
                             sx={{
                                 marginTop: 2,
                                 marginBottom: 2,
@@ -323,6 +326,7 @@ export default function PatientsPage() {
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
                             onClick={async () => { navigate("/admin") }}
+                            name="backButton"
                         >
                             Powrót
                         </Button>
@@ -351,7 +355,7 @@ export default function PatientsPage() {
                                         select
                                         name="centerSelection"
                                         value={selectedCenterId}
-                                        onChange={(e) => setSelectedCenterId(e.target.value)}
+                                        onChange={(e) => { setSelectedCenterId(e.target.value); }}
                                         SelectProps={{
                                             native: true,
                                         }}
@@ -366,13 +370,19 @@ export default function PatientsPage() {
                         </DialogContent>
                         <DialogActions>
                             <Button onClick={() => setOpenCentersDialog(false)}>Wróc</Button>
-                            <Button onClick={handleCenterChoice}>Wybierz</Button>
+                            <Button name="chooseButton" onClick={handleCenterChoice}>Wybierz</Button>
                         </DialogActions>
                     </Dialog>
                     <ErrorSnackbar
-                        error = {snackBarMessage}
-                        errorState = {openSnackBar}
-                        setErrorState = {setOpenSnackBar}
+                        error={error}
+                        message={snackBarMessage}
+                        errorState={openSnackBar}
+                        setErrorState={setOpenErrorSnackBar}
+                    />
+                    <SuccessSnackbar
+                        message={snackBarMessage}
+                        success={successState}
+                        setSuccess={setSuccessState}
                     />
                 </CssBaseline>
             </Container >

@@ -9,10 +9,9 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { blue } from '@mui/material/colors';
 import SummarizeIcon from '@mui/icons-material/Summarize';
 import Avatar from '@mui/material/Avatar';
-import { ErrorSnackbar } from '../tools/Snackbars';
+import { ErrorSnackbar, SuccessSnackbar } from './Snackbars';
 
 const theme = createTheme();
-
 
 export default function ItemListPageTemplate(props) //title, data, renderRow, renderError, errorState, error, handleSnackBarClose, handleBack, loading) 
 {
@@ -62,7 +61,7 @@ export default function ItemListPageTemplate(props) //title, data, renderRow, re
                                     size={24}
                                     sx={{
                                         color: blue,
-                                        position: 'relative',
+                                        position: 'absolute',
                                         alignSelf: 'center',
                                         left: '50%'
                                     }}
@@ -71,9 +70,18 @@ export default function ItemListPageTemplate(props) //title, data, renderRow, re
                         }
                     </Box>
                     <ErrorSnackbar
-                        error = {props.error}
-                        errorState = {props.errorState}
-                        setErrorState = {props.setErrorState}
+                        error={props.error}
+                        errorState={props.errorState}
+                        setErrorState={props.setErrorState}
+                    />
+                    <ErrorSnackbar
+                        error={props.error2}
+                        errorState={props.errorState2}
+                        setErrorState={props.setErrorState2}
+                    />
+                    <SuccessSnackbar
+                        success = {props.success}
+                        setSuccess = {props.setSuccess}
                     />
                 </CssBaseline>
             </Container>

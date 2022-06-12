@@ -1,15 +1,15 @@
-export default async function getCities() {
-    let response;
-    let errCode = '200';
-    try {
-        response = await axios({
-            method: 'get',
-            url: SYSTEM_SZCZEPIEN_URL + '/cities',
-        });
-        return [response.data, errCode];
+import { getRequest } from "./Api";
 
-    } catch (error) {
-        console.error(error.message);
-        return [response, error.response.status.toString()];
-    }
+export default async function getCities() {
+    return getRequest('/cities')
 }
+
+export async function downloadCities() {
+    const [data, err] = await getCities()
+    cities = data.map(city => ({ value: city.city, label: city.city }))
+    citiesEmptyPossible = data.map(city => ({ value: city.city, label: city.city }))
+    citiesEmptyPossible.push({ value: '', label: '' })
+}
+
+export var cities = []
+export var citiesEmptyPossible = []

@@ -20,6 +20,8 @@ import { SYSTEM_SZCZEPIEN_URL } from '../api/Api';
 import ValidationHelpers from '../tools/ValidationHelpers';
 import { getPatientInfo } from './Patient/PatientApi';
 import { getDoctorInfo } from './Doctor/DoctorApi';
+import getViruses, { downloadViruses } from '../api/Viruses';
+import getCities, { downloadCities } from '../api/Cities';
 
 const theme = createTheme();
 
@@ -79,44 +81,52 @@ export default function LoginPage() {
             setLoading(false)
         }
 
-        localStorage.setItem('userID', response.data.userId)
+        const [viruses, virusesError] = await getViruses();
+        localStorage.setItem('viruses', JSON.stringify(viruses))
+        const [cities, citiesError] = await getCities();
+        localStorage.setItem('cities', JSON.stringify(cities))
+        downloadCities()
+        downloadViruses()
 
+        localStorage.setItem('userID', response.data.userId)
 
         axios.defaults.headers.common['authorization'] = 'Bearer ' + response.headers.authorization
 
         setLoading(false);
 
         localStorage.setItem('isDoctor', false)
-        console.log(response.data.userType)
         let [data, err] = [];
         let patientId;
-
         switch (response.data.userType) {
             case "admin":
+            case "Admin":
                 navigate("/admin");
                 break;
             case "patient":
+            case "Patient":
                 patientId = localStorage.getItem('userID');
                 [data, err] = await getPatientInfo(patientId);
+                localStorage.setItem('patientID', patientId)
                 localStorage.setItem('userFirstName', data.firstName)
                 localStorage.setItem('userLastName', data.lastName)
                 navigate("/patient");
                 break;
             case "doctor":
-
+            case "Doctor":
+                let [doctorData, DoctorErr] = []
                 localStorage.setItem('isDoctor', true)
                 let doctorId = localStorage.getItem('userID');
-                console.log(doctorId)
-                let [doctorData, DoctorErr] = await getDoctorInfo(doctorId);
-                patientId = doctorData.patientId
-                [data, err] = await getPatientInfo(patientId);
+                [doctorData, DoctorErr] = await getDoctorInfo(doctorId);
+                localStorage.setItem('patientID', doctorData.patientAccountId);
+                [data, err] = await getPatientInfo(doctorData.patientAccountId);
                 localStorage.setItem('userFirstName', data.firstName)
                 localStorage.setItem('userLastName', data.lastName)
-                navigate("/doctor/redirection");
+                localStorage.setItem('doctorID', doctorId)
+
+                navigate("/doctor/redirection", { state: { page: "doctor" } });
                 break;
             default:
                 break;
-
         }
     }
 
@@ -192,7 +202,7 @@ export default function LoginPage() {
                             )
                         }
                         <Snackbar open={snackbar} autoHideDuration={6000} onClose={handleClose}>
-                            <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
+                            <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }} name="snackbar">
                                 Rejestarcja powiodła się
                             </Alert>
                         </Snackbar>
@@ -200,7 +210,7 @@ export default function LoginPage() {
 
                         <Grid container>
                             <Grid item>
-                                <Link to='/register' variant="body2">
+                                <Link to='/register' variant="body2" name="link">
                                     {"Nie masz konta pacjenckiego? Zarejestruj się."}
                                 </Link>
                             </Grid>
