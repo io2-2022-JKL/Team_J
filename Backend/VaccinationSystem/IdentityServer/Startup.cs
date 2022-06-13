@@ -44,10 +44,10 @@ namespace IdentityServer
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
-            services.AddKeyManagementDbContext(new DatabaseKeyManagementOptions
+            /*services.AddKeyManagementDbContext(new DatabaseKeyManagementOptions
             {
                 ConfigureDbContext = b => b.UseSqlServer(connectionString, sql => sql.MigrationsAssembly(migrationAssembly))
-            });
+            });*/
 
             services.AddIdentityServer()
                 .AddAspNetIdentity<ApplicationUser>()
@@ -59,7 +59,8 @@ namespace IdentityServer
                 {
                     options.ConfigureDbContext = b => b.UseSqlServer(connectionString, sql => sql.MigrationsAssembly(migrationAssembly));
                 })
-                .AddSigningKeyManagement(options =>
+                .AddDeveloperSigningCredential();
+                /*.AddSigningKeyManagement(options =>
                 {
                     options.License = "eyJTb2xkRm9yIjowLjAsIktleVByZXNldCI6NiwiU2F2ZUtleSI6ZmFsc2UsIkxlZ2FjeUtleSI6ZmFsc2UsIlJlbmV3YWxTZW50VGltZSI6IjAwMDEtMDEtMDFUMDA6MDA6MDAiLCJhdXRoIjoiREVNTyIsImV4cCI6IjIwMjItMDYtMTNUMDE6MDA6MDEuOTE0MTUwMyswMDowMCIsImlhdCI6IjIwMjItMDUtMTRUMDE6MDA6MDEiLCJvcmciOiJERU1PIiwiYXVkIjo1fQ==.JhTaaGrYXi9P7k5CPyGZAPPjxbk7ZJkbAfvXoIV8hmN4O+RelCHJ8PJNFuoqE9G2NWYZLiPT9wXphLYKlAIB4nwrjEUl4f1DNJ5Qhrta1GebcuKQOec2uhNOOejyn7EVzZ0T7Xg9RNuF0/UCoQbDGPsjEijkSmiVr6TNLBuwZYV1Yi6e8SqtsTW2CaCqBjjSoR8fXyWQm/wi7CsI0kumFIn2pR0lFS/dTZBrvXwsMUnqYkGHZF2TuyElPejxMdnOEgxD4/E6rDwTPzR/Y4m1TbquqwCzGHn9Do5jRkALBKLEhkYzvEo8oE5/0ap5+uRQXGM6hiiHsjjM6DHW6cVi8Pb+PWteezS5HuiQUnfS+5uVtde1WGM+YKfvfCAQQL5waMht4Aenxr3o19uwYtsgFY6rymINE6ajimxxwRdbnfOYNU96NACey9EWXcv3eq6C6nVIZJBm1iJc7Zw0zdB3Puh5bhFbtf6TXDUevPyNMY9cx4dyys1eH2tZHZl2QDiEQURSDXEJR5w/FSV1PmN1TLHTrkyz0zsi+cS58o2Csf8moS5OmqPGm7bMarODKkHd0HgFdlxGrOhBT4MjvOqyMUgQy4o6veN+5Jx5vf3PvsQcorWVLImnMH7++61hSuUgsMz3r/82phD4GyhKfJQ6TRsEAlBMqkEeUhFDCZ5ctYg=";
                     options.Licensee = "DEMO";
@@ -68,7 +69,7 @@ namespace IdentityServer
                 {
                     ConfigureDbContext = b => b.UseSqlServer(connectionString)
                 })
-                .EnableInMemoryCaching();
+                .EnableInMemoryCaching();*/
             //.ProtectKeysWithDataProtection();
 
             services.AddScoped<IProfileService, ProfileService>();

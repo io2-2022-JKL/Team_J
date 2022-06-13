@@ -15,7 +15,7 @@ namespace IdentityServer.Configuration
             using var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope();
             serviceScope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>().Database.Migrate();
 
-            serviceScope.ServiceProvider.GetRequiredService<KeyManagementDbContext>().Database.Migrate();
+            //serviceScope.ServiceProvider.GetRequiredService<KeyManagementDbContext>().Database.Migrate();
 
             var context = serviceScope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
 
