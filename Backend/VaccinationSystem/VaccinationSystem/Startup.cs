@@ -18,6 +18,10 @@ using Microsoft.OpenApi.Models;
 using System;
 using Microsoft.Net.Http.Headers;
 using VaccinationSystem.MailStuff;
+using Microsoft.Extensions.Azure;
+using Azure.Storage.Queues;
+using Azure.Storage.Blobs;
+using Azure.Core.Extensions;
 
 namespace VaccinationSystem
 {
@@ -46,14 +50,14 @@ namespace VaccinationSystem
             services.AddAuthentication("Bearer")
                 .AddJwtBearer("Bearer", options =>
                 {
-                    options.Authority = "https://localhost:6001";
+                    options.Authority = "https://localhost:6001/";
 
                     options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
                     {
                         ValidateAudience = false,
                         ValidateLifetime = true,
                         ValidateIssuer = true,
-                        ValidIssuers = new List<string>() { "https://localhost:6001" },
+                        ValidIssuers = new List<string>() { "https://localhost:6001/" },
                         ClockSkew = TimeSpan.Zero
                     };
                 });
@@ -146,6 +150,11 @@ namespace VaccinationSystem
             services.AddControllersWithViews();
             services.Configure<MailSettings>(Configuration.GetSection("MailSettings"));
             services.AddTransient<IMailService, MailService>();
+            services.AddAzureClients(builder =>
+            {
+                builder.AddBlobServiceClient(Configuration["ConnectionStrings:AppStorage:blob"], preferMsi: true);
+                builder.AddQueueServiceClient(Configuration["ConnectionStrings:AppStorage:queue"], preferMsi: true);
+            });
 
             // In production, the React files will be served from this directory
             /*services.AddSpaStaticFiles(configuration =>
@@ -222,6 +231,31 @@ namespace VaccinationSystem
                     spa.UseReactDevelopmentServer(npmScript: "start");
                 }
             });*/
+        }
+    }
+    internal static class StartupExtensions
+    {
+        public static IAzureClientBuilder<BlobServiceClient, BlobClientOptions> AddBlobServiceClient(this AzureClientFactoryBuilder builder, string serviceUriOrConnectionString, bool preferMsi)
+        {
+            if (preferMsi && Uri.TryCreate(serviceUriOrConnectionString, UriKind.Absolute, out Uri serviceUri))
+            {
+                return builder.AddBlobServiceClient(serviceUri);
+            }
+            else
+            {
+                return builder.AddBlobServiceClient(serviceUriOrConnectionString);
+            }
+        }
+        public static IAzureClientBuilder<QueueServiceClient, QueueClientOptions> AddQueueServiceClient(this AzureClientFactoryBuilder builder, string serviceUriOrConnectionString, bool preferMsi)
+        {
+            if (preferMsi && Uri.TryCreate(serviceUriOrConnectionString, UriKind.Absolute, out Uri serviceUri))
+            {
+                return builder.AddQueueServiceClient(serviceUri);
+            }
+            else
+            {
+                return builder.AddQueueServiceClient(serviceUriOrConnectionString);
+            }
         }
     }
 }
