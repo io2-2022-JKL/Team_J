@@ -12,6 +12,8 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.Storage.Blobs" Version="12.12.0" />
+    <PackageReference Include="Azure.Storage.Files.Shares" Version="12.1.0" />
+    <PackageReference Include="Azure.Storage.Queues" Version="12.2.0" />
     <PackageReference Include="EntityFramework" Version="6.4.4" />
     <PackageReference Include="MailKit" Version="3.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.1.0" />
@@ -22,6 +24,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Azure" Version="1.0.0" />
     <PackageReference Include="Microsoft.OpenApi" Version="1.2.3" />
     <PackageReference Include="MimeKit" Version="3.2.0" />
     <PackageReference Include="PdfSharp" Version="1.50.5147" />
@@ -47,6 +50,20 @@
     <Compile Remove="Migrations\20220417114751_dbFix.Designer.cs" />
     <Compile Remove="Migrations\20220417173000_dbFix.cs" />
     <Compile Remove="Migrations\20220417173000_dbFix.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="fonts\arial\Arial.ttf" />
+    <None Remove="fonts\arial\Arial_Bold.ttf" />
+    <None Remove="fonts\arial\Arial_Bold_Italic.ttf" />
+    <None Remove="fonts\arial\Arial_Italic.ttf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="fonts\arial\Arial.ttf" />
+    <EmbeddedResource Include="fonts\arial\Arial_Bold.ttf" />
+    <EmbeddedResource Include="fonts\arial\Arial_Bold_Italic.ttf" />
+    <EmbeddedResource Include="fonts\arial\Arial_Italic.ttf" />
   </ItemGroup>
 
   <ItemGroup>

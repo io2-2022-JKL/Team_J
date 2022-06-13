@@ -25,6 +25,7 @@ using System.Drawing;
 using System.IO;
 using Microsoft.Extensions.Configuration;
 using VaccinationSystem.MailStuff;
+using VaccinationSystem.fonts;
 
 namespace VaccinationSystem.Controllers
 {
@@ -880,6 +881,7 @@ namespace VaccinationSystem.Controllers
             //string url = _storageUrlBase + urlPatient + "/";
 
             System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+            MyFontResolver.Apply();
             PdfDocument document = new PdfDocument();
             PdfPage page = document.AddPage();
 
